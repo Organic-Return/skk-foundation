@@ -1,0 +1,62 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import ContactModal from '@/components/ContactModal';
+
+interface CTASectionProps {
+  title?: string;
+  description?: string;
+  buttonText?: string;
+  buttonAction?: 'link' | 'contact_modal';
+  buttonLink?: string;
+}
+
+export default function CTASection({
+  title = 'Looking to Partner With Us?',
+  description = "We're always looking to connect with exceptional real estate professionals who share our commitment to excellence.",
+  buttonText = 'Get in Touch',
+  buttonAction = 'link',
+  buttonLink = '/contact-us',
+}: CTASectionProps) {
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+
+  return (
+    <section className="py-20 md:py-28 bg-[var(--color-navy)]">
+      <div className="max-w-4xl mx-auto px-6 md:px-12 text-center">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-white tracking-wide mb-6">
+          {title}
+        </h2>
+        <p className="text-lg text-white/70 font-light mb-10 max-w-2xl mx-auto leading-relaxed">
+          {description}
+        </p>
+        {buttonAction === 'contact_modal' ? (
+          <button
+            onClick={() => setContactModalOpen(true)}
+            className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] font-light transition-all duration-300 bg-[var(--color-gold)] text-white px-10 py-4 border border-[var(--color-gold)] hover:bg-transparent hover:border-white"
+          >
+            {buttonText}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </button>
+        ) : (
+          <Link
+            href={buttonLink}
+            className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] font-light transition-all duration-300 bg-[var(--color-gold)] text-white px-10 py-4 border border-[var(--color-gold)] hover:bg-transparent hover:border-white"
+          >
+            {buttonText}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        )}
+      </div>
+
+      <ContactModal
+        isOpen={contactModalOpen}
+        onClose={() => setContactModalOpen(false)}
+      />
+    </section>
+  );
+}

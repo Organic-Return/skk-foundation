@@ -1,0 +1,16 @@
+import { post } from './post'
+import { community } from './community'
+import { publication } from './publication'
+import { settings } from './settings'
+import { homepage } from './homepage'
+import { teamMember } from './teamMember'
+import { accolade } from './accolade'
+import { navigation } from './navigation'
+import { mlsConfiguration } from './mlsConfiguration'
+import { whyKlugProperties } from './whyKlugProperties'
+import { testimonialsPage } from './testimonialsPage'
+import { affiliatedPartner } from './affiliatedPartner'
+import { affiliatedPartnersPage } from './affiliatedPartnersPage'
+import { offMarketListing } from './offMarketListing'
+
+export const schemaTypes = [post, community, publication, settings, homepage, teamMember, accolade, navigation, mlsConfiguration, whyKlugProperties, testimonialsPage, affiliatedPartner, affiliatedPartnersPage, offMarketListing]
