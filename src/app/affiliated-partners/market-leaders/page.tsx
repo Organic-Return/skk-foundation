@@ -43,10 +43,22 @@ const PAGE_CONTENT_QUERY = `*[_type == "affiliatedPartnersPage" && pageType == "
 
 const options = { next: { revalidate: 60 } };
 
-export const metadata: Metadata = {
-  title: 'Market Leaders | Klug Properties',
-  description: 'Meet our network of top-performing agents and industry leaders in their respective real estate markets.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+
+  return {
+    title: 'Market Leaders | Klug Properties',
+    description: 'Meet our network of top-performing agents and industry leaders in their respective real estate markets.',
+    alternates: {
+      canonical: `${baseUrl}/affiliated-partners/market-leaders`,
+    },
+    openGraph: {
+      title: 'Market Leaders | Klug Properties',
+      description: 'Meet our network of top-performing agents and industry leaders in their respective real estate markets.',
+      url: `${baseUrl}/affiliated-partners/market-leaders`,
+    },
+  };
+}
 
 export default async function MarketLeadersPage() {
   const [partners, pageContent] = await Promise.all([

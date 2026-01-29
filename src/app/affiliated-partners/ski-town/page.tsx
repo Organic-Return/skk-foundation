@@ -43,10 +43,22 @@ const PAGE_CONTENT_QUERY = `*[_type == "affiliatedPartnersPage" && pageType == "
 
 const options = { next: { revalidate: 60 } };
 
-export const metadata: Metadata = {
-  title: 'Ski Town Partners | Klug Properties',
-  description: 'Meet our network of trusted real estate professionals specializing in premier ski resort communities across North America.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+
+  return {
+    title: 'Ski Town Partners | Klug Properties',
+    description: 'Meet our network of trusted real estate professionals specializing in premier ski resort communities across North America.',
+    alternates: {
+      canonical: `${baseUrl}/affiliated-partners/ski-town`,
+    },
+    openGraph: {
+      title: 'Ski Town Partners | Klug Properties',
+      description: 'Meet our network of trusted real estate professionals specializing in premier ski resort communities across North America.',
+      url: `${baseUrl}/affiliated-partners/ski-town`,
+    },
+  };
+}
 
 export default async function SkiTownPartnersPage() {
   const [partners, pageContent] = await Promise.all([

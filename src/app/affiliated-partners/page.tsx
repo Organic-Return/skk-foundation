@@ -46,10 +46,22 @@ const PAGE_CONTENT_QUERY = `*[_type == "affiliatedPartnersPage" && pageType == "
 
 const options = { next: { revalidate: 60 } };
 
-export const metadata: Metadata = {
-  title: 'Affiliated Partners | Klug Properties',
-  description: 'Meet our network of trusted real estate professionals across premier ski towns and market-leading brokerages.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+
+  return {
+    title: 'Affiliated Partners | Klug Properties',
+    description: 'Meet our network of trusted real estate professionals across premier ski towns and market-leading brokerages.',
+    alternates: {
+      canonical: `${baseUrl}/affiliated-partners`,
+    },
+    openGraph: {
+      title: 'Affiliated Partners | Klug Properties',
+      description: 'Meet our network of trusted real estate professionals across premier ski towns and market-leading brokerages.',
+      url: `${baseUrl}/affiliated-partners`,
+    },
+  };
+}
 
 export default async function AffiliatedPartnersPage() {
   const [partners, pageContent] = await Promise.all([

@@ -82,13 +82,19 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+
   return {
     title: metaTitle,
     description: metaDescription,
+    alternates: {
+      canonical: `${baseUrl}/why-klug-properties`,
+    },
     openGraph: {
       title: metaTitle,
       description: metaDescription,
       type: 'website',
+      url: `${baseUrl}/why-klug-properties`,
       images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630 }] : [],
     },
   };

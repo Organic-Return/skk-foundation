@@ -1,5 +1,23 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getYouTubeCredentials } from "@/lib/settings";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+
+  return {
+    title: 'Videos | Real Estate Tours & Content',
+    description: 'Watch our latest real estate videos and virtual tours.',
+    alternates: {
+      canonical: `${baseUrl}/videos`,
+    },
+    openGraph: {
+      title: 'Videos | Real Estate Tours & Content',
+      description: 'Watch our latest real estate videos and virtual tours.',
+      url: `${baseUrl}/videos`,
+    },
+  };
+}
 
 interface YouTubeVideo {
   id: {

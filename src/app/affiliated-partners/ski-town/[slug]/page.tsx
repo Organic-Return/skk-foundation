@@ -41,9 +41,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const canonicalUrl = `${baseUrl}/affiliated-partners/ski-town/${slug}`;
+
   return {
     title: `${partner.firstName} ${partner.lastName} | Ski Town Partner | Klug Properties`,
     description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${partner.firstName} ${partner.lastName} | Ski Town Partner | Klug Properties`,
+      description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
+      url: canonicalUrl,
+    },
   };
 }
 

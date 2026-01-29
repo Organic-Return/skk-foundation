@@ -23,15 +23,23 @@ const urlFor = (source: any) =>
 
 const options = { next: { revalidate: 30 } };
 
-export const metadata: Metadata = {
-  title: 'Living Aspen | Luxury Lifestyle Magazine',
-  description: 'Discover the Aspen lifestyle through our curated magazine featuring local culture, design, real estate, and more.',
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+
+  return {
     title: 'Living Aspen | Luxury Lifestyle Magazine',
     description: 'Discover the Aspen lifestyle through our curated magazine featuring local culture, design, real estate, and more.',
-    type: 'website',
-  },
-};
+    alternates: {
+      canonical: `${baseUrl}/living-aspen`,
+    },
+    openGraph: {
+      title: 'Living Aspen | Luxury Lifestyle Magazine',
+      description: 'Discover the Aspen lifestyle through our curated magazine featuring local culture, design, real estate, and more.',
+      type: 'website',
+      url: `${baseUrl}/living-aspen`,
+    },
+  };
+}
 
 export default async function LivingAspenPage() {
   const magazines = await client.fetch<SanityDocument[]>(MAGAZINES_QUERY, {}, options);
