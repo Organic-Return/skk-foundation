@@ -259,6 +259,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           total={total}
           searchParams={currentSearchParams}
           currentSort={sort}
+          hasLocationFilter={!!(city || neighborhood)}
         />
       </div>
     </>
