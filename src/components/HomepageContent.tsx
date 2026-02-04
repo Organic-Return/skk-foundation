@@ -24,10 +24,14 @@ import ModernQuoteBlock from '@/components/ModernQuoteBlock';
 import ModernFeaturedProperty from '@/components/ModernFeaturedProperty';
 import ModernPropertyCarousel from '@/components/ModernPropertyCarousel';
 import ModernCityStats from '@/components/ModernCityStats';
+import ModernAgentListingsGallery from '@/components/ModernAgentListingsGallery';
+import ModernNewestListings from '@/components/ModernNewestListings';
+import ModernCommunities from '@/components/ModernCommunities';
+import ModernContactCTA from '@/components/ModernContactCTA';
 
 interface HomepageContentProps {
   // Template selection from Sanity
-  template?: 'classic' | 'luxury' | 'modern';
+  template?: 'classic' | 'luxury' | 'modern' | 'custom-one';
   // Hero data
   videoUrl?: string;
   fallbackImageUrl?: string;
@@ -123,7 +127,7 @@ export default function HomepageContent({
     ?.filter(c => c.enabled)
     ?.map(c => c.city) || [];
   // Modern Template
-  if (template === 'modern') {
+  if (template === 'modern' || template === 'custom-one') {
     return (
       <>
         {/* Modern Hero - Rolex/Patek Philippe inspired */}
@@ -151,16 +155,48 @@ export default function HomepageContent({
         )}
 
         {/* Featured Property Section */}
-        {featuredProperty?.enabled && featuredProperty?.mlsId && (
+        {featuredProperty?.enabled && (featuredProperty?.mlsId || agentMlsId) && (
           <ModernFeaturedProperty
             mlsId={featuredProperty.mlsId}
+            agentMlsId={agentMlsId}
             headline={featuredProperty.headline}
             buttonText={featuredProperty.buttonText}
           />
         )}
 
-        {/* Property Carousel - Horizontal scroll gallery */}
-        {featuredPropertiesCarousel?.enabled !== false && (
+        {/* City Stats Section - after featured property on custom-one */}
+        {template === 'custom-one' && marketStatsSection?.enabled !== false && (
+          <ModernCityStats
+            title={marketStatsSection?.title}
+            subtitle={marketStatsSection?.subtitle}
+            configuredCities={marketStatsCities.length > 0 ? marketStatsCities : undefined}
+            variant="dark"
+          />
+        )}
+
+        {/* Newest to Market - Custom One template only, right after market insights */}
+        {template === 'custom-one' && (
+          <ModernNewestListings
+            cities={featuredPropertiesCarousel?.cities || undefined}
+            limit={featuredPropertiesCarousel?.limit || 8}
+          />
+        )}
+
+        {/* Communities Section - Custom One template only */}
+        {template === 'custom-one' && featuredCommunities?.communities && featuredCommunities.communities.length > 0 && (
+          <ModernCommunities
+            title={featuredCommunities.title}
+            communities={featuredCommunities.communities}
+          />
+        )}
+
+        {/* Contact CTA Section - Custom One template only */}
+        {template === 'custom-one' && (
+          <ModernContactCTA />
+        )}
+
+        {/* Property Carousel - Horizontal scroll gallery (modern only, custom-one uses ModernNewestListings instead) */}
+        {template !== 'custom-one' && featuredPropertiesCarousel?.enabled !== false && (
           <ModernPropertyCarousel
             cities={featuredPropertiesCarousel?.cities}
             title={featuredPropertiesCarousel?.title || 'Featured Properties'}
@@ -169,8 +205,8 @@ export default function HomepageContent({
           />
         )}
 
-        {/* City Stats Section */}
-        {marketStatsSection?.enabled !== false && (
+        {/* City Stats Section - at the end on modern */}
+        {template !== 'custom-one' && marketStatsSection?.enabled !== false && (
           <ModernCityStats
             title={marketStatsSection?.title}
             subtitle={marketStatsSection?.subtitle}

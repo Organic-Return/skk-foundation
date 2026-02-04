@@ -109,12 +109,15 @@ export default function LuxuryFeaturedProperty({
     <section className="pt-12 md:pt-16 lg:pt-20 pb-6 md:pb-8 lg:pb-10 bg-[var(--color-cream)]">
       {/* Section Title */}
       <div className="max-w-[1800px] mx-auto px-6 lg:px-12 mb-10 md:mb-14">
-        <p className="text-[var(--color-gold)] text-xs uppercase tracking-[0.3em] font-light mb-4 font-luxury-body">
-          {headline}
-        </p>
-        <h2 className="text-[var(--color-charcoal)] text-2xl md:text-3xl lg:text-[2.5rem] font-light tracking-[0.04em] leading-[1.2] font-luxury">
-          {title}
-        </h2>
+        <div className="flex flex-col items-center text-center">
+          <p className="text-[var(--color-gold)] text-xs uppercase tracking-[0.3em] font-light mb-5 font-luxury-body">
+            {headline}
+          </p>
+          <div className="w-px h-8 bg-[var(--color-taupe)] mb-6" />
+          <h2 className="text-[var(--color-charcoal)] text-2xl md:text-3xl lg:text-[2.5rem] font-light tracking-[0.04em] leading-[1.2] font-luxury">
+            {title}
+          </h2>
+        </div>
       </div>
 
       {/* Property Card — one at a time, 16:9 */}

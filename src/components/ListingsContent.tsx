@@ -16,7 +16,7 @@ interface ListingsContentProps {
   searchParams: URLSearchParams;
   currentSort: SortOption;
   hasLocationFilter?: boolean;
-  template?: 'classic' | 'luxury' | 'modern';
+  template?: 'classic' | 'luxury' | 'modern' | 'custom-one';
 }
 
 function formatPrice(price: number | null): string {
@@ -68,7 +68,8 @@ function getStreetAddress(fullAddress: string | null, city: string | null, state
 }
 
 // Property card - style varies by template
-function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty; template?: 'classic' | 'luxury' | 'modern' }) {
+function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty; template?: 'classic' | 'luxury' | 'modern' | 'custom-one' }) {
+  const isModernStyle = template === 'modern' || template === 'custom-one';
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const photos = listing.photos && listing.photos.length > 0 ? listing.photos : [];
   const hasMultiplePhotos = photos.length > 1;
@@ -89,14 +90,14 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
   // Determine card container classes based on template
   const cardContainerClasses = template === 'classic'
     ? 'border border-gray-200 overflow-hidden'
-    : template === 'modern'
+    : isModernStyle
     ? 'border border-[var(--modern-gray-lighter)] bg-white overflow-hidden hover:border-[var(--modern-gold)] transition-all duration-300'
     : '';
 
   // Determine aspect ratio based on template
   const aspectRatioClasses = template === 'luxury'
     ? 'aspect-[4/5]'
-    : template === 'modern'
+    : isModernStyle
     ? 'aspect-[4/3]'
     : 'aspect-[4/3]';
 
@@ -187,18 +188,18 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
       </Link>
 
       {/* Card Content */}
-      <div className={template === 'classic' ? 'p-4' : template === 'modern' ? 'p-5' : 'px-0 pt-1 pb-2'}>
+      <div className={template === 'classic' ? 'p-4' : isModernStyle ? 'p-5' : 'px-0 pt-1 pb-2'}>
         <h3
           className={`line-clamp-1 ${
             template === 'luxury'
               ? 'text-[var(--color-charcoal)] font-luxury'
-              : template === 'modern'
+              : isModernStyle
               ? 'text-[var(--modern-gold)] font-light tracking-wider'
               : 'text-gray-900 font-semibold'
           }`}
           style={template === 'luxury'
             ? { fontSize: '20px', fontWeight: 400, lineHeight: 1.3, letterSpacing: '0.02em', marginBottom: '1px' }
-            : template === 'modern'
+            : isModernStyle
             ? { fontSize: '1.25rem', fontWeight: 300, lineHeight: 1.2, marginBottom: '0.5rem' }
             : { fontSize: '1.125rem', lineHeight: 1.2, marginBottom: '0.25rem' }
           }
@@ -215,7 +216,7 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
           className={`leading-snug line-clamp-1 ${
             template === 'luxury'
               ? 'text-[var(--color-warm-gray)] font-light font-luxury'
-              : template === 'modern'
+              : isModernStyle
               ? 'text-sm text-[var(--modern-dark)] font-normal tracking-wide'
               : 'text-sm text-gray-700'
           }`}
@@ -227,7 +228,7 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
           className={`leading-snug line-clamp-1 ${
             template === 'luxury'
               ? 'text-[var(--color-warm-gray)] font-light font-luxury'
-              : template === 'modern'
+              : isModernStyle
               ? 'text-xs text-[var(--modern-gray)] uppercase tracking-[0.1em]'
               : 'text-xs text-gray-500'
           }`}
@@ -241,7 +242,7 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
           className={`flex items-center gap-3 text-[10px] uppercase ${
             template === 'luxury'
               ? 'text-[var(--color-warm-gray)] tracking-[0.12em]'
-              : template === 'modern'
+              : isModernStyle
               ? 'text-[var(--modern-gray)] tracking-[0.15em] pt-3 border-t border-[var(--modern-gray-lighter)] mb-2'
               : 'text-gray-500 tracking-wider'
           }`}
@@ -254,7 +255,7 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
               <span className={`w-px h-3 ${
                 template === 'luxury'
                   ? 'bg-[var(--color-light-gray)]'
-                  : template === 'modern'
+                  : isModernStyle
                   ? 'bg-[var(--modern-gray-lighter)]'
                   : 'bg-gray-300'
               }`} />
@@ -266,7 +267,7 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
               <span className={`w-px h-3 ${
                 template === 'luxury'
                   ? 'bg-[var(--color-light-gray)]'
-                  : template === 'modern'
+                  : isModernStyle
                   ? 'bg-[var(--modern-gray-lighter)]'
                   : 'bg-gray-300'
               }`} />
@@ -276,7 +277,7 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
         </div>
 
         {/* CTA Button - Modern template */}
-        {template === 'modern' && (
+        {isModernStyle && (
           <Link
             href={`/listings/${listing.id}`}
             className="inline-flex items-center gap-2 mt-4 text-[10px] uppercase tracking-[0.2em] text-[var(--modern-dark)] hover:text-[var(--modern-gold)] transition-colors duration-300 group/link"

@@ -4,40 +4,41 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-interface PropertyData {
+interface Property {
   id: string;
-  address: string;
-  city: string;
-  state?: string;
-  list_price: number;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  list_price: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
   square_feet: number | null;
-  photos: string[] | null;
-  mls_number?: string;
+  listing_date: string | null;
+  photos: string[];
 }
 
-interface ModernPropertyCarouselProps {
+interface ModernNewestListingsProps {
   cities?: string[];
   title?: string;
   subtitle?: string;
   limit?: number;
 }
 
-export default function ModernPropertyCarousel({
+export default function ModernNewestListings({
   cities,
-  title = 'Featured Properties',
-  subtitle = 'A curated selection of exceptional residences',
+  title = 'Newest to Market',
+  subtitle = 'The latest properties available in our markets',
   limit = 8,
-}: ModernPropertyCarouselProps) {
-  const [properties, setProperties] = useState<PropertyData[]>([]);
+}: ModernNewestListingsProps) {
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (loading) return; // Wait until content is rendered with sectionRef
+    if (loading) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -59,16 +60,19 @@ export default function ModernPropertyCarousel({
   useEffect(() => {
     async function fetchProperties() {
       try {
-        const cityParam = cities?.length
-          ? `cities=${encodeURIComponent(cities.join(','))}`
+        const cityParam = (cities && cities.length > 0)
+          ? cities.length > 1
+            ? `cities=${encodeURIComponent(cities.join(','))}`
+            : `city=${encodeURIComponent(cities[0])}`
           : `city=${encodeURIComponent('Aspen')}`;
+
         const response = await fetch(`/api/featured-properties?${cityParam}&limit=${limit}`);
         if (response.ok) {
           const data = await response.json();
           setProperties(data.properties || []);
         }
       } catch (error) {
-        console.error('Error fetching properties:', error);
+        console.error('Error fetching newest listings:', error);
       } finally {
         setLoading(false);
       }
@@ -87,13 +91,31 @@ export default function ModernPropertyCarousel({
     }
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | null) => {
+    if (!price) return 'Price N/A';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
+  };
+
+  const isNewListing = (listingDate: string | null) => {
+    if (!listingDate) return false;
+    const date = new Date(listingDate);
+    const now = new Date();
+    const daysDiff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff <= 7;
+  };
+
+  const getStreetAddress = (fullAddress: string | null, city: string | null, state: string | null, zipCode: string | null): string => {
+    if (!fullAddress) return 'Address not available';
+    let street = fullAddress;
+    if (zipCode) street = street.replace(new RegExp(`\\s*,?\\s*${zipCode}\\s*$`), '');
+    if (state) street = street.replace(new RegExp(`\\s*,?\\s*${state}\\s*$`, 'i'), '');
+    if (city) street = street.replace(new RegExp(`\\s*,?\\s*${city}\\s*$`, 'i'), '');
+    return street.trim() || 'Address not available';
   };
 
   if (loading) {
@@ -125,7 +147,7 @@ export default function ModernPropertyCarousel({
         >
           <div>
             <span className="inline-block text-[var(--modern-gold)] text-xs uppercase tracking-[0.3em] mb-4">
-              Collection
+              Just Listed
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)]">
               {title}
@@ -164,7 +186,7 @@ export default function ModernPropertyCarousel({
       {/* Carousel */}
       <div
         ref={scrollContainerRef}
-        className={`flex gap-6 overflow-x-auto scrollbar-hide px-6 lg:px-8 pb-4 transition-all duration-1000 delay-200 ${
+        className={`flex gap-6 overflow-x-auto px-6 lg:px-8 pb-4 transition-all duration-1000 delay-200 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -173,39 +195,54 @@ export default function ModernPropertyCarousel({
           <Link
             key={property.id}
             href={`/listings/${property.id}`}
-            className="group min-w-[320px] md:min-w-[380px] flex-shrink-0 bg-white border border-[var(--modern-gray-lighter)] hover:border-[var(--modern-gold)] transition-all duration-300"
+            className="group w-[320px] md:w-[380px] flex-shrink-0 bg-white border border-[var(--modern-gray-lighter)] hover:border-[var(--modern-gold)] transition-all duration-300"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             {/* Image */}
-            <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-              <Image
-                src={property.photos?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9'}
-                alt={property.address || 'Property'}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 320px, 380px"
-              />
+            <div className="relative aspect-[4/3] overflow-hidden bg-[var(--modern-gray-lighter)]">
+              {property.photos?.[0] ? (
+                <Image
+                  src={property.photos[0]}
+                  alt={property.address || 'Property'}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 768px) 320px, 380px"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-[var(--modern-gray-light)]">
+                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </div>
+              )}
               {/* Hover overlay */}
               <div className="absolute inset-0 bg-transparent group-hover:bg-[var(--modern-gold)]/10 transition-all duration-500" />
+
+              {/* New badge */}
+              {isNewListing(property.listing_date) && (
+                <div className="absolute top-3 left-3 bg-[var(--modern-gold)] text-white text-[10px] uppercase tracking-[0.15em] px-3 py-1.5">
+                  New
+                </div>
+              )}
             </div>
 
             {/* Content */}
-            <div className="p-6">
+            <div className="px-4 py-3">
               {/* Price */}
-              <div className="text-[var(--modern-gold)] text-lg font-light tracking-wider mb-3">
+              <div className="text-[var(--modern-gold)] text-xl font-light tracking-wider mb-1">
                 {formatPrice(property.list_price)}
               </div>
 
               {/* Address */}
-              <h3 className="text-[var(--modern-black)] text-lg font-normal tracking-wide mb-1 line-clamp-1">
-                {property.address}
-              </h3>
-              <p className="text-[var(--modern-gray-light)] text-xs uppercase tracking-[0.15em] mb-4">
-                {property.city}{property.state ? `, ${property.state}` : ''}
+              <p className="text-[var(--modern-black)] text-[11px] uppercase tracking-[0.15em] truncate">
+                {getStreetAddress(property.address, property.city, property.state, property.zip_code)}
+              </p>
+              <p className="text-[var(--modern-gray-light)] text-[11px] uppercase tracking-[0.15em] mb-2">
+                {[property.city, property.state].filter(Boolean).join(', ')}
               </p>
 
               {/* Stats */}
-              <div className="flex gap-4 text-[var(--modern-gray)] text-sm pt-4 border-t border-[var(--modern-gray-lighter)]">
+              <div className="flex gap-3 text-[var(--modern-gray)] text-xs pt-2 border-t border-[var(--modern-gray-lighter)]">
                 {property.bedrooms !== null && <span>{property.bedrooms} Beds</span>}
                 {property.bathrooms !== null && (
                   <>

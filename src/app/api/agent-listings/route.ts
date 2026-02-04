@@ -13,9 +13,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await getListingsByAgentId(agentId);
-    const listings = status === 'sold'
-      ? result.soldListings.slice(0, limit)
-      : result.activeListings.slice(0, limit);
+    let listings;
+    if (status === 'sold') {
+      listings = result.soldListings.slice(0, limit);
+    } else if (status === 'all') {
+      listings = [...result.activeListings, ...result.soldListings].slice(0, limit);
+    } else {
+      listings = result.activeListings.slice(0, limit);
+    }
 
     return NextResponse.json({ listings });
   } catch (error) {

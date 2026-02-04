@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import LuxuryHeader from "@/components/LuxuryHeader";
 import ModernHeader from "@/components/ModernHeader";
 import Footer from "@/components/Footer";
+import ModernFooter from "@/components/ModernFooter";
 import LuxuryStayConnected from "@/components/LuxuryStayConnected";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -103,7 +104,7 @@ export default async function RootLayout({
         />
       );
     }
-    if (template === 'modern') {
+    if (template === 'modern' || template === 'custom-one') {
       return (
         <ModernHeader
           logo={branding?.logo}
@@ -126,7 +127,7 @@ export default async function RootLayout({
   };
 
   // Determine template-specific body class
-  const templateClass = template === 'modern' ? 'modern-template' : template === 'luxury' ? 'luxury-template' : '';
+  const templateClass = template === 'modern' ? 'modern-template' : template === 'custom-one' ? 'custom-one-template' : template === 'luxury' ? 'luxury-template' : '';
 
   return (
     <html lang="en">
@@ -143,6 +144,16 @@ export default async function RootLayout({
                 columns={footerColumns}
                 socialMedia={settings?.socialMedia}
                 contactInfo={settings?.contactInfo}
+              />
+            ) : template === 'custom-one' ? (
+              <ModernFooter
+                logo={branding?.logo}
+                logoAlt={branding?.logoAlt || settings?.title}
+                siteTitle={settings?.title}
+                columns={footerColumns}
+                socialMedia={settings?.socialMedia}
+                contactInfo={settings?.contactInfo}
+                footer={settings?.footer}
               />
             ) : (
               <Footer

@@ -15,6 +15,7 @@ export const settings = defineType({
           { title: 'Klug Custom', value: 'classic' },
           { title: 'Luxury', value: 'luxury' },
           { title: 'Modern', value: 'modern' },
+          { title: 'Custom One', value: 'custom-one' },
         ],
         layout: 'radio',
       },

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import imageUrlBuilder from '@sanity/image-url';
@@ -60,11 +61,14 @@ export default function ModernHeader({
   email,
   forceBackground = false,
 }: ModernHeaderProps) {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [activeMobileDropdown, setActiveMobileDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isHomepage = pathname === '/';
+  const isCommunityPage = pathname?.startsWith('/communities/');
 
   const showScrolledState = isScrolled || forceBackground;
 
@@ -443,8 +447,10 @@ export default function ModernHeader({
         </div>
       )}
 
-      {/* Header Spacer */}
-      <div className="h-[120px] lg:h-[120px]" />
+      {/* Header Spacer - hidden on pages with full-bleed heroes */}
+      {!isHomepage && !isCommunityPage && (
+        <div className="h-[120px] lg:h-[120px]" />
+      )}
     </>
   );
 }

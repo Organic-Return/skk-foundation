@@ -39,8 +39,8 @@
   --color-sand: var(--color-sand);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-lora);
-  /* Luxury heading font - Playfair Display (Didot-style high contrast serif) */
-  --font-luxury: var(--font-atacama, var(--font-playfair)), "Playfair Display", Didot, "Bodoni MT", "Noto Serif Display", serif;
+  /* Luxury heading font - Cormorant Garamond (elegant high-contrast serif, closest to Atacama) */
+  --font-luxury: var(--font-atacama, var(--font-cormorant)), "Cormorant Garamond", Didot, "Bodoni MT", "Noto Serif Display", serif;
   /* Luxury body font - clean sans-serif */
   --font-luxury-body: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
@@ -499,6 +499,7 @@ address {
   font-family: var(--font-luxury-body);
 }
 
+
 /* Luxury template specific styles */
 .luxury-template {
   font-family: var(--font-luxury-body);
@@ -797,4 +798,125 @@ address {
 
 .modern-link:hover::after {
   width: 100%;
+}
+
+/* ========================================
+   CUSTOM ONE TEMPLATE - DISTINCT AESTHETIC
+   Warm, earthy palette with serif headings
+   ======================================== */
+
+/* Override modern CSS variables within custom-one scope */
+.custom-one-template {
+  --modern-black: #1a2332;
+  --modern-white: #ffffff;
+  --modern-dark: #0f1720;
+  --modern-darker: #141e2b;
+  --modern-gray: #5a6577;
+  --modern-gray-light: #8d95a3;
+  --modern-gray-lighter: #e8e4df;
+  --modern-gray-bg: #faf8f5;
+  --modern-gold: #b07d4f;
+  --modern-gold-light: #c4956b;
+  --modern-green: #2d5a3f;
+  --modern-green-light: #3d7a56;
+
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.custom-one-template h1,
+.custom-one-template h2,
+.custom-one-template h3,
+.custom-one-template h4,
+.custom-one-template h5,
+.custom-one-template h6 {
+  font-family: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.custom-one-template h1 {
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+}
+
+.custom-one-template h2 {
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+/* Custom One navigation typography */
+.custom-one-template .modern-nav {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.15em;
+  font-weight: 400;
+  font-size: 0.7rem;
+}
+
+/* Custom One hero overrides */
+.custom-one-template .modern-hero-title {
+  font-family: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+  line-height: 1.15;
+}
+
+.custom-one-template .modern-hero-subtitle {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+/* Custom One button overrides */
+.custom-one-template .btn-modern-primary {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  border-radius: 2px;
+}
+
+.custom-one-template .btn-modern-outline {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  border-radius: 2px;
+}
+
+.custom-one-template .btn-modern-white {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  border-radius: 2px;
+}
+
+/* Custom One divider */
+.custom-one-template .modern-divider {
+  width: 40px;
+  height: 2px;
+  background-color: var(--modern-gold);
+}
+
+/* Custom One card hover */
+.custom-one-template .modern-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(26, 35, 50, 0.1);
+}
+
+/* Custom One link style */
+.custom-one-template .modern-link {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
 }

@@ -1,10 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { client } from '@/sanity/client';
 
 interface AccoladeItem {
   value?: string;
   label?: string;
+}
+
+interface Testimonial {
+  quote: string;
+  author: string;
+  role?: string;
+  location?: string;
 }
 
 interface ModernQuoteBlockProps {
@@ -12,11 +20,27 @@ interface ModernQuoteBlockProps {
   items?: AccoladeItem[];
 }
 
+const TESTIMONIAL_QUERY = `*[_type == "testimonialsPage"][0]{
+  featuredTestimonial{
+    quote,
+    author,
+    role,
+    location
+  },
+  "fallback": testimonials[featured == true][0]{
+    quote,
+    author,
+    role,
+    location
+  }
+}`;
+
 export default function ModernQuoteBlock({
   title = 'The Standard of Excellence',
   items = [],
 }: ModernQuoteBlockProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [testimonial, setTestimonial] = useState<Testimonial | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -37,9 +61,27 @@ export default function ModernQuoteBlock({
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    async function fetchTestimonial() {
+      try {
+        const data = await client.fetch(TESTIMONIAL_QUERY);
+        const t = data?.featuredTestimonial || data?.fallback;
+        if (t?.quote && t?.author) {
+          setTestimonial(t);
+        }
+      } catch (error) {
+        console.error('Error fetching testimonial:', error);
+      }
+    }
+
+    fetchTestimonial();
+  }, []);
+
   if (!items || items.length === 0) {
     return null;
   }
+
+  const displayItems = items.slice(0, 4);
 
   return (
     <section ref={sectionRef} className="py-24 md:py-32 bg-[var(--modern-black)] relative overflow-hidden">
@@ -69,9 +111,9 @@ export default function ModernQuoteBlock({
           </h2>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - 4 items */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-          {items.map((item, index) => (
+          {displayItems.map((item, index) => (
             <div
               key={index}
               className={`text-center transition-all duration-1000 ${
@@ -79,11 +121,9 @@ export default function ModernQuoteBlock({
               }`}
               style={{ transitionDelay: `${200 + index * 100}ms` }}
             >
-              {/* Value */}
               <div className="text-4xl md:text-5xl lg:text-6xl font-light text-[var(--modern-gold)] mb-4 tracking-wide">
                 {item.value}
               </div>
-              {/* Label */}
               <div className="text-xs md:text-sm text-white/60 uppercase tracking-[0.2em]">
                 {item.label}
               </div>
@@ -91,12 +131,44 @@ export default function ModernQuoteBlock({
           ))}
         </div>
 
-        {/* Bottom accent */}
+        {/* Gold line separator */}
         <div
-          className={`w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mt-20 transition-all duration-1000 delay-500 ${
+          className={`w-24 h-[1px] bg-[var(--modern-gold)] mx-auto my-16 md:my-20 transition-all duration-1000 delay-500 ${
             isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
           }`}
         />
+
+        {/* Testimonial */}
+        {testimonial ? (
+          <div
+            className={`max-w-3xl mx-auto text-center transition-all duration-1000 delay-700 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
+            <svg className="w-10 h-10 text-[var(--modern-gold)] opacity-30 mx-auto mb-8" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z" />
+            </svg>
+
+            <blockquote className="text-lg md:text-xl lg:text-2xl font-light text-white/80 leading-relaxed italic mb-8">
+              &ldquo;{testimonial.quote}&rdquo;
+            </blockquote>
+
+            <p className="text-white text-sm uppercase tracking-[0.2em] mb-1">
+              {testimonial.author}
+            </p>
+            {(testimonial.role || testimonial.location) && (
+              <p className="text-white/40 text-xs uppercase tracking-[0.15em]">
+                {[testimonial.role, testimonial.location].filter(Boolean).join(' — ')}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div
+            className={`w-16 h-[1px] bg-[var(--modern-gold)] mx-auto transition-all duration-1000 delay-500 ${
+              isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
+            }`}
+          />
+        )}
       </div>
     </section>
   );
