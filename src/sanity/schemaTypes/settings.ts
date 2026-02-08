@@ -46,6 +46,20 @@ export const settings = defineType({
         }),
     }),
     defineField({
+      name: 'listingsPerRow',
+      title: 'Listings Per Row (Map View)',
+      type: 'number',
+      description: 'Number of property cards per row on the listings page when map view is active',
+      options: {
+        list: [
+          { title: '2 per row', value: 2 },
+          { title: '3 per row', value: 3 },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 2,
+    }),
+    defineField({
       name: 'branding',
       title: 'Branding',
       type: 'object',

@@ -2,6 +2,7 @@ import { client } from '@/sanity/client';
 
 interface SiteSettings {
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one';
+  listingsPerRow?: 2 | 3;
   title?: string;
   description?: string;
   siteUrl?: string;
@@ -47,6 +48,7 @@ interface SiteSettings {
 
 const SETTINGS_QUERY = `*[_type == "settings" && _id == "settings"][0]{
   template,
+  listingsPerRow,
   title,
   description,
   siteUrl,

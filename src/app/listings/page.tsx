@@ -19,6 +19,7 @@ import {
   getExcludedStatuses,
 } from '@/lib/mlsConfiguration';
 import { getSettings } from '@/lib/settings';
+import { client } from '@/sanity/client';
 import ListingsContent from '@/components/ListingsContent';
 import ListingFilters from '@/components/ListingFilters';
 import StructuredData from '@/components/StructuredData';
@@ -134,6 +135,7 @@ interface ListingsPageProps {
     baths?: string;
     sort?: SortOption;
     q?: string;
+    ourTeam?: string;
   }>;
 }
 
@@ -151,9 +153,10 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const baths = params.baths ? parseInt(params.baths, 10) : undefined;
   const sort = params.sort || 'newest';
   const keyword = params.q;
+  const ourTeam = params.ourTeam === 'true';
 
   // Fetch MLS configuration, settings, and data in parallel
-  const [mlsConfig, settings, cities, propertyTypes, propertySubTypes, statuses, allNeighborhoods] = await Promise.all([
+  const [mlsConfig, settings, cities, propertyTypes, propertySubTypes, statuses, allNeighborhoods, teamMembers] = await Promise.all([
     getMLSConfiguration(),
     getSettings(),
     getDistinctCities(),
@@ -161,6 +164,11 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     getDistinctPropertySubTypes(),
     getDistinctStatuses(),
     getDistinctNeighborhoods(),
+    client.fetch<{ mlsAgentId?: string; mlsAgentIdSold?: string }[]>(
+      `*[_type == "teamMember" && defined(mlsAgentId)]{ mlsAgentId, mlsAgentIdSold }`,
+      {},
+      { next: { revalidate: 3600 } }
+    ),
   ]);
 
   // Fetch neighborhoods filtered by city if a city is selected
@@ -184,6 +192,11 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   // Filter out excluded statuses and also hide "Closed" from dropdown (closed properties still show on site)
   const filteredStatuses = statuses.filter((s) => !excludedStatuses.includes(s) && s !== 'Closed');
 
+  // Collect all team agent MLS IDs for "Our Properties Only" filter
+  const teamAgentIds = teamMembers
+    ? [...new Set(teamMembers.flatMap((m) => [m.mlsAgentId, m.mlsAgentIdSold]).filter(Boolean) as string[])]
+    : [];
+
   // Fetch listings with filters applied
   const listingsResult = await getListings(page, 24, {
     status,
@@ -196,6 +209,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     minBeds: beds,
     minBaths: baths,
     keyword,
+    agentMlsIds: ourTeam ? teamAgentIds : undefined,
     excludedPropertyTypes,
     excludedPropertySubTypes,
     allowedCities,
@@ -222,6 +236,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   if (baths) currentSearchParams.set('baths', baths.toString());
   if (sort && sort !== 'newest') currentSearchParams.set('sort', sort);
   if (keyword) currentSearchParams.set('q', keyword);
+  if (ourTeam) currentSearchParams.set('ourTeam', 'true');
 
   return (
     <>
@@ -231,7 +246,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       <div className="h-full flex flex-col overflow-hidden">
         {/* Filters */}
         <div className="bg-white shadow-sm flex-shrink-0">
-          <div className="px-4 py-3 sm:px-6 lg:px-8">
+          <div className="px-4 pt-0 pb-1 sm:px-6 lg:px-8">
             <ListingFilters
               keyword={keyword}
               status={status}
@@ -243,11 +258,13 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               maxPrice={maxPrice}
               beds={beds}
               baths={baths}
+              ourTeam={ourTeam}
               statuses={filteredStatuses}
               propertyTypes={filteredPropertyTypes}
               propertySubTypes={filteredPropertySubTypes}
               cities={filteredCities}
               initialNeighborhoods={neighborhoods}
+              hasTeamMembers={teamAgentIds.length > 0}
             />
           </div>
         </div>
@@ -262,6 +279,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           currentSort={sort}
           hasLocationFilter={!!(city || neighborhood)}
           template={settings?.template || 'classic'}
+          listingsPerRow={settings?.listingsPerRow || 2}
         />
       </div>
     </>

@@ -17,6 +17,7 @@ interface ListingsContentProps {
   currentSort: SortOption;
   hasLocationFilter?: boolean;
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one';
+  listingsPerRow?: 2 | 3;
 }
 
 function formatPrice(price: number | null): string {
@@ -400,6 +401,7 @@ export default function ListingsContent({
   currentSort,
   hasLocationFilter,
   template = 'classic',
+  listingsPerRow = 2,
 }: ListingsContentProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
@@ -456,8 +458,8 @@ export default function ListingsContent({
       {/* View Toggle */}
       <div className="px-4 py-3 bg-white border-b flex items-center justify-between lg:px-6 flex-shrink-0">
         {/* Property count, sort, and area filter indicator */}
-        <div className="flex items-center gap-4">
-          <p className="text-gray-600">
+        <div className="flex items-baseline gap-4 flex-nowrap">
+          <p className="text-gray-600 text-sm whitespace-nowrap">
             {areaFilteredListings !== null
               ? `${areaFilteredListings.length.toLocaleString()} of ${total.toLocaleString()} properties`
               : `${total.toLocaleString()} properties found`}
@@ -591,7 +593,7 @@ export default function ListingsContent({
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${listingsPerRow === 3 ? 'xl:grid-cols-3' : ''}`}>
                     {displayListings.map((listing) => (
                       <PropertyCard key={listing.id} listing={listing} template={template} />
                     ))}
