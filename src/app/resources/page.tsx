@@ -1,0 +1,322 @@
+import { PortableText, type SanityDocument, type PortableTextComponents } from "next-sanity";
+import imageUrlBuilder from "@sanity/image-url";
+import { client } from "@/sanity/client";
+import Link from "next/link";
+import Image from "next/image";
+import type { ReactNode } from "react";
+import type { Metadata } from "next";
+
+const RESOURCES_PAGE_QUERY = `*[_type == "resourcesPage"][0]{
+  heroTitle,
+  heroSubtitle,
+  heroImage,
+  sections[]{
+    title,
+    content,
+    image,
+    imagePosition,
+    ctaText,
+    ctaLink
+  },
+  resources[]{
+    title,
+    description,
+    "fileUrl": file.asset->url,
+    url,
+    category
+  },
+  ctaTitle,
+  ctaSubtitle,
+  ctaButtonText,
+  ctaButtonLink,
+  seo
+}`;
+
+const { projectId, dataset } = client.config();
+const urlFor = (source: any) =>
+  projectId && dataset
+    ? imageUrlBuilder({ projectId, dataset }).image(source)
+    : null;
+
+const options = { next: { revalidate: 60 } };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = await client.fetch<SanityDocument>(RESOURCES_PAGE_QUERY, {}, options);
+
+  if (!data) {
+    return {
+      title: 'Resources',
+    };
+  }
+
+  const metaTitle = data.seo?.metaTitle || data.heroTitle || 'Resources';
+  const metaDescription = data.seo?.metaDescription || data.heroSubtitle || '';
+  const ogImageUrl = data.seo?.ogImage
+    ? urlFor(data.seo.ogImage)?.width(1200).height(630).url()
+    : data.heroImage
+    ? urlFor(data.heroImage)?.width(1200).height(630).url()
+    : null;
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+
+  return {
+    title: metaTitle,
+    description: metaDescription,
+    alternates: {
+      canonical: `${baseUrl}/resources`,
+    },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      type: 'website',
+      url: `${baseUrl}/resources`,
+      images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630 }] : [],
+    },
+  };
+}
+
+const portableTextComponents: PortableTextComponents = {
+  block: {
+    normal: ({ children }: { children?: ReactNode }) => (
+      <p className="mb-6 text-[#4a4a4a] dark:text-gray-300 leading-[1.8] font-light text-[17px]">{children}</p>
+    ),
+    h2: ({ children }: { children?: ReactNode }) => (
+      <h2 className="text-2xl md:text-3xl font-serif font-light text-[#1a1a1a] dark:text-white mt-8 mb-4 tracking-wide">{children}</h2>
+    ),
+    h3: ({ children }: { children?: ReactNode }) => (
+      <h3 className="text-xl md:text-2xl font-serif font-light text-[#1a1a1a] dark:text-white mt-6 mb-3 tracking-wide">{children}</h3>
+    ),
+    blockquote: ({ children }: { children?: ReactNode }) => (
+      <blockquote className="border-l-2 border-[var(--color-gold)] pl-6 my-8 italic text-[#5a5a5a] dark:text-gray-400 font-serif text-lg">{children}</blockquote>
+    ),
+  },
+  marks: {
+    strong: ({ children }: { children?: ReactNode }) => <strong className="font-medium text-[#1a1a1a] dark:text-white">{children}</strong>,
+    em: ({ children }: { children?: ReactNode }) => <em className="italic font-serif">{children}</em>,
+  },
+};
+
+const categoryLabels: Record<string, string> = {
+  'market-reports': 'Market Reports',
+  buyer: 'Buyer Resources',
+  seller: 'Seller Resources',
+  community: 'Community Guides',
+  legal: 'Legal & HOA',
+  other: 'Other',
+};
+
+export default async function ResourcesPage() {
+  const data = await client.fetch<SanityDocument>(RESOURCES_PAGE_QUERY, {}, options);
+
+  if (!data) {
+    return (
+      <main className="min-h-screen pt-32">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h1 className="font-serif text-[#1a1a1a] dark:text-white mb-4">
+            Page Not Found
+          </h1>
+          <p className="text-[#6a6a6a] dark:text-gray-400 font-light mb-8">
+            Please add content in Sanity Studio under &quot;Resources Page&quot;.
+          </p>
+          <Link href="/" className="text-[var(--color-gold)] hover:underline">
+            Return Home
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const heroImageUrl = data.heroImage
+    ? urlFor(data.heroImage)?.width(1920).height(800).url()
+    : null;
+
+  // Group resources by category
+  const resourcesByCategory: Record<string, any[]> = {};
+  if (data.resources) {
+    for (const resource of data.resources) {
+      const cat = resource.category || 'other';
+      if (!resourcesByCategory[cat]) {
+        resourcesByCategory[cat] = [];
+      }
+      resourcesByCategory[cat].push(resource);
+    }
+  }
+
+  return (
+    <main className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative h-[60vh] md:h-[70vh] min-h-[500px] flex items-end">
+        {heroImageUrl ? (
+          <>
+            <Image
+              src={heroImageUrl}
+              alt={data.heroTitle || 'Resources'}
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-[var(--color-navy)]" />
+        )}
+
+        <div className="relative max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-16 md:pb-24">
+          <h1 className="font-serif text-white mb-4 max-w-4xl">
+            {data.heroTitle}
+          </h1>
+          {data.heroSubtitle && (
+            <p className="text-lg md:text-xl text-white/80 font-light max-w-2xl leading-relaxed">
+              {data.heroSubtitle}
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Content Sections */}
+      {data.sections && data.sections.length > 0 && (
+        <div>
+          {data.sections.map((section: any, index: number) => {
+            const sectionImageUrl = section.image
+              ? urlFor(section.image)?.width(800).height(600).url()
+              : null;
+            const imageOnLeft = section.imagePosition === 'left';
+            const bgClass = index % 2 === 0
+              ? 'bg-white dark:bg-[#1a1a1a]'
+              : 'bg-[#f8f7f5] dark:bg-[#141414]';
+
+            return (
+              <section key={index} className={`py-16 md:py-24 ${bgClass}`}>
+                <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+                  <div className={`grid grid-cols-1 ${sectionImageUrl ? 'lg:grid-cols-2' : ''} gap-12 lg:gap-20 items-center`}>
+                    <div className={imageOnLeft && sectionImageUrl ? 'lg:order-2' : ''}>
+                      <h2 className="text-3xl md:text-4xl font-serif font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
+                        {section.title}
+                      </h2>
+                      {section.content && (
+                        <div className="prose prose-lg max-w-none">
+                          <PortableText value={section.content} components={portableTextComponents} />
+                        </div>
+                      )}
+                      {section.ctaText && (
+                        <Link
+                          href={section.ctaLink || '#'}
+                          className="inline-flex items-center gap-3 mt-8 px-8 py-3 bg-transparent border border-[var(--color-gold)] text-[#1a1a1a] dark:text-white hover:bg-[var(--color-gold)] hover:text-white transition-all duration-300 text-sm uppercase tracking-[0.15em] font-light"
+                        >
+                          {section.ctaText}
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </Link>
+                      )}
+                    </div>
+                    {sectionImageUrl && (
+                      <div className={`relative aspect-[4/3] ${imageOnLeft ? 'lg:order-1' : ''}`}>
+                        <Image
+                          src={sectionImageUrl}
+                          alt={section.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Resources List */}
+      {data.resources && data.resources.length > 0 && (
+        <section className="py-16 md:py-24 bg-[#f8f7f5] dark:bg-[#141414]">
+          <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+            <h2 className="text-3xl md:text-4xl font-serif font-light text-[#1a1a1a] dark:text-white text-center mb-12 md:mb-16 tracking-wide">
+              Downloadable Resources
+            </h2>
+
+            {Object.entries(resourcesByCategory).map(([category, resources]) => (
+              <div key={category} className="mb-12 last:mb-0">
+                <h3 className="text-xl md:text-2xl font-serif font-light text-[#1a1a1a] dark:text-white mb-6 tracking-wide">
+                  {categoryLabels[category] || category}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {resources.map((resource: any, index: number) => {
+                    const resourceUrl = resource.fileUrl || resource.url;
+                    return (
+                      <div
+                        key={index}
+                        className="bg-white dark:bg-[#1a1a1a] p-6 border border-[#e8e6e3] dark:border-gray-800 hover:border-[var(--color-gold)]/30 transition-colors duration-300"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="text-[var(--color-gold)] flex-shrink-0 mt-1">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-serif font-light text-[#1a1a1a] dark:text-white mb-1 tracking-wide">
+                              {resource.title}
+                            </h4>
+                            {resource.description && (
+                              <p className="text-sm text-[#6a6a6a] dark:text-gray-400 font-light mb-3">
+                                {resource.description}
+                              </p>
+                            )}
+                            {resourceUrl && (
+                              <a
+                                href={resourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-sm text-[var(--color-gold)] hover:underline font-light uppercase tracking-wider"
+                              >
+                                {resource.fileUrl ? 'Download' : 'View'}
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* CTA Section */}
+      {data.ctaTitle && (
+        <section className="relative py-20 md:py-28">
+          <div className="absolute inset-0 bg-[var(--color-navy)]" />
+
+          <div className="relative max-w-4xl mx-auto px-6 md:px-12 text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-white tracking-wide mb-6">
+              {data.ctaTitle}
+            </h2>
+            {data.ctaSubtitle && (
+              <p className="text-lg text-white/70 font-light mb-10 max-w-2xl mx-auto leading-relaxed">
+                {data.ctaSubtitle}
+              </p>
+            )}
+            {data.ctaButtonText && (
+              <Link
+                href={data.ctaButtonLink || '/contact-us'}
+                className="inline-flex items-center gap-3 px-10 py-4 bg-transparent border border-[var(--color-gold)] text-white hover:bg-[var(--color-gold)] hover:text-[var(--color-navy)] transition-all duration-300 text-sm uppercase tracking-[0.2em] font-light"
+              >
+                {data.ctaButtonText}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
+    </main>
+  );
+}

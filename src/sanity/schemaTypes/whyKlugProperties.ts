@@ -2,7 +2,7 @@ import { defineType, defineField } from 'sanity'
 
 export const whyKlugProperties = defineType({
   name: 'whyKlugProperties',
-  title: 'Why Klug Properties',
+  title: 'Why Us',
   type: 'document',
   fields: [
     // Hero Section
@@ -406,7 +406,7 @@ export const whyKlugProperties = defineType({
     },
     prepare({ title, media }) {
       return {
-        title: title || 'Why Klug Properties',
+        title: title || 'Why Us',
         subtitle: 'About Page',
         media: media,
       }
