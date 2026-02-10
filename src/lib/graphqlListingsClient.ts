@@ -333,7 +333,7 @@ export async function getAllListings(): Promise<NormalizedListing[]> {
   const allItems: APIListing[] = [];
   let nextToken: string | undefined;
   let pageCount = 0;
-  const maxPages = 20; // Safety limit
+  const maxPages = 500; // Safety limit (DynamoDB returns ~65 items/page due to 1MB scan limit)
 
   do {
     const page = await fetchPage(url, key, limit, nextToken);
