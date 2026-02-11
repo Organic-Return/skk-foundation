@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import imageUrlBuilder from '@sanity/image-url';
 import { client } from '@/sanity/client';
+import ContactModal from './ContactModal';
 
 const builder = imageUrlBuilder(client);
 
@@ -66,6 +67,7 @@ export default function ModernHeader({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [activeMobileDropdown, setActiveMobileDropdown] = useState<number | null>(null);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isHomepage = pathname === '/';
   const isCommunityPage = pathname?.startsWith('/communities/');
@@ -143,12 +145,12 @@ export default function ModernHeader({
 
               {/* Right - Secondary links */}
               <div className="flex items-center gap-6">
-                <Link
-                  href="/contact-us"
+                <button
+                  onClick={() => setContactModalOpen(true)}
                   className="modern-nav transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
                 >
                   Contact
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -426,6 +428,15 @@ export default function ModernHeader({
 
             {/* Mobile Contact */}
             <div className="mt-12 pt-8 border-t border-white/10">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setContactModalOpen(true);
+                }}
+                className="block w-full text-left py-4 text-white text-lg font-light tracking-[0.1em] uppercase border-b border-white/10 mb-4"
+              >
+                Contact Us
+              </button>
               {phoneNumber && (
                 <a
                   href={`tel:${phoneNumber}`}
@@ -451,6 +462,16 @@ export default function ModernHeader({
       {!isHomepage && !isCommunityPage && (
         <div className="h-[120px] lg:h-[120px]" />
       )}
+
+      {/* Contact Modal */}
+      <ContactModal
+        isOpen={contactModalOpen}
+        onClose={() => setContactModalOpen(false)}
+        agent={{
+          phone: phoneNumber,
+          email: email,
+        }}
+      />
     </>
   );
 }
