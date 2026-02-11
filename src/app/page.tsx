@@ -1,12 +1,12 @@
 import { Metadata } from 'next';
-import imageUrlBuilder from '@sanity/image-url';
+import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import { getHomepageData, getAllCommunities } from '@/lib/homepage';
 import { getSettings } from '@/lib/settings';
 import StructuredData from '@/components/StructuredData';
 import HomepageContent from '@/components/HomepageContent';
 
-const builder = imageUrlBuilder(client);
+const builder = createImageUrlBuilder(client);
 
 function urlFor(source: any) {
   return builder.image(source);

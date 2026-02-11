@@ -1,16 +1,23 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let _supabase: SupabaseClient | null = null;
+let _initialized = false;
 
-export function getSupabase(): SupabaseClient {
-  if (!_supabase) {
+export function isSupabaseConfigured(): boolean {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
+
+export function getSupabase(): SupabaseClient | null {
+  if (!_initialized) {
+    _initialized = true;
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error(
-        'Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
+      console.warn(
+        'Missing Supabase environment variables. MLS listing features will be unavailable.'
       );
+      return null;
     }
 
     _supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -21,6 +28,10 @@ export function getSupabase(): SupabaseClient {
 // Backward-compatible export — lazily initialized
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_target, prop) {
-    return (getSupabase() as any)[prop];
+    const client = getSupabase();
+    if (!client) {
+      throw new Error('Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+    }
+    return (client as any)[prop];
   },
 });

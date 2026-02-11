@@ -1,5 +1,5 @@
 import { client } from "@/sanity/client";
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { getListingsByAgentId } from "@/lib/listings";
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 
-const builder = imageUrlBuilder(client);
+const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
   return builder.image(source);
 }

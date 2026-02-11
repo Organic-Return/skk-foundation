@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { getMLSConfiguration, getAllowedCities } from '@/lib/mlsConfiguration';
 
 // Cache duration: 24 hours (86400 seconds)
@@ -393,6 +393,10 @@ const getCachedCityStats = (propertyFilter: string) => {
 };
 
 export async function GET(request: Request) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ cities: [], stats: [] });
+  }
+
   try {
     // Get property type filter and optional city filters from query params
     const { searchParams } = new URL(request.url);

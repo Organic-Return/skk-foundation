@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 // Raw data from graphql_listings table
 interface GraphQLListing {
@@ -235,6 +235,10 @@ export async function getListings(
   pageSize: number = 24,
   filters: ListingsFilters = {}
 ): Promise<ListingsResult> {
+  if (!isSupabaseConfigured()) {
+    return { listings: [], total: 0, page, pageSize, totalPages: 0 };
+  }
+
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
@@ -370,6 +374,8 @@ export async function getListings(
 }
 
 export async function getListingById(id: string): Promise<MLSProperty | null> {
+  if (!isSupabaseConfigured()) return null;
+
   const { data, error } = await supabase
     .from('graphql_listings')
     .select('*')
@@ -385,6 +391,8 @@ export async function getListingById(id: string): Promise<MLSProperty | null> {
 }
 
 export async function getListingByMlsNumber(mlsNumber: string): Promise<MLSProperty | null> {
+  if (!isSupabaseConfigured()) return null;
+
   const { data, error } = await supabase
     .from('graphql_listings')
     .select('*')
@@ -400,6 +408,8 @@ export async function getListingByMlsNumber(mlsNumber: string): Promise<MLSPrope
 }
 
 export async function getDistinctCities(): Promise<string[]> {
+  if (!isSupabaseConfigured()) return [];
+
   // Note: Supabase has a 1000 row limit, so this may not return all cities
   // If allowedCities is configured in MLS settings, those are used directly instead
   const { data, error } = await supabase
@@ -465,6 +475,8 @@ export async function getDistinctPropertySubTypes(): Promise<string[]> {
 }
 
 export async function getDistinctStatuses(): Promise<string[]> {
+  if (!isSupabaseConfigured()) return [];
+
   const { data, error } = await supabase
     .from('graphql_listings')
     .select('status')
@@ -482,6 +494,8 @@ export async function getDistinctStatuses(): Promise<string[]> {
 }
 
 export async function getDistinctNeighborhoods(): Promise<string[]> {
+  if (!isSupabaseConfigured()) return [];
+
   const { data, error } = await supabase
     .from('graphql_listings')
     .select('subdivision_name')
@@ -499,6 +513,8 @@ export async function getDistinctNeighborhoods(): Promise<string[]> {
 }
 
 export async function getNeighborhoodsByCity(city: string): Promise<string[]> {
+  if (!isSupabaseConfigured()) return [];
+
   const { data, error } = await supabase
     .from('graphql_listings')
     .select('subdivision_name')
@@ -546,6 +562,8 @@ export async function getNewestHighPricedByCity(
   city: string,
   limit: number = 4
 ): Promise<MLSProperty[]> {
+  if (!isSupabaseConfigured()) return [];
+
   const { data, error } = await supabase
     .from('graphql_listings')
     .select('*')
@@ -572,6 +590,8 @@ export async function getNewestHighPricedByCity(
 export async function getCommunityPriceRange(
   city: string
 ): Promise<{ lowestCondo: number | null; highestSingleFamily: number | null }> {
+  if (!isSupabaseConfigured()) return { lowestCondo: null, highestSingleFamily: null };
+
   // Get lowest priced active condo
   const { data: condoData, error: condoError } = await supabase
     .from('graphql_listings')
@@ -615,7 +635,7 @@ export async function getNewestHighPricedByCities(
   cities: string[],
   limit: number = 8
 ): Promise<MLSProperty[]> {
-  if (!cities || cities.length === 0) {
+  if (!isSupabaseConfigured() || !cities || cities.length === 0) {
     return [];
   }
 
@@ -652,6 +672,8 @@ export async function getListingsByAgentId(
   agentMlsId: string,
   soldAgentMlsId?: string
 ): Promise<AgentListingsResult> {
+  if (!isSupabaseConfigured()) return { activeListings: [], soldListings: [] };
+
   const buildFilter = (id: string) =>
     `list_agent_mls_id.eq.${id},co_list_agent_mls_id.eq.${id},buyer_agent_mls_id.eq.${id},co_buyer_agent_mls_id.eq.${id}`;
 

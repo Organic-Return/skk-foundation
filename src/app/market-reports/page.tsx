@@ -1,5 +1,5 @@
 import { type SanityDocument } from "next-sanity";
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,7 +18,7 @@ const MARKET_REPORTS_QUERY = `*[_type == "publication" && publicationType == "ma
 const { projectId, dataset } = client.config();
 const urlFor = (source: any) =>
   projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
+    ? createImageUrlBuilder({ projectId, dataset }).image(source)
     : null;
 
 const options = { next: { revalidate: 30 } };

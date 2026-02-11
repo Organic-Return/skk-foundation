@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import imageUrlBuilder from '@sanity/image-url';
+import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 
-const builder = imageUrlBuilder(client);
+const builder = createImageUrlBuilder(client);
 
 function urlFor(source: any) {
   return builder.image(source);

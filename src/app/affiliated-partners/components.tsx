@@ -1,4 +1,4 @@
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,7 +6,7 @@ import Link from "next/link";
 const { projectId, dataset } = client.config();
 export const urlFor = (source: any) =>
   projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
+    ? createImageUrlBuilder({ projectId, dataset }).image(source)
     : null;
 
 // Page content interface for CMS-driven page settings

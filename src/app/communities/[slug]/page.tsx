@@ -1,5 +1,5 @@
 import { PortableText, type SanityDocument, type PortableTextComponents } from "next-sanity";
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import { client, writeClient } from "@/sanity/client";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,7 +53,7 @@ const COMMUNITY_QUERY = `*[_type == "community" && slug.current == $slug][0]{
 const { projectId, dataset } = client.config();
 const urlFor = (source: any) =>
   projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
+    ? createImageUrlBuilder({ projectId, dataset }).image(source)
     : null;
 
 const options = { next: { revalidate: 30 } };

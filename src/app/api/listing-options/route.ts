@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export async function GET() {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ neighborhoods: [], complexes: [] });
+  }
+
   try {
     // Fetch distinct mls_area_minor values (neighborhoods)
     const { data: neighborhoodData, error: neighborhoodError } = await supabase

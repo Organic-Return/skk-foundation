@@ -1,5 +1,5 @@
 import { PortableText, type SanityDocument, type PortableTextComponents } from "next-sanity";
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -20,7 +20,7 @@ const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
 const { projectId, dataset } = client.config();
 const urlFor = (source: any) =>
   projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
+    ? createImageUrlBuilder({ projectId, dataset }).image(source)
     : null;
 
 const options = { next: { revalidate: 30 } };

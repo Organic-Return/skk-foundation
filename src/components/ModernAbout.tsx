@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import imageUrlBuilder from '@sanity/image-url';
+import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 
-const builder = imageUrlBuilder(client);
+const builder = createImageUrlBuilder(client);
 
 function urlFor(source: any) {
   return builder.image(source);

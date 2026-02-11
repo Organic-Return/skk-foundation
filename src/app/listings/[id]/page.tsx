@@ -11,7 +11,7 @@ import {
 } from '@/lib/listings';
 import { getSettings } from '@/lib/settings';
 import { client } from '@/sanity/client';
-import imageUrlBuilder from '@sanity/image-url';
+import { createImageUrlBuilder } from '@sanity/image-url';
 import PropertyGallery from '@/components/PropertyGallery';
 import PropertyDetailsTabs from '@/components/PropertyDetailsTabs';
 import PropertyMap from '@/components/PropertyMap';
@@ -23,7 +23,7 @@ import CustomOneListingContent from '@/components/CustomOneListingContent';
 import RCSothebysListingContent from '@/components/RCSothebysListingContent';
 import StickyRequestInfo from '@/components/StickyRequestInfo';
 
-const builder = imageUrlBuilder(client);
+const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
   return builder.image(source);
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface RemarkItem {
   type?: string;
@@ -55,6 +55,10 @@ function normalizePhotoUrl(url: string | null): string | null {
 }
 
 export async function GET(request: Request) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const agentStaffId = searchParams.get('agentStaffId');
