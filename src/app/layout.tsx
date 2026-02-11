@@ -100,7 +100,8 @@ export default async function RootLayout({
   ]);
 
   const footerColumns = groupFooterLinks(footerNav);
-  const template = settings?.template || 'classic';
+  const envTemplate = process.env.NEXT_PUBLIC_SITE_TEMPLATE;
+  const template = settings?.template || envTemplate || 'classic';
   const communityNames = (communities || []).map((c: any) => c.title).filter(Boolean) as string[];
 
   // Render appropriate header based on template
