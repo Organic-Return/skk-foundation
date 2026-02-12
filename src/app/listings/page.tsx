@@ -180,8 +180,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const allowedCities = getAllowedCities(mlsConfig);
   const excludedStatuses = getExcludedStatuses(mlsConfig);
 
-  // Always exclude "Closed" listings from search results (dedupe in case Closed is already configured)
-  const allExcludedStatuses = [...new Set([...excludedStatuses, 'Closed'])];
+  // Always exclude "Closed" and "Sold" listings from search results
+  const allExcludedStatuses = [...new Set([...excludedStatuses, 'Closed', 'Sold'])];
 
   // Filter dropdown options based on MLS configuration
   // If allowedCities is configured, use those directly for the dropdown
@@ -189,8 +189,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const filteredCities = allowedCities.length > 0 ? allowedCities : cities;
   const filteredPropertyTypes = propertyTypes.filter((t) => !excludedPropertyTypes.includes(t));
   const filteredPropertySubTypes = propertySubTypes.filter((t) => !excludedPropertySubTypes.includes(t));
-  // Filter out excluded statuses and also hide "Closed" from dropdown (closed properties still show on site)
-  const filteredStatuses = statuses.filter((s) => !excludedStatuses.includes(s) && s !== 'Closed');
+  // Filter out excluded statuses and also hide "Closed"/"Sold" from dropdown
+  const filteredStatuses = statuses.filter((s) => !excludedStatuses.includes(s) && s !== 'Closed' && s !== 'Sold');
 
   // Collect all team agent MLS IDs for "Our Properties Only" filter
   const teamAgentIds = teamMembers

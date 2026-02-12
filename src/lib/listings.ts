@@ -577,7 +577,7 @@ export async function getNewestHighPricedByCity(
     .ilike('city', city)
     .eq('property_type', 'Residential')
     .eq('property_sub_type', 'Single Family Residence')
-    .not('status', 'eq', 'Closed')
+    .not('status', 'in', '("Closed","Sold")')
     .not('list_price', 'is', null)
     .order('listing_date', { ascending: false })
     .order('list_price', { ascending: false })
@@ -655,7 +655,7 @@ export async function getNewestHighPricedByCities(
     .or(cityFilters)
     .eq('property_type', 'Residential')
     .eq('property_sub_type', 'Single Family Residence')
-    .not('status', 'eq', 'Closed')
+    .not('status', 'in', '("Closed","Sold")')
     .not('list_price', 'is', null)
     .order('listing_date', { ascending: false })
     .order('list_price', { ascending: false })
@@ -695,14 +695,14 @@ export async function getListingsByAgentId(
       .from('graphql_listings')
       .select('*')
       .or(activeFilter)
-      .not('status', 'eq', 'Closed')
+      .not('status', 'in', '("Closed","Sold")')
       .order('listing_date', { ascending: false })
       .limit(200),
     supabase
       .from('graphql_listings')
       .select('*')
       .or(soldFilter)
-      .eq('status', 'Closed')
+      .or('status.eq.Closed,status.eq.Sold')
       .order('sold_price', { ascending: false, nullsFirst: false })
       .limit(200),
   ]);
