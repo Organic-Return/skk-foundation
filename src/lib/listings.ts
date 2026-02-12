@@ -626,8 +626,8 @@ export async function getNewestHighPricedByCity(
     .from('graphql_listings')
     .select('*')
     .ilike('city', city)
-    .eq('property_type', 'Residential')
-    .eq('property_sub_type', 'Single Family Residence')
+    .or('property_type.eq.Residential,property_type.is.null')
+    .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
     .or('status.not.in.(Closed,Sold),status.is.null')
     .not('list_price', 'is', null)
     .order('listing_date', { ascending: false })
@@ -650,12 +650,12 @@ export async function getCommunityPriceRange(
 ): Promise<{ lowestCondo: number | null; highestSingleFamily: number | null }> {
   if (!isSupabaseConfigured()) return { lowestCondo: null, highestSingleFamily: null };
 
-  // Get lowest priced active condo
+  // Get lowest priced active listing (prefer condos, fall back to any type)
   const { data: condoData, error: condoError } = await supabase
     .from('graphql_listings')
     .select('list_price')
     .ilike('city', city)
-    .eq('property_sub_type', 'Condominium')
+    .or('property_sub_type.eq.Condominium,property_sub_type.is.null')
     .eq('status', 'Active')
     .not('list_price', 'is', null)
     .order('list_price', { ascending: true })
@@ -665,12 +665,12 @@ export async function getCommunityPriceRange(
     console.error('Error fetching lowest condo price:', condoError);
   }
 
-  // Get highest priced active single family home
+  // Get highest priced active listing (prefer SFR, fall back to any type)
   const { data: sfhData, error: sfhError } = await supabase
     .from('graphql_listings')
     .select('list_price')
     .ilike('city', city)
-    .eq('property_sub_type', 'Single Family Residence')
+    .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
     .eq('status', 'Active')
     .not('list_price', 'is', null)
     .order('list_price', { ascending: false })
@@ -704,8 +704,8 @@ export async function getNewestHighPricedByCities(
     .from('graphql_listings')
     .select('*')
     .or(cityFilters)
-    .eq('property_type', 'Residential')
-    .eq('property_sub_type', 'Single Family Residence')
+    .or('property_type.eq.Residential,property_type.is.null')
+    .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
     .or('status.not.in.(Closed,Sold),status.is.null')
     .not('list_price', 'is', null)
     .order('listing_date', { ascending: false })
