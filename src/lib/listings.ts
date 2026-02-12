@@ -123,8 +123,9 @@ function transformListing(row: GraphQLListing): MLSProperty {
     for (const mediaItem of row.media) {
       try {
         const parsed = typeof mediaItem === 'string' ? JSON.parse(mediaItem) : mediaItem;
-        if (parsed.MediaURL && !photos.includes(parsed.MediaURL)) {
-          photos.push(parsed.MediaURL);
+        const url = parsed.MediaURL || parsed.MediaUrl || parsed.mediaUrl || parsed.mediaURL;
+        if (url && !photos.includes(url)) {
+          photos.push(url);
         }
       } catch {
         // Skip invalid media items
