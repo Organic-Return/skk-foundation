@@ -236,6 +236,7 @@ export default function RCSothebysPropertyCarousel({
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 80vw, 50vw"
+                          quality={90}
                           priority={index < 3}
                         />
                       ) : (
