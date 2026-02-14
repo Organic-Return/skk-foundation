@@ -204,7 +204,7 @@ export default function Header({
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {logo?.asset?.url ? (
-              <div className="relative h-12 sm:h-16 md:h-20 lg:h-27 w-[10rem] sm:w-[14rem] md:w-[18rem] lg:w-[22.5rem]">
+              <div className="relative h-12 sm:h-16 md:h-20 xl:h-27 w-[10rem] sm:w-[14rem] md:w-[18rem] xl:w-[20rem] 2xl:w-[22.5rem]">
                 <Image
                   src={urlFor(logo).width(675).url()}
                   alt={logoAlt}
@@ -225,7 +225,7 @@ export default function Header({
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden xl:flex items-center space-x-0.5">
             {navItems.map((item, index) => {
               const hasDropdown = item.hasMegaMenu || (item.simpleDropdown && item.simpleDropdown.length > 0);
 
@@ -239,18 +239,18 @@ export default function Header({
                     href={item.url}
                     target={item.openInNewTab ? '_blank' : undefined}
                     rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
-                    className="relative px-4 py-2 text-[16px] font-medium uppercase tracking-[0.15em] text-white group"
+                    className="relative px-2 xl:px-3 2xl:px-4 py-2 text-[13px] xl:text-[14px] 2xl:text-[16px] font-medium uppercase tracking-[0.1em] xl:tracking-[0.12em] 2xl:tracking-[0.15em] text-white whitespace-nowrap group"
                   >
                     {item.label}
-                    <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                    <span className="absolute bottom-0 left-2 right-2 xl:left-3 xl:right-3 2xl:left-4 2xl:right-4 h-[2px] bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                   </Link>
                 ) : (
                   <button
                     onClick={() => toggleDropdown(index)}
-                    className="relative px-4 py-2 text-[16px] font-medium uppercase tracking-[0.15em] text-white group"
+                    className="relative px-2 xl:px-3 2xl:px-4 py-2 text-[13px] xl:text-[14px] 2xl:text-[16px] font-medium uppercase tracking-[0.1em] xl:tracking-[0.12em] 2xl:tracking-[0.15em] text-white whitespace-nowrap group"
                   >
                     {item.label}
-                    <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                    <span className="absolute bottom-0 left-2 right-2 xl:left-3 xl:right-3 2xl:left-4 2xl:right-4 h-[2px] bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                   </button>
                 )}
 
@@ -370,7 +370,7 @@ export default function Header({
           </nav>
 
           {/* Search & CTA Buttons - Desktop */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden xl:flex items-center gap-4">
             {/* Search Icon Button */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
@@ -398,7 +398,7 @@ export default function Header({
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`lg:hidden p-2 transition-colors ${
+            className={`xl:hidden p-2 transition-colors ${
               isScrolled
                 ? 'text-white hover:text-[var(--color-gold)]'
                 : 'text-white hover:text-white/80'
@@ -420,7 +420,7 @@ export default function Header({
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white">
+        <div className="xl:hidden border-t border-gray-200 bg-white">
           <nav className="px-4 py-4 space-y-2 max-h-[calc(100vh-5rem)] overflow-y-auto">
             {navItems.map((item, index) => (
               <div key={index}>
