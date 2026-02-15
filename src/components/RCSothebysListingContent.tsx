@@ -896,6 +896,69 @@ export default function RCSothebysListingContent({
         </div>
       </section>
 
+      {/* Virtual Tour */}
+      {listing.virtual_tour_url && (
+        <section className="bg-[var(--rc-cream)] py-16 md:py-24">
+          <div className="text-center mb-10 md:mb-14">
+            <h2
+              className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em]"
+              style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em', color: '#c19b5f' }}
+            >
+              Virtual Tour
+            </h2>
+          </div>
+          <div className="max-w-[1400px] mx-auto px-6 md:px-8">
+            <div className="aspect-video w-full">
+              <iframe
+                src={listing.virtual_tour_url}
+                className="w-full h-full border-0"
+                allowFullScreen
+                allow="xr-spatial-tracking"
+                title="Virtual Tour"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Property Video */}
+      {listing.video_urls && listing.video_urls.length > 0 && (
+        <section className="bg-[var(--rc-navy)] py-16 md:py-24">
+          <div className="text-center mb-10 md:mb-14">
+            <h2
+              className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em]"
+              style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em', color: '#c19b5f' }}
+            >
+              Property Video{listing.video_urls.length > 1 ? 's' : ''}
+            </h2>
+          </div>
+          <div className="max-w-[1400px] mx-auto px-6 md:px-8 space-y-8">
+            {listing.video_urls.map((url, index) => (
+              <div key={index} className="aspect-video w-full">
+                {url.includes('brightcove') ? (
+                  <iframe
+                    src={url}
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                    allow="encrypted-media"
+                    title={`Property Video ${index + 1}`}
+                  />
+                ) : (
+                  <video
+                    src={url}
+                    controls
+                    className="w-full h-full bg-black"
+                    preload="metadata"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Map Section */}
       {listing.latitude && listing.longitude && (
         <section className="bg-gray-100 border-t border-[var(--rc-brown)]/10">
