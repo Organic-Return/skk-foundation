@@ -156,7 +156,7 @@ export function TeamMemberAgentImport(props: StringInputProps) {
         await sanityClient
           .transaction()
           .createIfNotExists({ _id: draftId, _type: 'teamMember' })
-          .patch(draftId, (p: { set: (data: Record<string, unknown>) => unknown }) => p.set(patchData))
+          .patch(draftId, { set: patchData })
           .commit()
 
         // Set the sirAgentId field
