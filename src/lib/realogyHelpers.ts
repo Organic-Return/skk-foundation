@@ -106,3 +106,21 @@ export function parseMlsNumbers(mlsNumbers: unknown): string[] {
 
   return [];
 }
+
+export function parseLicenseNumber(licenseInfo: unknown): string | null {
+  if (!licenseInfo) return null;
+
+  try {
+    const parsed = typeof licenseInfo === 'string'
+      ? JSON.parse(licenseInfo)
+      : licenseInfo;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const primary = parsed.find((l: any) => l.isPrimary) || parsed[0];
+      return primary?.number || null;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}

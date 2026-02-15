@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase';
+import { getRealogySupabase, isRealogyConfigured } from './realogySupabase';
 
 // Raw data from graphql_listings table
 interface GraphQLListing {
@@ -740,6 +741,122 @@ export async function getNewestHighPricedByCities(
   return (data || []).map(transformListing);
 }
 
+// Transform a Realogy/SIR listing to the MLSProperty format
+function transformRealogyListing(row: any): MLSProperty {
+  const photos: string[] = [];
+  if (row.default_photo_url) {
+    const url = row.default_photo_url.startsWith('//')
+      ? `https:${row.default_photo_url}`
+      : row.default_photo_url;
+    photos.push(url);
+  }
+  if (row.media && Array.isArray(row.media)) {
+    for (const item of row.media) {
+      let url = item?.url;
+      if (url) {
+        if (url.startsWith('//')) url = `https:${url}`;
+        if (!photos.includes(url)) photos.push(url);
+      }
+    }
+  }
+
+  let daysOnMarket: number | null = null;
+  if (row.listed_on) {
+    const listDate = new Date(row.listed_on);
+    daysOnMarket = Math.floor((Date.now() - listDate.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  // Parse lot_size string like "0.27 AC" to acres number
+  let lotSize: number | null = null;
+  if (row.lot_size) {
+    const match = String(row.lot_size).match(/([\d.]+)/);
+    if (match) lotSize = parseFloat(match[1]);
+  }
+
+  return {
+    id: row.id,
+    mls_number: row.rfg_listing_id || row.entity_id || row.id,
+    status: row.is_active ? 'Active' : 'Closed',
+    list_price: row.price_amount,
+    sold_price: row.is_active ? null : row.price_amount,
+    address: row.street_address,
+    city: row.city,
+    state: row.state_province_code,
+    zip_code: row.postal_code,
+    neighborhood: row.district || null,
+    bedrooms: row.no_of_bedrooms,
+    bathrooms: row.total_bath,
+    bathrooms_full: row.full_bath,
+    bathrooms_half: row.half_bath,
+    bathrooms_three_quarter: row.three_quarter_bath,
+    square_feet: row.square_footage || row.building_area,
+    lot_size: lotSize,
+    year_built: row.year_built,
+    property_type: row.property_type,
+    listing_date: row.listed_on,
+    sold_date: null,
+    days_on_market: daysOnMarket,
+    description: null,
+    features: {},
+    agent_name: row.primary_agent_name,
+    agent_email: null,
+    photos,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    subdivision_name: null,
+    mls_area_minor: null,
+    furnished: null,
+    fireplace_yn: null,
+    fireplace_features: null,
+    fireplace_total: null,
+    cooling: null,
+    heating: null,
+    laundry_features: null,
+    attached_garage_yn: null,
+    parking_features: null,
+    association_amenities: null,
+    virtual_tour_url: null,
+    list_agent_mls_id: null,
+    co_list_agent_mls_id: null,
+    buyer_agent_mls_id: null,
+    co_buyer_agent_mls_id: null,
+    created_at: row.created_at || row.synced_at || '',
+    updated_at: row.synced_at || '',
+  };
+}
+
+async function getRealogyListingsByAgentName(agentName: string): Promise<AgentListingsResult> {
+  if (!isRealogyConfigured()) return { activeListings: [], soldListings: [] };
+
+  const realogySupabase = getRealogySupabase();
+  if (!realogySupabase) return { activeListings: [], soldListings: [] };
+
+  const { data, error } = await realogySupabase
+    .from('realogy_listings')
+    .select(`
+      id, entity_id, rfg_listing_id, is_active, price_amount, street_address,
+      city, state_province_code, postal_code, district, no_of_bedrooms, total_bath,
+      full_bath, half_bath, three_quarter_bath, square_footage, building_area,
+      lot_size, year_built, property_type, listed_on, default_photo_url, media,
+      primary_agent_name, latitude, longitude, created_at, synced_at
+    `)
+    .ilike('primary_agent_name', agentName)
+    .order('listed_on', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    console.error('Error fetching Realogy agent listings:', error);
+    return { activeListings: [], soldListings: [] };
+  }
+
+  const listings = (data || []).map(transformRealogyListing);
+
+  return {
+    activeListings: listings.filter((l) => l.status === 'Active'),
+    soldListings: listings.filter((l) => l.status !== 'Active'),
+  };
+}
+
 // Get listings by agent MLS ID, separated into active and sold
 export interface AgentListingsResult {
   activeListings: MLSProperty[];
@@ -747,63 +864,83 @@ export interface AgentListingsResult {
 }
 
 export async function getListingsByAgentId(
-  agentMlsId: string,
+  agentMlsId: string | null,
   soldAgentMlsId?: string,
   agentName?: string
 ): Promise<AgentListingsResult> {
-  if (!isSupabaseConfigured()) return { activeListings: [], soldListings: [] };
+  if (!agentMlsId && !agentName) return { activeListings: [], soldListings: [] };
 
-  const buildFilter = (id: string) =>
-    `list_agent_mls_id.eq.${id},co_list_agent_mls_id.eq.${id},buyer_agent_mls_id.eq.${id},co_buyer_agent_mls_id.eq.${id}`;
+  // Query both sources in parallel and combine results
+  const [mlsResult, realogyResult] = await Promise.all([
+    // MLS data — only if configured and agent has an MLS ID
+    (isSupabaseConfigured() && agentMlsId)
+      ? (async () => {
+          const buildFilter = (id: string) =>
+            `list_agent_mls_id.eq.${id},co_list_agent_mls_id.eq.${id},buyer_agent_mls_id.eq.${id},co_buyer_agent_mls_id.eq.${id}`;
 
-  let activeFilter = buildFilter(agentMlsId);
-  const soldId = soldAgentMlsId || agentMlsId;
-  let soldFilter = soldId === agentMlsId
-    ? activeFilter
-    : `${buildFilter(agentMlsId)},${buildFilter(soldId)}`;
+          const activeFilter = buildFilter(agentMlsId);
+          const soldId = soldAgentMlsId || agentMlsId;
+          const soldFilter = soldId === agentMlsId
+            ? activeFilter
+            : `${buildFilter(agentMlsId)},${buildFilter(soldId)}`;
 
-  // Also match by agent full name as fallback (handles MLS ID format mismatches)
-  if (agentName) {
-    activeFilter += `,list_agent_full_name.ilike.${agentName}`;
-    soldFilter += `,list_agent_full_name.ilike.${agentName}`;
-  }
+          const [activeRes, soldRes] = await Promise.all([
+            supabase
+              .from('graphql_listings')
+              .select('*')
+              .or(activeFilter)
+              .or('status.not.in.(Closed,Sold),status.is.null')
+              .order('listing_date', { ascending: false })
+              .limit(200),
+            supabase
+              .from('graphql_listings')
+              .select('*')
+              .or(soldFilter)
+              .or('status.eq.Closed,status.eq.Sold')
+              .order('sold_price', { ascending: false, nullsFirst: false })
+              .limit(200),
+          ]);
 
-  const [activeResult, soldResult] = await Promise.all([
-    supabase
-      .from('graphql_listings')
-      .select('*')
-      .or(activeFilter)
-      .or('status.not.in.(Closed,Sold),status.is.null')
-      .order('listing_date', { ascending: false })
-      .limit(200),
-    supabase
-      .from('graphql_listings')
-      .select('*')
-      .or(soldFilter)
-      .or('status.eq.Closed,status.eq.Sold')
-      .order('sold_price', { ascending: false, nullsFirst: false })
-      .limit(200),
+          if (activeRes.error) console.error('Error fetching active MLS listings:', activeRes.error);
+          if (soldRes.error) console.error('Error fetching sold MLS listings:', soldRes.error);
+
+          const dedup = (listings: any[]) => {
+            const seen = new Set<string>();
+            return listings.filter((row) => {
+              if (seen.has(row.id)) return false;
+              seen.add(row.id);
+              return true;
+            });
+          };
+
+          return {
+            activeListings: dedup(activeRes.data || []).map(transformListing),
+            soldListings: dedup(soldRes.data || []).map(transformListing),
+          };
+        })()
+      : Promise.resolve({ activeListings: [] as MLSProperty[], soldListings: [] as MLSProperty[] }),
+
+    // Realogy/SIR listings — by agent name
+    agentName
+      ? getRealogyListingsByAgentName(agentName)
+      : Promise.resolve({ activeListings: [] as MLSProperty[], soldListings: [] as MLSProperty[] }),
   ]);
 
-  if (activeResult.error) {
-    console.error('Error fetching active agent listings:', activeResult.error);
-  }
-  if (soldResult.error) {
-    console.error('Error fetching sold agent listings:', soldResult.error);
-  }
-
-  // Deduplicate in case agent appears in multiple roles on the same listing
-  const dedup = (listings: any[]) => {
+  // Combine both sources, deduplicating by address + price
+  const dedupCombined = (a: MLSProperty[], b: MLSProperty[]) => {
     const seen = new Set<string>();
-    return listings.filter((row) => {
-      if (seen.has(row.id)) return false;
-      seen.add(row.id);
-      return true;
-    });
+    const result: MLSProperty[] = [];
+    for (const listing of [...a, ...b]) {
+      const key = `${listing.address}-${listing.city}-${listing.list_price}`.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(listing);
+    }
+    return result;
   };
 
   return {
-    activeListings: dedup(activeResult.data || []).map(transformListing),
-    soldListings: dedup(soldResult.data || []).map(transformListing),
+    activeListings: dedupCombined(mlsResult.activeListings, realogyResult.activeListings),
+    soldListings: dedupCombined(mlsResult.soldListings, realogyResult.soldListings),
   };
 }

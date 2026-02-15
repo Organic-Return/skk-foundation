@@ -9,7 +9,7 @@ import {
   parseMlsNumbers,
 } from '@/lib/realogyHelpers';
 
-const TIMEOUT_MS = 55_000; // Stop processing before 60s serverless limit
+const TIMEOUT_MS = process.env.NODE_ENV === 'development' ? 300_000 : 55_000; // 5 min local, 55s on Vercel
 
 interface RealogyAgent {
   id: string;
@@ -53,6 +53,11 @@ function getAgentRealogyId(agent: RealogyAgent): string {
   return agent.rfg_staff_id || agent.entity_id || agent.id;
 }
 
+function getAgentMlsId(agent: RealogyAgent): string | null {
+  const mlsNumbers = parseMlsNumbers(agent.mls_numbers);
+  return mlsNumbers.length > 0 ? mlsNumbers[0] : null;
+}
+
 function generateSlug(name: string): string {
   return name
     .toLowerCase()
@@ -63,18 +68,12 @@ function generateSlug(name: string): string {
 
 async function uploadPhotoToSanity(photoUrl: string): Promise<{ _type: 'image'; asset: { _type: 'reference'; _ref: string } } | null> {
   try {
-    // Build base URL for the photo proxy
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-      || 'http://localhost:3000';
+    // Fetch the photo directly (server-side, no CORS issues)
+    const response = await fetch(photoUrl);
+    if (!response.ok) return null;
 
-    const proxyResponse = await fetch(
-      `${baseUrl}/api/agents/photo?url=${encodeURIComponent(photoUrl)}`
-    );
-    if (!proxyResponse.ok) return null;
-
-    const buffer = Buffer.from(await proxyResponse.arrayBuffer());
-    const contentType = proxyResponse.headers.get('content-type') || 'image/jpeg';
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
     const ext = contentType.includes('png') ? 'png' : 'jpg';
 
     const asset = await writeClient.assets.upload('image', buffer, {
@@ -165,32 +164,28 @@ function buildPatchData(
   const overrides = existing?.overrides || {};
   const patch: Record<string, unknown> = {};
 
+  // Helper: only include field if not overridden AND value actually changed
+  const setIfChanged = (field: string, newValue: string) => {
+    if (!overrides[field] && newValue && newValue !== (existing as any)?.[field]) {
+      patch[field] = newValue;
+    }
+  };
+
   const name = `${agent.first_name} ${agent.last_name}`;
-  if (!overrides.name && name.trim()) patch.name = name;
+  setIfChanged('name', name.trim());
 
-  const bio = parseRemarksHtml(agent.remarks as any);
-  if (!overrides.bio && bio) patch.bio = bio;
+  setIfChanged('bio', parseRemarksHtml(agent.remarks as any));
+  setIfChanged('email', agent.email || agent.lead_email || '');
+  setIfChanged('phone', agent.business_phone || '');
+  setIfChanged('mobile', agent.mobile_phone || '');
+  setIfChanged('office', agent.office_phone || '');
+  setIfChanged('address', formatOfficeAddress(agent.office_address));
+  setIfChanged('title', agent.specialty || '');
 
-  const email = agent.email || agent.lead_email || '';
-  if (!overrides.email && email) patch.email = email;
-
-  const phone = agent.business_phone || '';
-  if (!overrides.phone && phone) patch.phone = phone;
-
-  const mobile = agent.mobile_phone || '';
-  if (!overrides.mobile && mobile) patch.mobile = mobile;
-
-  const officePhone = agent.office_phone || '';
-  if (!overrides.office && officePhone) patch.office = officePhone;
-
-  const address = formatOfficeAddress(agent.office_address);
-  if (!overrides.address && address) patch.address = address;
-
-  const specialty = agent.specialty || '';
-  if (!overrides.title && specialty) patch.title = specialty;
-
-  const mlsNumbers = parseMlsNumbers(agent.mls_numbers);
-  if (!overrides.mlsAgentId && mlsNumbers.length > 0) patch.mlsAgentId = mlsNumbers[0];
+  const mlsId = getAgentMlsId(agent);
+  if (!overrides.mlsAgentId && mlsId && mlsId !== existing?.mlsAgentId) {
+    patch.mlsAgentId = mlsId;
+  }
 
   return patch;
 }
@@ -269,8 +264,8 @@ async function executeSync() {
 
         if (agent.specialty) doc.title = agent.specialty;
 
-        const mlsNumbers = parseMlsNumbers(agent.mls_numbers);
-        if (mlsNumbers.length > 0) doc.mlsAgentId = mlsNumbers[0];
+        const mlsId = getAgentMlsId(agent);
+        if (mlsId) doc.mlsAgentId = mlsId;
 
         // Upload photo
         const photoUrl = normalizePhotoUrl(agent.photo_url);
@@ -309,8 +304,7 @@ async function executeSync() {
           await writeClient.patch(existing._id).set(patchData).commit();
           results.updated++;
         } else {
-          // Only lastSyncedAt changed, still mark as synced
-          await writeClient.patch(existing._id).set({ lastSyncedAt: patchData.lastSyncedAt }).commit();
+          // Nothing actually changed — skip API call entirely
           results.skipped++;
         }
       }
