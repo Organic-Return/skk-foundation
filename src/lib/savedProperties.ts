@@ -13,6 +13,7 @@ export async function saveProperty(
   listingType: 'mls' | 'off_market' = 'mls'
 ): Promise<{ error: Error | null }> {
   const supabase = createClient();
+  if (!supabase) return { error: new Error('Database not configured') };
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -43,6 +44,7 @@ export async function unsaveProperty(
   listingType: 'mls' | 'off_market' = 'mls'
 ): Promise<{ error: Error | null }> {
   const supabase = createClient();
+  if (!supabase) return { error: new Error('Database not configured') };
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -68,6 +70,7 @@ export async function isPropertySaved(
   listingType: 'mls' | 'off_market' = 'mls'
 ): Promise<boolean> {
   const supabase = createClient();
+  if (!supabase) return false;
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -93,6 +96,7 @@ export async function getSavedPropertyIds(
   listingType?: 'mls' | 'off_market'
 ): Promise<string[]> {
   const supabase = createClient();
+  if (!supabase) return [];
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -119,6 +123,7 @@ export async function getSavedPropertyIds(
 
 export async function getSavedProperties(): Promise<SavedProperty[]> {
   const supabase = createClient();
+  if (!supabase) return [];
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
