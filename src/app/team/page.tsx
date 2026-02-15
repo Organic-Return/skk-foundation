@@ -83,6 +83,15 @@ export default async function TeamPage() {
           >
             Meet our experienced real estate professionals
           </p>
+          <p
+            className={
+              isRC
+                ? "text-white/40 text-sm mt-3 font-light"
+                : "text-white/50 text-sm mt-3 font-light"
+            }
+          >
+            {members.length} Agents
+          </p>
         </div>
       </section>
 
