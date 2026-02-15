@@ -1037,8 +1037,8 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </div>
               )}
 
-              {/* Virtual Tour - Matterport only */}
-              {listing.virtual_tour_url && listing.virtual_tour_url.includes('matterport') && (
+              {/* Virtual Tour */}
+              {listing.virtual_tour_url && (
                 <div className="bg-white p-6 rounded-sm shadow-sm">
                   <h2 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-6">
                     Virtual Tour
@@ -1053,6 +1053,40 @@ export default async function ListingPage({ params }: ListingPageProps) {
                       src={listing.virtual_tour_url}
                       title={`Virtual tour of ${listing.address}`}
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* Property Videos from SIR */}
+              {listing.video_urls && listing.video_urls.length > 0 && (
+                <div className="bg-white p-6 rounded-sm shadow-sm">
+                  <h2 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-6">
+                    Property Video{listing.video_urls.length > 1 ? 's' : ''}
+                  </h2>
+                  <div className="space-y-4">
+                    {listing.video_urls.map((url, index) => (
+                      <div key={index} className="aspect-video bg-black rounded overflow-hidden">
+                        {url.includes('brightcove') ? (
+                          <iframe
+                            width="100%"
+                            height="100%"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            allowFullScreen
+                            src={url}
+                            title={`Property video ${index + 1}`}
+                          />
+                        ) : (
+                          <video
+                            src={url}
+                            controls
+                            className="w-full h-full"
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

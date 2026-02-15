@@ -89,6 +89,7 @@ export interface MLSProperty {
   agent_name: string | null;
   agent_email: string | null;
   photos: string[];
+  video_urls: string[];
   latitude: number | null;
   longitude: number | null;
   // Additional property details
@@ -176,6 +177,7 @@ function transformListing(row: GraphQLListing): MLSProperty {
     agent_name: row.list_office_name,
     agent_email: null,
     photos,
+    video_urls: [],
     latitude: row.latitude != null ? Number(row.latitude) || null : null,
     longitude: row.longitude != null ? Number(row.longitude) || null : null,
     // Additional property details
@@ -387,6 +389,25 @@ export async function getListings(
   };
 }
 
+// Look up SIR media for a listing by its MLS number
+async function getSIRMediaForListing(mlsNumber: string): Promise<SIRMediaAssets | null> {
+  if (!isRealogyConfigured()) return null;
+
+  const realogySupabase = getRealogySupabase();
+  if (!realogySupabase) return null;
+
+  const { data, error } = await realogySupabase
+    .from('realogy_listings')
+    .select('default_photo_url, media')
+    .contains('mls_numbers', JSON.stringify([mlsNumber]))
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return extractSIRMedia(data);
+}
+
 export async function getListingById(id: string): Promise<MLSProperty | null> {
   if (!isSupabaseConfigured()) return null;
 
@@ -401,24 +422,36 @@ export async function getListingById(id: string): Promise<MLSProperty | null> {
     return null;
   }
 
-  return data ? transformListing(data) : null;
+  if (!data) return null;
+  const listing = transformListing(data);
+
+  // Enrich with SIR media (better photos, virtual tours, videos)
+  const sirMedia = await getSIRMediaForListing(listing.mls_number);
+  return sirMedia ? enrichListingWithSIRMedia(listing, sirMedia) : listing;
 }
 
 export async function getListingByMlsNumber(mlsNumber: string): Promise<MLSProperty | null> {
   if (!isSupabaseConfigured()) return null;
 
-  const { data, error } = await supabase
-    .from('graphql_listings')
-    .select('*')
-    .eq('listing_id', mlsNumber)
-    .single();
+  // Fetch MLS listing and SIR media in parallel (we already have the MLS number)
+  const [mlsResult, sirMedia] = await Promise.all([
+    supabase
+      .from('graphql_listings')
+      .select('*')
+      .eq('listing_id', mlsNumber)
+      .single(),
+    getSIRMediaForListing(mlsNumber),
+  ]);
 
-  if (error) {
-    console.error('Error fetching listing:', error);
+  if (mlsResult.error) {
+    console.error('Error fetching listing:', mlsResult.error);
     return null;
   }
 
-  return data ? transformListing(data) : null;
+  if (!mlsResult.data) return null;
+  const listing = transformListing(mlsResult.data);
+
+  return sirMedia ? enrichListingWithSIRMedia(listing, sirMedia) : listing;
 }
 
 export async function getDistinctCities(): Promise<string[]> {
@@ -741,24 +774,58 @@ export async function getNewestHighPricedByCities(
   return (data || []).map(transformListing);
 }
 
-// Transform a Realogy/SIR listing to the MLSProperty format
-function transformRealogyListing(row: any): MLSProperty {
+// Extract and categorize media from a Realogy/SIR listing row
+interface SIRMediaAssets {
+  photos: string[];
+  videoUrls: string[];
+  virtualTourUrl: string | null;
+}
+
+function extractSIRMedia(row: any): SIRMediaAssets {
   const photos: string[] = [];
+  const videoUrls: string[] = [];
+  let virtualTourUrl: string | null = null;
+
   if (row.default_photo_url) {
     const url = row.default_photo_url.startsWith('//')
       ? `https:${row.default_photo_url}`
       : row.default_photo_url;
     photos.push(url);
   }
+
   if (row.media && Array.isArray(row.media)) {
     for (const item of row.media) {
       let url = item?.url;
-      if (url) {
-        if (url.startsWith('//')) url = `https:${url}`;
+      if (!url) continue;
+      if (url.startsWith('//')) url = `https:${url}`;
+
+      if (item.format === '3D Video') {
+        // Matterport or similar virtual tour
+        if (!virtualTourUrl) virtualTourUrl = url;
+      } else if (item.format === 'Video') {
+        videoUrls.push(url);
+      } else {
+        // Image
         if (!photos.includes(url)) photos.push(url);
       }
     }
   }
+
+  return { photos, videoUrls, virtualTourUrl };
+}
+
+function enrichListingWithSIRMedia(listing: MLSProperty, sir: SIRMediaAssets): MLSProperty {
+  return {
+    ...listing,
+    photos: sir.photos.length > 0 ? sir.photos : listing.photos,
+    virtual_tour_url: sir.virtualTourUrl || listing.virtual_tour_url,
+    video_urls: sir.videoUrls.length > 0 ? sir.videoUrls : listing.video_urls,
+  };
+}
+
+// Transform a Realogy/SIR listing to the MLSProperty format
+function transformRealogyListing(row: any): MLSProperty {
+  const sir = extractSIRMedia(row);
 
   let daysOnMarket: number | null = null;
   if (row.listed_on) {
@@ -800,7 +867,8 @@ function transformRealogyListing(row: any): MLSProperty {
     features: {},
     agent_name: row.primary_agent_name,
     agent_email: null,
-    photos,
+    photos: sir.photos,
+    video_urls: sir.videoUrls,
     latitude: row.latitude,
     longitude: row.longitude,
     subdivision_name: null,
@@ -815,7 +883,7 @@ function transformRealogyListing(row: any): MLSProperty {
     attached_garage_yn: null,
     parking_features: null,
     association_amenities: null,
-    virtual_tour_url: null,
+    virtual_tour_url: sir.virtualTourUrl,
     list_agent_mls_id: null,
     co_list_agent_mls_id: null,
     buyer_agent_mls_id: null,
@@ -926,21 +994,50 @@ export async function getListingsByAgentId(
       : Promise.resolve({ activeListings: [] as MLSProperty[], soldListings: [] as MLSProperty[] }),
   ]);
 
-  // Combine both sources, deduplicating by address + price
-  const dedupCombined = (a: MLSProperty[], b: MLSProperty[]) => {
+  // Combine both sources — enrich MLS listings with SIR media when matched
+  const mergeWithSIRMedia = (mlsListings: MLSProperty[], sirListings: MLSProperty[]) => {
+    const sirByKey = new Map<string, MLSProperty>();
+    for (const listing of sirListings) {
+      const key = `${listing.address}-${listing.city}-${listing.list_price}`.toLowerCase();
+      sirByKey.set(key, listing);
+    }
+
     const seen = new Set<string>();
     const result: MLSProperty[] = [];
-    for (const listing of [...a, ...b]) {
+
+    // MLS listings first, enriched with SIR media if matched
+    for (const listing of mlsListings) {
       const key = `${listing.address}-${listing.city}-${listing.list_price}`.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-      result.push(listing);
+
+      const sirMatch = sirByKey.get(key);
+      if (sirMatch && sirMatch.photos.length > 0) {
+        result.push({
+          ...listing,
+          photos: sirMatch.photos,
+          virtual_tour_url: sirMatch.virtual_tour_url || listing.virtual_tour_url,
+          video_urls: sirMatch.video_urls.length > 0 ? sirMatch.video_urls : listing.video_urls,
+        });
+      } else {
+        result.push(listing);
+      }
     }
+
+    // SIR-only listings (no MLS match)
+    for (const listing of sirListings) {
+      const key = `${listing.address}-${listing.city}-${listing.list_price}`.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(listing);
+      }
+    }
+
     return result;
   };
 
   return {
-    activeListings: dedupCombined(mlsResult.activeListings, realogyResult.activeListings),
-    soldListings: dedupCombined(mlsResult.soldListings, realogyResult.soldListings),
+    activeListings: mergeWithSIRMedia(mlsResult.activeListings, realogyResult.activeListings),
+    soldListings: mergeWithSIRMedia(mlsResult.soldListings, realogyResult.soldListings),
   };
 }
