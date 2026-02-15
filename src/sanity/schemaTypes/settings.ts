@@ -301,9 +301,9 @@ export const settings = defineType({
                 },
                 {
                   name: 'officeId',
-                  title: 'Office ID',
+                  title: 'Office ID or Name',
                   type: 'string',
-                  description: 'The office_id from the Realogy database',
+                  description: 'RFG Company ID (e.g. "800396"), office UUID, or office name to match against',
                   validation: (Rule: any) => Rule.required(),
                 },
               ],

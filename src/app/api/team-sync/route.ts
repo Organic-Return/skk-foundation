@@ -101,8 +101,11 @@ async function fetchAgentsForOffices(officeIds: string[]): Promise<RealogyAgent[
 
   const allAgents: RealogyAgent[] = [];
 
+  const isUUID = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(s);
+  const isNumeric = (s: string) => /^\d+$/.test(s);
+
   for (const officeId of officeIds) {
-    const { data, error } = await realogySupabase
+    let query = realogySupabase
       .from('realogy_agents')
       .select(`
         id, rfg_staff_id, entity_id, first_name, last_name,
@@ -110,9 +113,19 @@ async function fetchAgentsForOffices(officeIds: string[]): Promise<RealogyAgent[
         office_name, office_id, office_address, photo_url, remarks,
         mls_numbers, specialty
       `)
-      .eq('office_id', officeId)
       .not('first_name', 'is', null)
       .not('last_name', 'is', null);
+
+    // Support UUID office_id, numeric rfg_company_id, or office name
+    if (isUUID(officeId)) {
+      query = query.eq('office_id', officeId);
+    } else if (isNumeric(officeId)) {
+      query = query.eq('rfg_company_id', officeId);
+    } else {
+      query = query.ilike('office_name', `%${officeId}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error(`Error fetching agents for office ${officeId}:`, error);
