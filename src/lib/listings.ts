@@ -426,7 +426,13 @@ export async function getListingById(id: string): Promise<MLSProperty | null> {
   const listing = transformListing(data);
 
   // Enrich with SIR media (better photos, virtual tours, videos)
+  console.log(`[SIR Enrichment] Listing ${id}, MLS# ${listing.mls_number}, Realogy configured: ${isRealogyConfigured()}`);
   const sirMedia = await getSIRMediaForListing(listing.mls_number);
+  if (sirMedia) {
+    console.log(`[SIR Enrichment] Found SIR match: ${sirMedia.photos.length} photos, ${sirMedia.videoUrls.length} videos, tour: ${!!sirMedia.virtualTourUrl}`);
+  } else {
+    console.log(`[SIR Enrichment] No SIR match found for MLS# ${listing.mls_number}`);
+  }
   return sirMedia ? enrichListingWithSIRMedia(listing, sirMedia) : listing;
 }
 
