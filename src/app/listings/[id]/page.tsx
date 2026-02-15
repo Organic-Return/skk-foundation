@@ -23,7 +23,7 @@ import CustomOneListingContent from '@/components/CustomOneListingContent';
 import RCSothebysListingContent from '@/components/RCSothebysListingContent';
 import StickyRequestInfo from '@/components/StickyRequestInfo';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {

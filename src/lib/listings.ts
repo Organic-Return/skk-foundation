@@ -149,9 +149,21 @@ function transformListing(row: GraphQLListing): MLSProperty {
     daysOnMarket = Math.floor((endDate.getTime() - listDate.getTime()) / (1000 * 60 * 60 * 24));
   }
 
+  // Extract MLS number: prefer listing_id, fall back to description ("MLS# 285075 ...")
+  // or photo URL path ("/PACMLS/285075/")
+  let mlsNumber: string = row.listing_id || '';
+  if (!mlsNumber && row.description) {
+    const match = row.description.match(/MLS#\s*(\d+)/i);
+    if (match) mlsNumber = match[1];
+  }
+  if (!mlsNumber && photos.length > 0) {
+    const match = photos[0].match(/\/PACMLS\/(\d+)\//);
+    if (match) mlsNumber = match[1];
+  }
+
   return {
     id: row.id,
-    mls_number: row.listing_id,
+    mls_number: mlsNumber,
     status: row.status,
     list_price: row.list_price || row.sold_price,
     sold_price: row.sold_price,
