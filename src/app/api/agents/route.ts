@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { realogySupabase, isRealogyConfigured } from '@/lib/realogySupabase';
 
 interface RemarkItem {
   type?: string;
@@ -38,6 +39,32 @@ function parseRemarks(remarks: RemarkItem[] | string | null): string {
   return '';
 }
 
+function parseRemarksHtml(remarks: RemarkItem[] | string | null): string {
+  if (!remarks) return '';
+
+  if (typeof remarks === 'string') {
+    try {
+      const parsed = JSON.parse(remarks);
+      if (Array.isArray(parsed)) {
+        const personalProfile = parsed.find((r: RemarkItem) => r.type === 'Personal Profile');
+        const remarkItem = personalProfile || parsed[0];
+        return remarkItem?.htmlRemark || remarkItem?.remark || '';
+      }
+      return parsed.htmlRemark || parsed.remark || parsed.Remark || '';
+    } catch {
+      return remarks;
+    }
+  }
+
+  if (Array.isArray(remarks)) {
+    const personalProfile = remarks.find((r: RemarkItem) => r.type === 'Personal Profile');
+    const remarkItem = personalProfile || remarks[0];
+    return remarkItem?.htmlRemark || remarkItem?.remark || '';
+  }
+
+  return '';
+}
+
 function normalizePhotoUrl(url: string | null): string | null {
   if (!url) return null;
 
@@ -54,8 +81,150 @@ function normalizePhotoUrl(url: string | null): string | null {
   return url;
 }
 
+// Search agents from the Realogy database (realogy_agents table)
+async function searchRealogyAgents(search: string) {
+  const searchParts = search.trim().split(/\s+/);
+
+  let query = realogySupabase
+    .from('realogy_agents')
+    .select('first_name, last_name, photo_url, rfg_staff_id, entity_id, id, office_name, email, specialty')
+    .not('first_name', 'is', null)
+    .not('last_name', 'is', null);
+
+  if (searchParts.length >= 2) {
+    const first = searchParts[0];
+    const last = searchParts.slice(1).join(' ');
+    query = query
+      .ilike('first_name', `%${first}%`)
+      .ilike('last_name', `%${last}%`);
+  } else {
+    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,office_name.ilike.%${search}%`);
+  }
+
+  query = query
+    .order('last_name', { ascending: true })
+    .order('first_name', { ascending: true })
+    .limit(200);
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error searching realogy agents:', error);
+    return [];
+  }
+
+  return (data || [])
+    .filter(agent => agent.first_name && agent.last_name)
+    .map(agent => ({
+      agentStaffId: String(agent.rfg_staff_id || agent.entity_id || agent.id),
+      databaseId: String(agent.id),
+      firstName: agent.first_name,
+      lastName: agent.last_name,
+      office: agent.office_name || '',
+      photoUrl: normalizePhotoUrl(agent.photo_url),
+    }));
+}
+
+// Fetch a single agent from the Realogy database by ID
+async function getRealogyAgent(agentStaffId: string, firstName?: string | null, lastName?: string | null) {
+  let query = realogySupabase
+    .from('realogy_agents')
+    .select('first_name, last_name, photo_url, rfg_staff_id, entity_id, id, remarks, office_name');
+
+  // id and entity_id are UUID columns — only compare against them if the value looks like a UUID
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(agentStaffId);
+  if (isUUID) {
+    query = query.or(`rfg_staff_id.eq.${agentStaffId},entity_id.eq.${agentStaffId},id.eq.${agentStaffId}`);
+  } else {
+    query = query.eq('rfg_staff_id', agentStaffId);
+  }
+
+  if (firstName) query = query.ilike('first_name', firstName);
+  if (lastName) query = query.ilike('last_name', lastName);
+
+  const { data, error } = await query.limit(1).single();
+
+  if (error || !data) return null;
+
+  return {
+    agentStaffId: data.rfg_staff_id || data.entity_id || data.id,
+    firstName: data.first_name,
+    lastName: data.last_name,
+    photoUrl: normalizePhotoUrl(data.photo_url),
+    bio: parseRemarks(data.remarks),
+  };
+}
+
+// Fetch full agent details from Realogy database (for SIR import)
+// Uses the unique database UUID (id column) for exact lookup
+async function getRealogyAgentFull(databaseId: string) {
+  const query = realogySupabase
+    .from('realogy_agents')
+    .select(`
+      first_name, last_name, photo_url, rfg_staff_id, entity_id, id,
+      remarks, office_name, email, lead_email,
+      business_phone, mobile_phone, office_phone,
+      office_address, mls_numbers, specialty
+    `)
+    .eq('id', databaseId);
+
+  const { data, error } = await query.limit(1).single();
+  if (error || !data) return null;
+
+  // Parse office_address JSON into a formatted string
+  let formattedAddress = '';
+  if (data.office_address) {
+    try {
+      const addr = typeof data.office_address === 'string'
+        ? JSON.parse(data.office_address)
+        : data.office_address;
+      const parts = [
+        addr.streetAddress,
+        addr.city,
+        addr.stateProvince,
+        addr.postalCode,
+      ].filter(Boolean);
+      formattedAddress = parts.join(', ');
+    } catch {
+      formattedAddress = String(data.office_address);
+    }
+  }
+
+  // Parse mls_numbers
+  let mlsNumbers: string[] = [];
+  if (data.mls_numbers) {
+    try {
+      const parsed = typeof data.mls_numbers === 'string'
+        ? JSON.parse(data.mls_numbers)
+        : data.mls_numbers;
+      if (Array.isArray(parsed)) {
+        mlsNumbers = parsed.map(String);
+      }
+    } catch {
+      mlsNumbers = [String(data.mls_numbers)];
+    }
+  }
+
+  return {
+    agentStaffId: data.rfg_staff_id || data.entity_id || data.id,
+    firstName: data.first_name,
+    lastName: data.last_name,
+    photoUrl: normalizePhotoUrl(data.photo_url),
+    bio: parseRemarksHtml(data.remarks),
+    email: data.email || data.lead_email || '',
+    businessPhone: data.business_phone || '',
+    mobilePhone: data.mobile_phone || '',
+    officePhone: data.office_phone || '',
+    officeName: data.office_name || '',
+    officeAddress: formattedAddress,
+    mlsNumbers,
+    specialty: data.specialty || '',
+  };
+}
+
 export async function GET(request: Request) {
-  if (!isSupabaseConfigured()) {
+  const useRealogy = isRealogyConfigured();
+  if (!useRealogy && !isSupabaseConfigured()) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
   }
 
@@ -67,9 +236,22 @@ export async function GET(request: Request) {
     const list = searchParams.get('list');
     const search = searchParams.get('search');
     const count = searchParams.get('count');
+    const full = searchParams.get('full');
 
-    // If count=true, return the total count of agents in the database
+    // If count=true, return the total count of agents
     if (count === 'true') {
+      if (useRealogy) {
+        const { count: totalCount } = await realogySupabase
+          .from('realogy_agents')
+          .select('*', { count: 'exact', head: true });
+        const { count: validNameCount } = await realogySupabase
+          .from('realogy_agents')
+          .select('*', { count: 'exact', head: true })
+          .not('first_name', 'is', null)
+          .not('last_name', 'is', null);
+        return NextResponse.json({ totalRecords: totalCount, recordsWithValidNames: validNameCount });
+      }
+
       const { count: totalCount, error } = await supabase
         .from('anywhere_agents')
         .select('*', { count: 'exact', head: true });
@@ -82,7 +264,6 @@ export async function GET(request: Request) {
         );
       }
 
-      // Also get count of agents with valid names (that would appear in search)
       const { count: validNameCount } = await supabase
         .from('anywhere_agents')
         .select('*', { count: 'exact', head: true })
@@ -95,9 +276,8 @@ export async function GET(request: Request) {
       });
     }
 
-    // If list=true, search for agents (requires search parameter for performance)
+    // If list=true, search for agents
     if (list === 'true') {
-      // Require a search term to avoid loading thousands of records
       if (!search || search.trim().length < 2) {
         return NextResponse.json({
           agents: [],
@@ -105,7 +285,13 @@ export async function GET(request: Request) {
         });
       }
 
-      // Check if search contains a space (likely "first last" name search)
+      // Search Realogy database if configured
+      if (useRealogy) {
+        const agents = await searchRealogyAgents(search);
+        return NextResponse.json({ agents, total: agents.length });
+      }
+
+      // Fall back to legacy anywhere_agents table
       const searchParts = search.trim().split(/\s+/);
 
       let query = supabase
@@ -115,14 +301,12 @@ export async function GET(request: Request) {
         .not('last_name', 'is', null);
 
       if (searchParts.length >= 2) {
-        // Search for first name AND last name separately
-        const firstName = searchParts[0];
-        const lastName = searchParts.slice(1).join(' ');
+        const first = searchParts[0];
+        const last = searchParts.slice(1).join(' ');
         query = query
-          .ilike('first_name', `%${firstName}%`)
-          .ilike('last_name', `%${lastName}%`);
+          .ilike('first_name', `%${first}%`)
+          .ilike('last_name', `%${last}%`);
       } else {
-        // Single term - search across first name, last name, or office
         query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,office_name.ilike.%${search}%`);
       }
 
@@ -161,14 +345,30 @@ export async function GET(request: Request) {
       );
     }
 
-    // Query the anywhere_agents table - try multiple ID fields
-    // The agent staff ID could be in summary_r_f_g_staff_id or agent_summary_r_f_g_staff_id
+    // Fetch single agent — try Realogy first if configured
+    if (useRealogy) {
+      if (full === 'true') {
+        const rawDbId = searchParams.get('databaseId');
+        const databaseId = (rawDbId && rawDbId !== 'undefined') ? rawDbId : null;
+        if (databaseId) {
+          const agent = await getRealogyAgentFull(databaseId);
+          if (agent) return NextResponse.json(agent);
+        }
+        // Fall back to name-filtered lookup if no valid databaseId
+        const fallbackAgent = await getRealogyAgent(agentStaffId, firstName, lastName);
+        if (fallbackAgent) return NextResponse.json(fallbackAgent);
+      } else {
+        const agent = await getRealogyAgent(agentStaffId, firstName, lastName);
+        if (agent) return NextResponse.json(agent);
+      }
+    }
+
+    // Fall back to legacy anywhere_agents table
     let query = supabase
       .from('anywhere_agents')
       .select('first_name, last_name, agent_summary_default_photo_u_r_l, remarks, summary_r_f_g_staff_id, agent_summary_r_f_g_staff_id, id')
       .or(`summary_r_f_g_staff_id.eq.${agentStaffId},agent_summary_r_f_g_staff_id.eq.${agentStaffId},id.eq.${agentStaffId}`);
 
-    // Add name filters if provided (for additional verification)
     if (firstName) {
       query = query.ilike('first_name', firstName);
     }
@@ -186,10 +386,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Parse the remarks to extract the bio
     const bio = parseRemarks(data.remarks);
-
-    // Normalize the photo URL (add https: if needed)
     const photoUrl = normalizePhotoUrl(data.agent_summary_default_photo_u_r_l);
 
     return NextResponse.json({

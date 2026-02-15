@@ -1,10 +1,20 @@
 import { defineType, defineField } from 'sanity'
+import { TeamMemberAgentImport } from '../components/TeamMemberAgentImport'
 
 export const teamMember = defineType({
   name: 'teamMember',
   title: 'Team Member',
   type: 'document',
   fields: [
+    defineField({
+      name: 'sirAgentId',
+      title: 'SIR Agent Import',
+      type: 'string',
+      description: 'Search the SIR database to auto-populate fields below',
+      components: {
+        input: TeamMemberAgentImport,
+      },
+    }),
     defineField({
       name: 'name',
       title: 'Name',

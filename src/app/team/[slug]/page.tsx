@@ -189,11 +189,10 @@ export default async function TeamMemberPage({ params }: Props) {
             <h2 className="text-2xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6">
               About {member.name.split(' ')[0]}
             </h2>
-            <div className="prose prose-lg dark:prose-invert max-w-none">
-              <p className="text-[#4a4a4a] dark:text-gray-300 font-light leading-relaxed whitespace-pre-line">
-                {member.bio}
-              </p>
-            </div>
+            <div
+              className="prose prose-lg dark:prose-invert max-w-none text-[#4a4a4a] dark:text-gray-300 font-light leading-relaxed [&_a]:text-[var(--color-gold)] [&_a]:underline hover:[&_a]:opacity-80"
+              dangerouslySetInnerHTML={{ __html: member.bio }}
+            />
           </div>
         </section>
       )}
