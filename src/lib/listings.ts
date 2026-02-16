@@ -1087,8 +1087,10 @@ export async function getListingsByAgentId(
           const dedup = (listings: any[]) => {
             const seen = new Set<string>();
             return listings.filter((row) => {
-              if (seen.has(row.id)) return false;
-              seen.add(row.id);
+              // Dedup by listing_id (MLS number) to collapse duplicate rows for the same property
+              const key = row.listing_id || row.id;
+              if (seen.has(String(key))) return false;
+              seen.add(String(key));
               return true;
             });
           };
