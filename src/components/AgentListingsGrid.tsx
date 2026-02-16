@@ -29,8 +29,9 @@ function PropertyCard({ listing, isSold }: { listing: MLSProperty; isSold?: bool
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const photos = listing.photos && listing.photos.length > 0 ? listing.photos : [];
-  const hasMultiplePhotos = photos.length > 1;
-  const currentPhoto = photos[currentPhotoIndex] || null;
+  // Only show gallery navigation for active listings, not sold
+  const hasMultiplePhotos = !isSold && photos.length > 1;
+  const currentPhoto = isSold ? (photos[0] || null) : (photos[currentPhotoIndex] || null);
 
   const handlePrevPhoto = (e: React.MouseEvent) => {
     e.preventDefault();
