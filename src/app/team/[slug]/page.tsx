@@ -35,7 +35,7 @@ interface TeamMember {
   mlsAgentIdSold?: string;
 }
 
-const TEAM_MEMBER_QUERY = `*[_type == "teamMember" && slug.current == $slug][0] {
+const TEAM_MEMBER_QUERY = `*[_type == "teamMember" && slug.current == $slug && inactive != true][0] {
   _id,
   name,
   slug,

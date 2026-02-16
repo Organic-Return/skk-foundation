@@ -51,7 +51,7 @@ async function getListingAgents(listing: MLSProperty): Promise<ListingAgent[]> {
   if (ids.length === 0) return [];
 
   const agents = await client.fetch<(ListingAgent & { _id: string; mlsAgentId?: string })[]>(
-    `*[_type == "teamMember" && (mlsAgentId in $ids || mlsAgentIdSold in $ids)]{
+    `*[_type == "teamMember" && inactive != true && (mlsAgentId in $ids || mlsAgentIdSold in $ids)]{
       _id,
       name,
       slug,

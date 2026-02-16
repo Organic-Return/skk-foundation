@@ -165,7 +165,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     getDistinctStatuses(),
     getDistinctNeighborhoods(),
     client.fetch<{ name: string; mlsAgentId?: string; mlsAgentIdSold?: string }[]>(
-      `*[_type == "teamMember" && defined(mlsAgentId)]{ name, mlsAgentId, mlsAgentIdSold }`,
+      `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{ name, mlsAgentId, mlsAgentIdSold }`,
       {},
       { next: { revalidate: 3600 } }
     ),
