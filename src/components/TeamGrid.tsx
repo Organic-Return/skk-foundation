@@ -150,7 +150,14 @@ export default function TeamGrid({ members, isRC }: TeamGridProps) {
                   : 'text-[#1a1a1a] dark:text-white group-hover:text-[var(--color-gold,#c19b5f)]'
               }`}
             >
-              {member.name}
+              {isRC ? (
+                <>
+                  {member.name.split(/\s+/).slice(0, -1).join(' ')}<br />
+                  {member.name.split(/\s+/).slice(-1)[0]}
+                </>
+              ) : (
+                member.name
+              )}
             </h3>
 
             {/* Title */}
