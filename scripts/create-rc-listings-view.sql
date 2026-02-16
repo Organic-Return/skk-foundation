@@ -55,7 +55,7 @@ SELECT
   COALESCE("ListAgentLastName", "LA1AgentLastName") AS list_agent_last_name,
   COALESCE("ListAgentEmail", "AgentEmail") AS list_agent_email,
   COALESCE("ListAgentFullName", CONCAT("LA1AgentFirstName", ' ', "LA1AgentLastName")) AS list_agent_full_name,
-  "CoListAgentMlsId" AS co_list_agent_mls_id,
+  COALESCE("CoListAgentMlsId", "ListingAgent2"::text) AS co_list_agent_mls_id,
   "BuyerAgentMlsId" AS buyer_agent_mls_id,
   "CoBuyerAgentMlsId" AS co_buyer_agent_mls_id,
   COALESCE("VirtualTourURLUnbranded", "VirtualTour") AS virtual_tour_url,
