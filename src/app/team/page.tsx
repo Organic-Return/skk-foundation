@@ -50,7 +50,11 @@ export default async function TeamPage() {
     name: m.name,
     slug: m.slug,
     title: m.title,
-    imageUrl: m.image ? urlFor(m.image).width(300).height(300).url() : undefined,
+    imageUrl: m.image
+      ? isRC
+        ? urlFor(m.image).width(450).height(560).url()
+        : urlFor(m.image).width(300).height(300).url()
+      : undefined,
   }));
 
   return (
