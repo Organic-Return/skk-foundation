@@ -1069,7 +1069,7 @@ export async function getListingsByAgentId(
               .from('graphql_listings')
               .select('*')
               .or(activeFilter)
-              .or('status.not.in.(Closed,Sold),status.is.null')
+              .or('status.in.(Active,Coming Soon,Pending,Active Under Contract,Contingent)')
               .order('listing_date', { ascending: false })
               .limit(200),
             supabase
