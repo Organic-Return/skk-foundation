@@ -71,8 +71,8 @@ export default function TeamGrid({ members, isRC }: TeamGridProps) {
   return (
     <>
       {/* Search & Sort */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
-        <div className="relative flex-1 w-full sm:max-w-md">
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+        <div className="relative w-full sm:w-80">
           <svg
             className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${
               isRC ? 'text-[var(--rc-brown)]/40' : 'text-gray-400'
