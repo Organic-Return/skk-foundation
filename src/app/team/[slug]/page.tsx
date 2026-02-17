@@ -387,12 +387,12 @@ export default async function TeamMemberPage({ params }: Props) {
 
       {/* Bio Section */}
       {member.bio && (
-        <section className={`py-16 md:py-24 ${isRC ? 'bg-[var(--rc-cream)]' : 'bg-white dark:bg-[#1a1a1a]'}`}>
+        <section className={`py-16 md:py-24 ${isRC ? 'bg-[var(--rc-navy)]' : 'bg-white dark:bg-[#1a1a1a]'}`}>
           <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
             <h2
               className={
                 isRC
-                  ? 'text-2xl md:text-3xl font-light uppercase tracking-[0.08em] text-[var(--rc-navy)] mb-6'
+                  ? 'text-2xl md:text-3xl font-light uppercase tracking-[0.08em] text-white mb-6'
                   : 'text-2xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6'
               }
               style={isRC ? { fontFamily: 'var(--font-figtree), Figtree, sans-serif' } : undefined}
@@ -402,7 +402,7 @@ export default async function TeamMemberPage({ params }: Props) {
             <div
               className={`prose prose-lg max-w-none font-light leading-relaxed ${
                 isRC
-                  ? 'text-[var(--rc-brown)] [&_a]:text-[var(--rc-gold)] [&_a]:underline hover:[&_a]:opacity-80'
+                  ? '[&_*]:text-white/80 [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h4]:text-white [&_strong]:text-white [&_a]:!text-[var(--rc-gold)] [&_a]:underline hover:[&_a]:opacity-80'
                   : 'dark:prose-invert text-[#4a4a4a] dark:text-gray-300 [&_a]:text-[var(--color-gold)] [&_a]:underline hover:[&_a]:opacity-80'
               }`}
               dangerouslySetInnerHTML={{ __html: member.bio }}
