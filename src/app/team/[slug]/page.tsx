@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { getListingsByAgentId } from "@/lib/listings";
 import { getSiteTemplate } from "@/lib/settings";
 import AgentListingsGrid from "@/components/AgentListingsGrid";
+import AgentHeroGallery from "@/components/AgentHeroGallery";
 
 const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
@@ -97,9 +98,45 @@ export default async function TeamMemberPage({ params }: Props) {
 
   const hasListings = agentListings && (agentListings.activeListings.length > 0 || agentListings.soldListings.length > 0);
 
+  // For RC template: filter active listings that have photos for the hero gallery
+  const heroListings = isRC && agentListings
+    ? agentListings.activeListings
+        .filter((l) => l.photos && l.photos.length > 0)
+        .map((l) => ({
+          id: String(l.id),
+          address: l.address || '',
+          city: l.city || '',
+          state: l.state || undefined,
+          list_price: l.list_price || 0,
+          bedrooms: l.bedrooms,
+          bathrooms: l.bathrooms,
+          square_feet: l.square_feet,
+          photos: l.photos,
+          status: l.status || undefined,
+        }))
+    : [];
+  const showHeroGallery = isRC && heroListings.length > 0;
+
+  const agentImageUrl = member.image
+    ? urlFor(member.image).width(450).height(560).url()
+    : undefined;
+
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
+      {showHeroGallery ? (
+        <AgentHeroGallery
+          listings={heroListings}
+          agentName={member.name}
+          agentImageUrl={agentImageUrl}
+          agentTitle={member.title}
+          agentEmail={member.email}
+          agentPhone={member.phone}
+          agentMobile={member.mobile}
+          agentSlug={member.slug.current}
+          socialMedia={member.socialMedia}
+        />
+      ) : (
       <section className={`relative py-16 md:py-24 ${isRC ? 'bg-[var(--rc-navy)]' : 'bg-[var(--color-navy)]'}`}>
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
           {/* Breadcrumb */}
@@ -222,6 +259,7 @@ export default async function TeamMemberPage({ params }: Props) {
           </div>
         </div>
       </section>
+      )}
 
       {/* Bio Section */}
       {member.bio && (
