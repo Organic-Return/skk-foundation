@@ -227,22 +227,6 @@ export default async function TeamMemberPage({ params }: Props) {
                     </div>
                   )}
 
-                  {/* Bio */}
-                  {member.bio && (
-                    <div className="mb-8">
-                      <h2
-                        className="text-lg md:text-xl font-light uppercase tracking-[0.08em] text-[var(--rc-navy)] mb-4"
-                        style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif' }}
-                      >
-                        About {member.name.split(' ')[0]}
-                      </h2>
-                      <div
-                        className="prose prose-sm max-w-none font-light leading-relaxed text-[var(--rc-brown)] [&_a]:text-[var(--rc-gold)] [&_a]:underline hover:[&_a]:opacity-80"
-                        dangerouslySetInnerHTML={{ __html: member.bio }}
-                      />
-                    </div>
-                  )}
-
                   {/* Contact button */}
                   {member.email && (
                     <a
@@ -257,6 +241,22 @@ export default async function TeamMemberPage({ params }: Props) {
                   )}
                 </div>
               </div>
+
+              {/* Bio — full width below profile */}
+              {member.bio && (
+                <div className="mt-12 md:mt-16 pt-10 border-t border-[var(--rc-brown)]/10">
+                  <h2
+                    className="text-2xl md:text-3xl font-light uppercase tracking-[0.08em] text-[var(--rc-navy)] mb-6"
+                    style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif' }}
+                  >
+                    About {member.name.split(' ')[0]}
+                  </h2>
+                  <div
+                    className="prose prose-lg max-w-none font-light leading-relaxed text-[var(--rc-brown)] [&_a]:text-[var(--rc-gold)] [&_a]:underline hover:[&_a]:opacity-80"
+                    dangerouslySetInnerHTML={{ __html: member.bio }}
+                  />
+                </div>
+              )}
             </div>
           </section>
         </>
@@ -413,33 +413,27 @@ export default async function TeamMemberPage({ params }: Props) {
       </>
       )}
 
-      {/* Agent Stats */}
-      {agentListings && agentListings.soldListings.length > 0 && (() => {
+      {/* Agent Stats (non-RC only) */}
+      {!isRC && agentListings && agentListings.soldListings.length > 0 && (() => {
         const totalSold = agentListings.soldListings.length;
         const totalVolume = agentListings.soldListings.reduce((sum, listing) => sum + (listing.sold_price || listing.list_price || 0), 0);
         return (
-          <section className={`py-12 md:py-16 ${isRC ? 'bg-white' : 'bg-[#f8f7f5] dark:bg-[#141414]'}`}>
+          <section className="py-12 md:py-16 bg-[#f8f7f5] dark:bg-[#141414]">
             <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
               <div className="grid grid-cols-2 gap-8 text-center">
                 <div>
-                  <p
-                    className={`text-4xl md:text-5xl font-light mb-2 ${isRC ? 'text-[var(--rc-navy)]' : 'font-serif text-[#1a1a1a] dark:text-white'}`}
-                    style={isRC ? { fontFamily: 'var(--font-figtree), Figtree, sans-serif' } : undefined}
-                  >
+                  <p className="text-4xl md:text-5xl font-light mb-2 font-serif text-[#1a1a1a] dark:text-white">
                     {totalSold}
                   </p>
-                  <p className={`text-sm uppercase tracking-[0.15em] font-light ${isRC ? 'text-[var(--rc-brown)]' : 'text-[#6a6a6a] dark:text-gray-400'}`}>
+                  <p className="text-sm uppercase tracking-[0.15em] font-light text-[#6a6a6a] dark:text-gray-400">
                     Properties Sold
                   </p>
                 </div>
                 <div>
-                  <p
-                    className={`text-4xl md:text-5xl font-light mb-2 ${isRC ? 'text-[var(--rc-navy)]' : 'font-serif text-[#1a1a1a] dark:text-white'}`}
-                    style={isRC ? { fontFamily: 'var(--font-figtree), Figtree, sans-serif' } : undefined}
-                  >
+                  <p className="text-4xl md:text-5xl font-light mb-2 font-serif text-[#1a1a1a] dark:text-white">
                     {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalVolume)}
                   </p>
-                  <p className={`text-sm uppercase tracking-[0.15em] font-light ${isRC ? 'text-[var(--rc-brown)]' : 'text-[#6a6a6a] dark:text-gray-400'}`}>
+                  <p className="text-sm uppercase tracking-[0.15em] font-light text-[#6a6a6a] dark:text-gray-400">
                     Total Sales Volume
                   </p>
                 </div>
