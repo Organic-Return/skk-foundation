@@ -431,8 +431,12 @@ export async function getListings(
   };
 }
 
-// Look up SIR media for a listing by its MLS number
-async function getSIRMediaForListing(mlsNumber: string): Promise<SIRMediaAssets | null> {
+// Look up SIR media for a listing by its MLS number, with address/city verification
+async function getSIRMediaForListing(
+  mlsNumber: string,
+  address?: string | null,
+  city?: string | null,
+): Promise<SIRMediaAssets | null> {
   if (!isRealogyConfigured()) return null;
 
   const realogySupabase = getRealogySupabase();
@@ -440,7 +444,7 @@ async function getSIRMediaForListing(mlsNumber: string): Promise<SIRMediaAssets 
 
   const { data, error } = await realogySupabase
     .from('realogy_listings')
-    .select('default_photo_url, media')
+    .select('default_photo_url, media, street_address, city')
     .contains('mls_numbers', JSON.stringify([mlsNumber]))
     .limit(1)
     .maybeSingle();
@@ -450,6 +454,32 @@ async function getSIRMediaForListing(mlsNumber: string): Promise<SIRMediaAssets 
     return null;
   }
   if (!data) return null;
+
+  // Verify address/city match to prevent cross-MLS-system collisions
+  if (address && data.street_address) {
+    const normalize = (s: string) => s.toLowerCase().trim().replace(/\s+/g, ' ');
+    const sirAddr = normalize(data.street_address);
+    const mlsAddr = normalize(address);
+    // Check if the street address starts the same (handles unit/suite differences)
+    const sirFirst = sirAddr.split(' ').slice(0, 2).join(' ');
+    const mlsFirst = mlsAddr.split(' ').slice(0, 2).join(' ');
+    if (sirFirst !== mlsFirst) {
+      console.warn(
+        `[SIR Enrichment] MLS# ${mlsNumber}: Address mismatch — ` +
+        `MLS "${address}" vs SIR "${data.street_address}". Skipping SIR photos.`
+      );
+      return null;
+    }
+  } else if (city && data.city) {
+    // Fallback: at least verify city matches
+    if (city.toLowerCase().trim() !== data.city.toLowerCase().trim()) {
+      console.warn(
+        `[SIR Enrichment] MLS# ${mlsNumber}: City mismatch — ` +
+        `MLS "${city}" vs SIR "${data.city}". Skipping SIR photos.`
+      );
+      return null;
+    }
+  }
 
   return extractSIRMedia(data);
 }
@@ -472,31 +502,29 @@ export async function getListingById(id: string): Promise<MLSProperty | null> {
   const listing = transformListing(data);
 
   // Enrich with SIR media (better photos, virtual tours, videos)
-  const sirMedia = await getSIRMediaForListing(listing.mls_number);
+  const sirMedia = await getSIRMediaForListing(listing.mls_number, listing.address, listing.city);
   return sirMedia ? enrichListingWithSIRMedia(listing, sirMedia) : listing;
 }
 
 export async function getListingByMlsNumber(mlsNumber: string): Promise<MLSProperty | null> {
   if (!isSupabaseConfigured()) return null;
 
-  // Fetch MLS listing and SIR media in parallel (we already have the MLS number)
-  const [mlsResult, sirMedia] = await Promise.all([
-    supabase
-      .from('graphql_listings')
-      .select('*')
-      .eq('listing_id', mlsNumber)
-      .single(),
-    getSIRMediaForListing(mlsNumber),
-  ]);
+  const { data, error } = await supabase
+    .from('graphql_listings')
+    .select('*')
+    .eq('listing_id', mlsNumber)
+    .single();
 
-  if (mlsResult.error) {
-    console.error('Error fetching listing:', mlsResult.error);
+  if (error) {
+    console.error('Error fetching listing:', error);
     return null;
   }
 
-  if (!mlsResult.data) return null;
-  const listing = transformListing(mlsResult.data);
+  if (!data) return null;
+  const listing = transformListing(data);
 
+  // Enrich with SIR media, passing address/city for verification
+  const sirMedia = await getSIRMediaForListing(listing.mls_number, listing.address, listing.city);
   return sirMedia ? enrichListingWithSIRMedia(listing, sirMedia) : listing;
 }
 
@@ -556,6 +584,44 @@ export async function getOpenHouseListings(): Promise<MLSProperty[]> {
   }
 
   return results;
+}
+
+// Enrich an array of listings with open house data from the open_houses table
+async function enrichListingsWithOpenHouses(listings: MLSProperty[]): Promise<MLSProperty[]> {
+  if (!isSupabaseConfigured() || listings.length === 0) return listings;
+
+  const listingIds = listings.map(l => l.mls_number).filter(Boolean);
+  if (listingIds.length === 0) return listings;
+
+  const today = new Date().toISOString().split('T')[0];
+  const { data: ohData, error } = await supabase
+    .from('open_houses')
+    .select('ListingId, OpenHouseDate, OpenHouseStartTime, OpenHouseEndTime, OpenHouseRemarks')
+    .in('ListingId', listingIds)
+    .gte('OpenHouseDate', today)
+    .order('OpenHouseDate', { ascending: true });
+
+  if (error || !ohData || ohData.length === 0) return listings;
+
+  // Map: ListingId → first upcoming open house
+  const ohMap = new Map<string, typeof ohData[0]>();
+  for (const oh of ohData) {
+    if (!ohMap.has(oh.ListingId)) {
+      ohMap.set(oh.ListingId, oh);
+    }
+  }
+
+  return listings.map(listing => {
+    const oh = ohMap.get(listing.mls_number);
+    if (!oh) return listing;
+    return {
+      ...listing,
+      open_house_date: oh.OpenHouseDate,
+      open_house_start_time: oh.OpenHouseStartTime,
+      open_house_end_time: oh.OpenHouseEndTime,
+      open_house_remarks: oh.OpenHouseRemarks,
+    };
+  });
 }
 
 export async function getDistinctCities(): Promise<string[]> {
@@ -757,7 +823,7 @@ export function formatLotSize(acres: number | null): string {
 export async function getNewestHighPricedByCity(
   city: string,
   limit: number = 4,
-  options?: { agentIds?: string[]; officeName?: string; minPrice?: number; sortBy?: 'date' | 'price' }
+  options?: { agentIds?: string[]; officeName?: string; minPrice?: number; sortBy?: 'date' | 'price'; excludeLand?: boolean }
 ): Promise<MLSProperty[]> {
   if (!isSupabaseConfigured()) return [];
 
@@ -769,6 +835,13 @@ export async function getNewestHighPricedByCity(
     .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
     .or('status.not.in.(Closed,Sold),status.is.null')
     .not('list_price', 'is', null);
+
+  if (options?.excludeLand) {
+    query = query
+      .not('property_type', 'ilike', '%Land%')
+      .not('property_sub_type', 'ilike', '%Land%')
+      .not('property_sub_type', 'ilike', '%Lot%');
+  }
 
   if (options?.minPrice) {
     query = query.gte('list_price', options.minPrice);
@@ -797,7 +870,8 @@ export async function getNewestHighPricedByCity(
   }
 
   const listings = (data || []).map(transformListing);
-  return enrichListingsWithSIRMedia(listings);
+  const withOpenHouses = await enrichListingsWithOpenHouses(listings);
+  return enrichListingsWithSIRMedia(withOpenHouses);
 }
 
 /**
@@ -850,7 +924,7 @@ export async function getCommunityPriceRange(
 export async function getNewestHighPricedByCities(
   cities: string[],
   limit: number = 8,
-  options?: { agentIds?: string[]; officeName?: string; minPrice?: number; sortBy?: 'date' | 'price' }
+  options?: { agentIds?: string[]; officeName?: string; minPrice?: number; sortBy?: 'date' | 'price'; excludeLand?: boolean }
 ): Promise<MLSProperty[]> {
   if (!isSupabaseConfigured() || !cities || cities.length === 0) {
     return [];
@@ -867,6 +941,13 @@ export async function getNewestHighPricedByCities(
     .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
     .or('status.not.in.(Closed,Sold),status.is.null')
     .not('list_price', 'is', null);
+
+  if (options?.excludeLand) {
+    query = query
+      .not('property_type', 'ilike', '%Land%')
+      .not('property_sub_type', 'ilike', '%Land%')
+      .not('property_sub_type', 'ilike', '%Lot%');
+  }
 
   if (options?.minPrice) {
     query = query.gte('list_price', options.minPrice);
@@ -895,7 +976,8 @@ export async function getNewestHighPricedByCities(
   }
 
   const listings = (data || []).map(transformListing);
-  return enrichListingsWithSIRMedia(listings);
+  const withOpenHouses = await enrichListingsWithOpenHouses(listings);
+  return enrichListingsWithSIRMedia(withOpenHouses);
 }
 
 // Enrich an array of listings with SIR media in parallel
@@ -905,7 +987,7 @@ async function enrichListingsWithSIRMedia(listings: MLSProperty[]): Promise<MLSP
   return Promise.all(
     listings.map(async (listing) => {
       if (!listing.mls_number) return listing;
-      const sirMedia = await getSIRMediaForListing(listing.mls_number);
+      const sirMedia = await getSIRMediaForListing(listing.mls_number, listing.address, listing.city);
       return sirMedia ? enrichListingWithSIRMedia(listing, sirMedia) : listing;
     })
   );

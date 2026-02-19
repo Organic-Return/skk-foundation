@@ -26,6 +26,7 @@ interface RCSothebysHeroProps {
   officeName?: string;
   minPrice?: number;
   sortBy?: 'date' | 'price';
+  excludeLand?: boolean;
 }
 
 function formatPrice(price: number): string {
@@ -83,6 +84,7 @@ export default function RCSothebysHero({
   officeName,
   minPrice,
   sortBy,
+  excludeLand,
 }: RCSothebysHeroProps) {
   const resolvedCities = cities || ['Aspen'];
   const router = useRouter();
@@ -113,7 +115,10 @@ export default function RCSothebysHero({
         const sortByParam = sortBy
           ? `&sortBy=${sortBy}`
           : '';
-        const response = await fetch(`/api/featured-properties?${citiesParam}&limit=${limit}${officeParam}${minPriceParam}${sortByParam}`);
+        const excludeLandParam = excludeLand
+          ? '&excludeLand=true'
+          : '';
+        const response = await fetch(`/api/featured-properties?${citiesParam}&limit=${limit}${officeParam}${minPriceParam}${sortByParam}${excludeLandParam}`);
         const data = await response.json();
         setProperties(data.properties || []);
       } catch (error) {
@@ -123,7 +128,7 @@ export default function RCSothebysHero({
       }
     }
     fetchProperties();
-  }, [resolvedCities, limit, officeName, minPrice, sortBy]);
+  }, [resolvedCities, limit, officeName, minPrice, sortBy, excludeLand]);
 
   const goToSlide = useCallback((index: number) => {
     if (properties.length === 0) return;
@@ -135,12 +140,12 @@ export default function RCSothebysHero({
   const handlePrev = () => goToSlide(activeIndex - 1);
   const handleNext = () => goToSlide(activeIndex + 1);
 
-  // Auto-advance every 6 seconds
+  // Auto-advance every 10 seconds
   useEffect(() => {
     if (properties.length <= 1) return;
     const timer = setInterval(() => {
       goToSlide(activeIndex + 1);
-    }, 6000);
+    }, 10000);
     return () => clearInterval(timer);
   }, [activeIndex, properties.length, goToSlide]);
 

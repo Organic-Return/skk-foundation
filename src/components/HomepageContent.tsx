@@ -89,6 +89,9 @@ interface HomepageContentProps {
   // Override limit for hero gallery
   heroLimit?: number;
 
+  // Exclude land/lot listings from hero gallery
+  heroExcludeLand?: boolean;
+
   // Featured properties carousel data
   featuredPropertiesCarousel?: {
     enabled?: boolean;
@@ -139,6 +142,7 @@ export default function HomepageContent({
   heroMinPrice,
   heroSortBy,
   heroLimit,
+  heroExcludeLand,
   featuredPropertiesCarousel,
   featuredCommunities,
   marketStatsSection,
@@ -251,6 +255,7 @@ export default function HomepageContent({
           officeName={officeName}
           minPrice={heroMinPrice}
           sortBy={heroSortBy}
+          excludeLand={heroExcludeLand}
         />
 
         {/* About Section — unique RC Sotheby's editorial layout */}

@@ -176,6 +176,7 @@ export default async function Home() {
         heroMinPrice={settings?.template === 'rcsothebys-custom' ? 950000 : undefined}
         heroSortBy={settings?.template === 'rcsothebys-custom' ? 'price' : undefined}
         heroLimit={settings?.template === 'rcsothebys-custom' ? 10 : undefined}
+        heroExcludeLand={settings?.template === 'rcsothebys-custom' ? true : undefined}
         featuredProperty={{
           enabled: featuredProperty?.enabled,
           mlsId: featuredProperty?.mlsId,
