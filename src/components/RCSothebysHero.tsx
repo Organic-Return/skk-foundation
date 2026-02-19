@@ -431,7 +431,7 @@ function SearchBar({
   return (
     <div className="bg-transparent">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
-        <div className="h-[3px] bg-[var(--rc-gold)] opacity-20" />
+        <div className="h-[4px] bg-white" />
       </div>
       <form
         onSubmit={onSearch}
