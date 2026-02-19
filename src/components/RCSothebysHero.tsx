@@ -430,19 +430,19 @@ function SearchBar({
 
   return (
     <div className="bg-transparent">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8">
         <div className="h-[1px] bg-white" />
       </div>
       <form
         onSubmit={onSearch}
-        className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 flex flex-wrap items-center gap-3 md:gap-4 lg:gap-6"
+        className="max-w-[1600px] mx-auto px-4 md:px-8 py-4 flex flex-wrap items-center gap-3 md:gap-4 lg:gap-6"
       >
         {/* Location */}
         <div className="flex-1 min-w-[120px]">
           <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none cursor-pointer appearance-none"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none cursor-pointer appearance-none"
             style={selectStyle}
           >
             <option value="" className="text-gray-900 normal-case">Locations</option>
@@ -452,14 +452,14 @@ function SearchBar({
           </select>
         </div>
 
-        <div className="hidden md:block w-px h-6 bg-white/15" />
+        <div className="hidden md:block w-px h-6 bg-white" />
 
         {/* Price Min */}
         <div className="flex-1 min-w-[100px]">
           <select
             value={priceMin}
             onChange={(e) => setPriceMin(e.target.value)}
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none cursor-pointer appearance-none"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none cursor-pointer appearance-none"
             style={selectStyle}
           >
             <option value="" className="text-gray-900 normal-case">Min Price</option>
@@ -469,14 +469,14 @@ function SearchBar({
           </select>
         </div>
 
-        <div className="hidden md:block w-px h-6 bg-white/15" />
+        <div className="hidden md:block w-px h-6 bg-white" />
 
         {/* Price Max */}
         <div className="flex-1 min-w-[100px]">
           <select
             value={priceMax}
             onChange={(e) => setPriceMax(e.target.value)}
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none cursor-pointer appearance-none"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none cursor-pointer appearance-none"
             style={selectStyle}
           >
             <option value="" className="text-gray-900 normal-case">Max Price</option>
@@ -486,7 +486,7 @@ function SearchBar({
           </select>
         </div>
 
-        <div className="hidden md:block w-px h-6 bg-white/15" />
+        <div className="hidden md:block w-px h-6 bg-white" />
 
         {/* Keyword / MLS# */}
         <div className="flex-[2] min-w-[150px]">
@@ -495,7 +495,7 @@ function SearchBar({
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="KEYWORD OR MLS#"
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none placeholder:text-white/40 placeholder:uppercase placeholder:tracking-[0.15em]"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none placeholder:text-white/40 placeholder:uppercase placeholder:tracking-[0.15em]"
           />
         </div>
 
