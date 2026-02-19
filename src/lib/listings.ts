@@ -757,7 +757,7 @@ export function formatLotSize(acres: number | null): string {
 export async function getNewestHighPricedByCity(
   city: string,
   limit: number = 4,
-  options?: { agentIds?: string[]; officeName?: string }
+  options?: { agentIds?: string[]; officeName?: string; minPrice?: number }
 ): Promise<MLSProperty[]> {
   if (!isSupabaseConfigured()) return [];
 
@@ -769,6 +769,10 @@ export async function getNewestHighPricedByCity(
     .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
     .or('status.not.in.(Closed,Sold),status.is.null')
     .not('list_price', 'is', null);
+
+  if (options?.minPrice) {
+    query = query.gte('list_price', options.minPrice);
+  }
 
   if (options?.officeName) {
     query = query.ilike('list_office_name', `%${options.officeName}%`);
@@ -787,7 +791,8 @@ export async function getNewestHighPricedByCity(
     return [];
   }
 
-  return (data || []).map(transformListing);
+  const listings = (data || []).map(transformListing);
+  return enrichListingsWithSIRMedia(listings);
 }
 
 /**
@@ -840,7 +845,7 @@ export async function getCommunityPriceRange(
 export async function getNewestHighPricedByCities(
   cities: string[],
   limit: number = 8,
-  options?: { agentIds?: string[]; officeName?: string }
+  options?: { agentIds?: string[]; officeName?: string; minPrice?: number }
 ): Promise<MLSProperty[]> {
   if (!isSupabaseConfigured() || !cities || cities.length === 0) {
     return [];
@@ -857,6 +862,10 @@ export async function getNewestHighPricedByCities(
     .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
     .or('status.not.in.(Closed,Sold),status.is.null')
     .not('list_price', 'is', null);
+
+  if (options?.minPrice) {
+    query = query.gte('list_price', options.minPrice);
+  }
 
   if (options?.officeName) {
     query = query.ilike('list_office_name', `%${options.officeName}%`);
@@ -875,7 +884,21 @@ export async function getNewestHighPricedByCities(
     return [];
   }
 
-  return (data || []).map(transformListing);
+  const listings = (data || []).map(transformListing);
+  return enrichListingsWithSIRMedia(listings);
+}
+
+// Enrich an array of listings with SIR media in parallel
+async function enrichListingsWithSIRMedia(listings: MLSProperty[]): Promise<MLSProperty[]> {
+  if (!isRealogyConfigured() || listings.length === 0) return listings;
+
+  return Promise.all(
+    listings.map(async (listing) => {
+      if (!listing.mls_number) return listing;
+      const sirMedia = await getSIRMediaForListing(listing.mls_number);
+      return sirMedia ? enrichListingWithSIRMedia(listing, sirMedia) : listing;
+    })
+  );
 }
 
 // Extract and categorize media from a Realogy/SIR listing row

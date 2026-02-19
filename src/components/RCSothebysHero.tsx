@@ -24,6 +24,7 @@ interface RCSothebysHeroProps {
   videoUrl?: string;
   fallbackImageUrl?: string;
   officeName?: string;
+  minPrice?: number;
 }
 
 function formatPrice(price: number): string {
@@ -79,6 +80,7 @@ export default function RCSothebysHero({
   videoUrl,
   fallbackImageUrl,
   officeName,
+  minPrice,
 }: RCSothebysHeroProps) {
   const resolvedCities = cities || ['Aspen'];
   const router = useRouter();
@@ -103,7 +105,10 @@ export default function RCSothebysHero({
         const officeParam = officeName
           ? `&officeName=${encodeURIComponent(officeName)}`
           : '';
-        const response = await fetch(`/api/featured-properties?${citiesParam}&limit=${limit}${officeParam}`);
+        const minPriceParam = minPrice
+          ? `&minPrice=${minPrice}`
+          : '';
+        const response = await fetch(`/api/featured-properties?${citiesParam}&limit=${limit}${officeParam}${minPriceParam}`);
         const data = await response.json();
         setProperties(data.properties || []);
       } catch (error) {
@@ -113,7 +118,7 @@ export default function RCSothebysHero({
       }
     }
     fetchProperties();
-  }, [resolvedCities, limit, officeName]);
+  }, [resolvedCities, limit, officeName, minPrice]);
 
   const goToSlide = useCallback((index: number) => {
     if (properties.length === 0) return;
@@ -198,10 +203,11 @@ export default function RCSothebysHero({
           <div className="bg-gradient-to-t from-black/70 via-black/40 to-transparent pt-20 pb-4">
             {/* City Tabs */}
             <div className="max-w-[1400px] mx-auto px-4 md:px-8">
-              <div className="flex items-center justify-center gap-3 md:gap-6 lg:gap-10 pb-4 border-b border-white/10 mb-0 flex-wrap">
+              <div className="relative flex items-center justify-center gap-3 md:gap-6 lg:gap-10 pb-0 mb-0 flex-wrap">
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-white/20" />
                 <button
                   onClick={() => { setActiveCity(null); setLocation(''); }}
-                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-1 border-b-2 transition-all duration-300 ${
+                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
                     !location
                       ? 'text-white border-white font-bold'
                       : 'text-white/50 border-transparent hover:text-white'
@@ -213,7 +219,7 @@ export default function RCSothebysHero({
                   <button
                     key={city}
                     onClick={() => { setActiveCity(city); setLocation(city); }}
-                    className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-1 border-b-2 transition-all duration-300 ${
+                    className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
                       location === city
                         ? 'text-white border-white font-bold'
                         : 'text-white/50 border-transparent hover:text-white'
@@ -343,10 +349,11 @@ export default function RCSothebysHero({
         <div className="bg-gradient-to-t from-black/70 via-black/40 to-transparent pt-20 pb-4">
           {/* City Tabs */}
           <div className="max-w-[1400px] mx-auto px-4 md:px-8">
-            <div className="flex items-center justify-center gap-3 md:gap-6 lg:gap-10 pb-4 border-b border-white/10 mb-0 flex-wrap">
+            <div className="relative flex items-center justify-center gap-3 md:gap-6 lg:gap-10 pb-0 mb-0 flex-wrap">
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-white/20" />
               <button
                 onClick={() => { setActiveCity(null); setLocation(''); }}
-                className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-1 border-b-2 transition-all duration-300 ${
+                className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
                   !location
                     ? 'text-white border-white font-bold'
                     : 'text-white/50 border-transparent hover:text-white'
@@ -358,7 +365,7 @@ export default function RCSothebysHero({
                 <button
                   key={city}
                   onClick={() => { setActiveCity(city); setLocation(city); }}
-                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-1 border-b-2 transition-all duration-300 ${
+                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
                     location === city
                       ? 'text-white border-white font-bold'
                       : 'text-white/50 border-transparent hover:text-white'

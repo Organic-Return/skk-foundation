@@ -80,6 +80,9 @@ interface HomepageContentProps {
   // Office name filter for hero/carousel (only show team listings)
   officeName?: string;
 
+  // Minimum price filter for hero gallery
+  heroMinPrice?: number;
+
   // Featured properties carousel data
   featuredPropertiesCarousel?: {
     enabled?: boolean;
@@ -127,6 +130,7 @@ export default function HomepageContent({
   featuredProperty,
   agentMlsId,
   officeName,
+  heroMinPrice,
   featuredPropertiesCarousel,
   featuredCommunities,
   marketStatsSection,
@@ -237,6 +241,7 @@ export default function HomepageContent({
           videoUrl={videoUrl}
           fallbackImageUrl={fallbackImageUrl}
           officeName={officeName}
+          minPrice={heroMinPrice}
         />
 
         {/* About Section — unique RC Sotheby's editorial layout */}

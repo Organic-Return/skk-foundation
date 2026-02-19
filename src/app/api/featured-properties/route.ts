@@ -12,7 +12,11 @@ export async function GET(request: NextRequest) {
     ? agentIdsParam.split(',').map(id => id.trim()).filter(Boolean)
     : undefined;
 
-  const filterOptions = officeName ? { officeName } : agentIds ? { agentIds } : undefined;
+  const minPriceParam = searchParams.get('minPrice');
+  const minPrice = minPriceParam ? parseInt(minPriceParam, 10) : undefined;
+
+  const filterOptions: { officeName?: string; agentIds?: string[]; minPrice?: number } | undefined =
+    officeName ? { officeName, minPrice } : agentIds ? { agentIds, minPrice } : minPrice ? { minPrice } : undefined;
 
   try {
     let properties;
