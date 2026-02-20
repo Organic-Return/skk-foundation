@@ -93,5 +93,21 @@ export async function GET() {
     .is('status', null);
   diagnostics.status_null_count = nullStatusCount;
 
+  // 7. Check photo/media columns for active listings
+  const { data: photoSample } = await supabase
+    .from('graphql_listings')
+    .select('listing_id, preferred_photo, media')
+    .eq('status', 'Active')
+    .not('list_price', 'is', null)
+    .order('list_price', { ascending: false })
+    .limit(3);
+
+  diagnostics.photoSample = photoSample?.map((r: any) => ({
+    listing_id: r.listing_id,
+    preferred_photo: r.preferred_photo ? r.preferred_photo.substring(0, 120) : null,
+    media_type: r.media === null ? 'null' : Array.isArray(r.media) ? `array[${r.media.length}]` : typeof r.media,
+    media_preview: r.media ? JSON.stringify(r.media).substring(0, 200) : null,
+  }));
+
   return NextResponse.json(diagnostics);
 }
