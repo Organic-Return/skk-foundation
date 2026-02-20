@@ -639,36 +639,31 @@ export async function getDistinctCities(): Promise<string[]> {
 // Main property types from database (property_type column)
 // Hardcoded to avoid Supabase 1000 row limit issues
 const PROPERTY_TYPES = [
-  'Commercial Land',
-  'Commercial Lease',
   'Commercial Sale',
-  'Fractional',
-  'RES Vacant Land',
+  'Farm',
+  'Land',
   'Residential',
-  'Residential Lease',
+  'Residential Income',
 ];
 
 // Property subtypes from database (property_sub_type column)
 const PROPERTY_SUB_TYPES = [
-  'Agricultural',
   'Agriculture',
-  'Business with Real Estate',
-  'Business with/RE',
+  'Apartment',
   'Commercial',
-  'Commercial Land',
   'Condominium',
-  'Development',
   'Duplex',
-  'Half Duplex',
-  'Leasehold',
-  'Mobile Home',
-  'Multi-Family Lot',
-  'Other',
-  'Residential Income',
-  'Seasonal & Remote',
-  'Single Family Lot',
-  'Single Family Residence',
+  'Farm',
+  'Log Home',
+  'Manufactured-Owned Lot',
+  'Manufactured Rented Lot',
+  'Multi Family',
+  'Residential',
+  'Site Built-Owned Lot',
+  'Site Built-Rented Lot',
+  'Stock Cooperative',
   'Townhouse',
+  'Triplex',
 ];
 
 export async function getDistinctPropertyTypes(): Promise<string[]> {
