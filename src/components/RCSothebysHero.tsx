@@ -279,7 +279,7 @@ export default function RCSothebysHero({
       {/* Signature Triangular Arrows */}
       <button
         onClick={handlePrev}
-        className="absolute left-0 top-[40%] -translate-y-1/2 z-30 hover:scale-105 transition-transform duration-200"
+        className="absolute left-0 top-[40%] -translate-y-1/2 z-40 hover:scale-105 transition-transform duration-200"
         aria-label="Previous property"
       >
         <div className="w-[36px] h-[72px] md:w-[48px] md:h-[96px] lg:w-[60px] lg:h-[120px]">
@@ -289,7 +289,7 @@ export default function RCSothebysHero({
 
       <button
         onClick={handleNext}
-        className="absolute right-0 top-[40%] -translate-y-1/2 z-30 hover:scale-105 transition-transform duration-200"
+        className="absolute right-0 top-[40%] -translate-y-1/2 z-40 hover:scale-105 transition-transform duration-200"
         aria-label="Next property"
       >
         <div className="w-[36px] h-[72px] md:w-[48px] md:h-[96px] lg:w-[60px] lg:h-[120px]">
