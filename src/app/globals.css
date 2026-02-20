@@ -1024,6 +1024,11 @@ address {
   color: var(--rc-navy);
 }
 
+/* Gold button links should keep white text */
+.rcsothebys-template a[class*="text-white"] {
+  color: white;
+}
+
 /* RC Sotheby's button styles */
 .btn-rc-primary {
   display: inline-flex;
