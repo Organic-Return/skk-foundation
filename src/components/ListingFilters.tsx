@@ -15,12 +15,15 @@ interface ListingFiltersProps {
   maxPrice?: number;
   beds?: number;
   baths?: number;
+  ourTeam?: boolean;
   // Available options
   statuses: string[];
   propertyTypes: string[];
   propertySubTypes: string[];
   cities: string[];
   initialNeighborhoods: string[];
+  // Show "Our Listings" checkbox (only when team data is available)
+  showOurTeamFilter?: boolean;
 }
 
 export default function ListingFilters({
@@ -34,11 +37,13 @@ export default function ListingFilters({
   maxPrice: initialMaxPrice,
   beds: initialBeds,
   baths: initialBaths,
+  ourTeam: initialOurTeam,
   statuses,
   propertyTypes,
   propertySubTypes,
   cities,
   initialNeighborhoods,
+  showOurTeamFilter,
 }: ListingFiltersProps) {
   const router = useRouter();
 
@@ -53,6 +58,8 @@ export default function ListingFilters({
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice?.toString() || '');
   const [beds, setBeds] = useState(initialBeds?.toString() || '');
   const [baths, setBaths] = useState(initialBaths?.toString() || '');
+
+  const [ourTeam, setOurTeam] = useState(initialOurTeam || false);
 
   const [neighborhoods, setNeighborhoods] = useState<string[]>(initialNeighborhoods);
   const [loadingNeighborhoods, setLoadingNeighborhoods] = useState(false);
@@ -69,6 +76,7 @@ export default function ListingFilters({
     setMaxPrice(initialMaxPrice?.toString() || '');
     setBeds(initialBeds?.toString() || '');
     setBaths(initialBaths?.toString() || '');
+    setOurTeam(initialOurTeam || false);
   }, [
     initialKeyword,
     initialStatus,
@@ -80,6 +88,7 @@ export default function ListingFilters({
     initialMaxPrice,
     initialBeds,
     initialBaths,
+    initialOurTeam,
   ]);
 
   // Build URL and navigate
@@ -96,10 +105,11 @@ export default function ListingFilters({
     if (maxPrice) params.set('maxPrice', maxPrice);
     if (beds) params.set('beds', beds);
     if (baths) params.set('baths', baths);
+    if (ourTeam) params.set('ourTeam', 'true');
 
     const queryString = params.toString();
     router.push(queryString ? `/listings?${queryString}` : '/listings');
-  }, [keyword, status, propertyType, propertySubType, selectedCity, selectedNeighborhood, minPrice, maxPrice, beds, baths, router]);
+  }, [keyword, status, propertyType, propertySubType, selectedCity, selectedNeighborhood, minPrice, maxPrice, beds, baths, ourTeam, router]);
 
   // Fetch neighborhoods when city changes
   useEffect(() => {
@@ -152,12 +162,13 @@ export default function ListingFilters({
       selectedCity === (initialCity || '') &&
       selectedNeighborhood === (initialNeighborhood || '') &&
       beds === (initialBeds?.toString() || '') &&
-      baths === (initialBaths?.toString() || '');
+      baths === (initialBaths?.toString() || '') &&
+      ourTeam === (initialOurTeam || false);
 
     if (!isInitialState) {
       navigateWithFilters();
     }
-  }, [status, propertyType, propertySubType, selectedCity, selectedNeighborhood, beds, baths]);
+  }, [status, propertyType, propertySubType, selectedCity, selectedNeighborhood, beds, baths, ourTeam]);
 
   // Debounced navigation for text inputs (keyword, price)
   useEffect(() => {
@@ -174,7 +185,7 @@ export default function ListingFilters({
     return () => clearTimeout(timer);
   }, [keyword, minPrice, maxPrice]);
 
-  const hasFilters = keyword || status || propertyType || propertySubType || selectedCity || selectedNeighborhood || minPrice || maxPrice || beds || baths;
+  const hasFilters = keyword || status || propertyType || propertySubType || selectedCity || selectedNeighborhood || minPrice || maxPrice || beds || baths || ourTeam;
 
   const handleClearFilters = () => {
     setKeyword('');
@@ -187,6 +198,7 @@ export default function ListingFilters({
     setMaxPrice('');
     setBeds('');
     setBaths('');
+    setOurTeam(false);
     router.push('/listings');
   };
 
@@ -325,6 +337,19 @@ export default function ListingFilters({
         <option value="3">3+ Baths</option>
         <option value="4">4+ Baths</option>
       </select>
+
+      {/* Our Listings Only checkbox */}
+      {showOurTeamFilter && (
+        <label className="flex items-center gap-2 px-4 py-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={ourTeam}
+            onChange={(e) => setOurTeam(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Our Listings</span>
+        </label>
+      )}
 
       {hasFilters && (
         <button

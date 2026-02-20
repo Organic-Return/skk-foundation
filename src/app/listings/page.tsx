@@ -204,6 +204,9 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const teamAgentNames = teamMembers
     ? [...new Set(teamMembers.map((m) => m.name).filter(Boolean))]
     : [];
+  const teamOfficeNames = settings?.teamSync?.offices
+    ? settings.teamSync.offices.map((o) => o.officeName).filter(Boolean)
+    : [];
 
   // Fetch listings with filters applied
   const listingsResult = await getListings(page, 24, {
@@ -219,6 +222,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     keyword,
     agentMlsIds: ourTeam ? teamAgentIds : undefined,
     agentNames: ourTeam ? teamAgentNames : undefined,
+    officeNames: ourTeam ? teamOfficeNames : undefined,
     excludedPropertyTypes,
     excludedPropertySubTypes,
     allowedCities,
@@ -272,6 +276,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               propertySubTypes={filteredPropertySubTypes}
               cities={filteredCities}
               initialNeighborhoods={neighborhoods}
+              ourTeam={ourTeam}
+              showOurTeamFilter={teamAgentIds.length > 0 || teamOfficeNames.length > 0}
             />
           </div>
         </div>

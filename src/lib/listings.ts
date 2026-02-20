@@ -296,9 +296,10 @@ export interface ListingsFilters {
   maxSqft?: number;
   // Keyword search (MLS# or address)
   keyword?: string;
-  // Agent filtering (Our Properties Only)
+  // Agent/office filtering (Our Listings Only)
   agentMlsIds?: string[];
   agentNames?: string[];  // Fallback: also match by agent full name
+  officeNames?: string[];  // Match by listing office name
   // Filters from MLS Configuration
   excludedPropertyTypes?: string[];      // Excluded main property types
   excludedPropertySubTypes?: string[];   // Excluded property subtypes
@@ -380,15 +381,18 @@ export async function getListings(
     query = query.or(`listing_id.ilike.%${filters.keyword}%,address.ilike.%${filters.keyword}%`);
   }
 
-  // Filter by team agent MLS IDs and/or names (Our Properties Only)
-  if ((filters.agentMlsIds && filters.agentMlsIds.length > 0) || (filters.agentNames && filters.agentNames.length > 0)) {
+  // Filter by team agent MLS IDs, names, and/or office names (Our Listings Only)
+  if ((filters.agentMlsIds && filters.agentMlsIds.length > 0) || (filters.agentNames && filters.agentNames.length > 0) || (filters.officeNames && filters.officeNames.length > 0)) {
     const idConditions = (filters.agentMlsIds || [])
       .map((id) => `list_agent_mls_id.eq.${id},co_list_agent_mls_id.eq.${id},buyer_agent_mls_id.eq.${id},co_buyer_agent_mls_id.eq.${id}`)
       .join(',');
     const nameConditions = (filters.agentNames || [])
       .map((name) => `list_agent_full_name.ilike.${name}`)
       .join(',');
-    const allConditions = [idConditions, nameConditions].filter(Boolean).join(',');
+    const officeConditions = (filters.officeNames || [])
+      .map((name) => `list_office_name.ilike.%${name}%`)
+      .join(',');
+    const allConditions = [idConditions, nameConditions, officeConditions].filter(Boolean).join(',');
     query = query.or(allConditions);
   }
 
