@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getNewestHighPricedByCity, getNewestHighPricedByCities, getNewestHighPriced } from '@/lib/listings';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const citiesParam = searchParams.get('cities');
