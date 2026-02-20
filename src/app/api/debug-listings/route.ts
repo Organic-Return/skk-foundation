@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { isSupabaseConfigured, getSupabase } from '@/lib/supabase';
 import { getMLSConfiguration, getAllowedCities, getExcludedStatuses } from '@/lib/mlsConfiguration';
+import { getListings } from '@/lib/listings';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const diagnostics: Record<string, any> = {};
@@ -16,82 +19,79 @@ export async function GET() {
     return NextResponse.json({ ...diagnostics, error: 'Supabase client is null' });
   }
 
-  // 2. Check if graphql_listings table exists and has data
-  const { data: countData, error: countError, count } = await supabase
+  // 2. Total row count
+  const { error: countError, count } = await supabase
     .from('graphql_listings')
     .select('*', { count: 'exact', head: true });
 
-  diagnostics.tableExists = !countError;
-  diagnostics.tableError = countError?.message || null;
   diagnostics.totalRows = count;
+  diagnostics.tableError = countError?.message || null;
 
-  if (countError) {
-    return NextResponse.json(diagnostics);
-  }
-
-  // 3. Sample a few rows to check column structure
-  const { data: sampleData, error: sampleError } = await supabase
-    .from('graphql_listings')
-    .select('id, listing_id, status, city, property_type, property_sub_type, list_price')
-    .limit(5);
-
-  diagnostics.sampleError = sampleError?.message || null;
-  diagnostics.sampleRows = sampleData;
-  diagnostics.columns = sampleData?.[0] ? Object.keys(sampleData[0]) : [];
-
-  // 4. Get distinct statuses
-  const { data: statusData } = await supabase
-    .from('graphql_listings')
-    .select('status')
-    .not('status', 'is', null)
-    .limit(1000);
-
-  diagnostics.distinctStatuses = [...new Set(statusData?.map(d => d.status).filter(Boolean))];
-
-  // 5. Get distinct cities
-  const { data: cityData } = await supabase
-    .from('graphql_listings')
-    .select('city')
-    .not('city', 'is', null)
-    .limit(1000);
-
-  diagnostics.distinctCities = [...new Set(cityData?.map(d => d.city).filter(Boolean))];
-
-  // 6. Get distinct property types
-  const { data: typeData } = await supabase
-    .from('graphql_listings')
-    .select('property_type')
-    .not('property_type', 'is', null)
-    .limit(1000);
-
-  diagnostics.distinctPropertyTypes = [...new Set(typeData?.map(d => d.property_type).filter(Boolean))];
-
-  // 7. Check MLS Configuration from Sanity
+  // 3. MLS Configuration
   const mlsConfig = await getMLSConfiguration();
   diagnostics.mlsConfigExists = !!mlsConfig;
   diagnostics.allowedCities = getAllowedCities(mlsConfig);
   diagnostics.excludedStatuses = getExcludedStatuses(mlsConfig);
 
-  // 8. Check if allowedCities match any data
-  if (diagnostics.allowedCities.length > 0) {
-    const { count: matchCount } = await supabase
-      .from('graphql_listings')
-      .select('*', { count: 'exact', head: true })
-      .in('city', diagnostics.allowedCities);
+  // 4. Run the exact getListings query (default - no filters)
+  const allExcludedStatuses = [...new Set([...getExcludedStatuses(mlsConfig), 'Closed', 'Sold'])];
+  diagnostics.allExcludedStatuses = allExcludedStatuses;
 
-    diagnostics.allowedCitiesMatchCount = matchCount;
-    diagnostics.mismatchWarning = matchCount === 0
-      ? 'PROBLEM: allowedCities in Sanity MLS config do not match any cities in Supabase!'
-      : null;
+  try {
+    const startTime = Date.now();
+    const result = await getListings(1, 24, {
+      excludedPropertyTypes: [],
+      excludedPropertySubTypes: [],
+      allowedCities: getAllowedCities(mlsConfig),
+      excludedStatuses: allExcludedStatuses,
+      sort: 'newest',
+    });
+    diagnostics.getListingsTime = `${Date.now() - startTime}ms`;
+    diagnostics.getListingsTotal = result.total;
+    diagnostics.getListingsCount = result.listings.length;
+    diagnostics.getListingsFirstListing = result.listings[0] ? {
+      id: result.listings[0].id,
+      address: result.listings[0].address,
+      status: result.listings[0].status,
+      city: result.listings[0].city,
+    } : null;
+  } catch (e: any) {
+    diagnostics.getListingsError = e.message;
   }
 
-  // 9. Count non-Closed listings (what the page shows by default)
-  const { count: activeCount } = await supabase
+  // 5. Raw Supabase query matching getListings logic
+  try {
+    const startTime = Date.now();
+    const { data, error, count: rawCount } = await supabase
+      .from('graphql_listings')
+      .select('id, listing_id, status, city, list_price, listing_date', { count: 'exact' })
+      .or(`status.not.in.(${allExcludedStatuses.join(',')}),status.is.null`)
+      .order('listing_date', { ascending: false, nullsFirst: false })
+      .range(0, 4);
+
+    diagnostics.rawQueryTime = `${Date.now() - startTime}ms`;
+    diagnostics.rawQueryCount = rawCount;
+    diagnostics.rawQueryError = error?.message || null;
+    diagnostics.rawQueryData = data;
+  } catch (e: any) {
+    diagnostics.rawQueryError = e.message;
+  }
+
+  // 6. Manual status count
+  for (const status of ['Active', 'Pending', 'Closed', 'Sold']) {
+    const { count: sc } = await supabase
+      .from('graphql_listings')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', status);
+    diagnostics[`status_${status}_count`] = sc;
+  }
+
+  // NULL status count
+  const { count: nullStatusCount } = await supabase
     .from('graphql_listings')
     .select('*', { count: 'exact', head: true })
-    .not('status', 'eq', 'Closed');
-
-  diagnostics.nonClosedCount = activeCount;
+    .is('status', null);
+  diagnostics.status_null_count = nullStatusCount;
 
   return NextResponse.json(diagnostics);
 }
