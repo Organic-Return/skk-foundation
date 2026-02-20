@@ -26,7 +26,6 @@ interface RCSothebysHeroProps {
   officeName?: string;
   minPrice?: number;
   sortBy?: 'date' | 'price';
-  excludeLand?: boolean;
 }
 
 function formatPrice(price: number): string {
@@ -84,8 +83,8 @@ export default function RCSothebysHero({
   officeName,
   minPrice,
   sortBy,
-  excludeLand,
 }: RCSothebysHeroProps) {
+  const resolvedCities = cities || ['Aspen'];
   const router = useRouter();
 
   const [properties, setProperties] = useState<Property[]>([]);
@@ -102,13 +101,9 @@ export default function RCSothebysHero({
   useEffect(() => {
     async function fetchProperties() {
       try {
-        // Build city filter: use configured cities, or omit to fetch all from the database
-        let citiesParam = '';
-        if (cities && cities.length > 1) {
-          citiesParam = `cities=${encodeURIComponent(cities.join(','))}`;
-        } else if (cities && cities.length === 1) {
-          citiesParam = `city=${encodeURIComponent(cities[0])}`;
-        }
+        const citiesParam = resolvedCities.length > 1
+          ? `cities=${encodeURIComponent(resolvedCities.join(','))}`
+          : `city=${encodeURIComponent(resolvedCities[0] || 'Aspen')}`;
         const officeParam = officeName
           ? `&officeName=${encodeURIComponent(officeName)}`
           : '';
@@ -118,11 +113,7 @@ export default function RCSothebysHero({
         const sortByParam = sortBy
           ? `&sortBy=${sortBy}`
           : '';
-        const excludeLandParam = excludeLand
-          ? '&excludeLand=true'
-          : '';
-        const sep = citiesParam ? '?' : '?';
-        const response = await fetch(`/api/featured-properties${sep}${citiesParam}&limit=${limit}${officeParam}${minPriceParam}${sortByParam}${excludeLandParam}`);
+        const response = await fetch(`/api/featured-properties?${citiesParam}&limit=${limit}${officeParam}${minPriceParam}${sortByParam}`);
         const data = await response.json();
         setProperties(data.properties || []);
       } catch (error) {
@@ -132,7 +123,7 @@ export default function RCSothebysHero({
       }
     }
     fetchProperties();
-  }, [cities, limit, officeName, minPrice, sortBy, excludeLand]);
+  }, [resolvedCities, limit, officeName, minPrice, sortBy]);
 
   const goToSlide = useCallback((index: number) => {
     if (properties.length === 0) return;
@@ -144,12 +135,12 @@ export default function RCSothebysHero({
   const handlePrev = () => goToSlide(activeIndex - 1);
   const handleNext = () => goToSlide(activeIndex + 1);
 
-  // Auto-advance every 10 seconds
+  // Auto-advance every 6 seconds
   useEffect(() => {
     if (properties.length <= 1) return;
     const timer = setInterval(() => {
       goToSlide(activeIndex + 1);
-    }, 10000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [activeIndex, properties.length, goToSlide]);
 
@@ -158,10 +149,8 @@ export default function RCSothebysHero({
     ? properties.filter(p => p.city.toLowerCase() === activeCity.toLowerCase())
     : properties;
 
-  // Use configured cities if provided, otherwise derive from fetched data
-  const displayCities = cities && cities.length > 0
-    ? cities
-    : Array.from(new Set(properties.map(p => p.city))).filter(Boolean);
+  // Get unique cities from fetched properties
+  const uniqueCities = Array.from(new Set(properties.map(p => p.city)));
 
   // Reset active index when city filter changes
   useEffect(() => {
@@ -192,7 +181,7 @@ export default function RCSothebysHero({
       keyword={keyword}
       setKeyword={setKeyword}
       onSearch={handleSearch}
-      cities={displayCities}
+      cities={resolvedCities}
     />
   );
 
@@ -229,9 +218,9 @@ export default function RCSothebysHero({
                       : 'text-white/50 border-transparent hover:text-white'
                   }`}
                 >
-                  All {displayCities.length > 1 ? 'Cities' : displayCities[0] || 'Properties'}
+                  All {resolvedCities.length > 1 ? 'Cities' : resolvedCities[0]}
                 </button>
-                {displayCities.map(city => (
+                {resolvedCities.map(city => (
                   <button
                     key={city}
                     onClick={() => { setActiveCity(city); setLocation(city); }}
@@ -285,7 +274,7 @@ export default function RCSothebysHero({
       {/* Signature Triangular Arrows */}
       <button
         onClick={handlePrev}
-        className="absolute left-0 top-[40%] -translate-y-1/2 z-40 hover:scale-105 transition-transform duration-200"
+        className="absolute left-0 top-[40%] -translate-y-1/2 z-30 hover:scale-105 transition-transform duration-200"
         aria-label="Previous property"
       >
         <div className="w-[36px] h-[72px] md:w-[48px] md:h-[96px] lg:w-[60px] lg:h-[120px]">
@@ -295,7 +284,7 @@ export default function RCSothebysHero({
 
       <button
         onClick={handleNext}
-        className="absolute right-0 top-[40%] -translate-y-1/2 z-40 hover:scale-105 transition-transform duration-200"
+        className="absolute right-0 top-[40%] -translate-y-1/2 z-30 hover:scale-105 transition-transform duration-200"
         aria-label="Next property"
       >
         <div className="w-[36px] h-[72px] md:w-[48px] md:h-[96px] lg:w-[60px] lg:h-[120px]">
@@ -378,9 +367,9 @@ export default function RCSothebysHero({
                     : 'text-white/50 border-transparent hover:text-white'
                 }`}
               >
-                All {displayCities.length > 1 ? 'Cities' : displayCities[0] || 'Properties'}
+                All {resolvedCities.length > 1 ? 'Cities' : resolvedCities[0]}
               </button>
-              {displayCities.map(city => (
+              {resolvedCities.map(city => (
                 <button
                   key={city}
                   onClick={() => { setActiveCity(city); setLocation(city); }}
@@ -436,19 +425,19 @@ function SearchBar({
 
   return (
     <div className="bg-transparent">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-8">
-        <div className="h-[1px] bg-white" />
+      <div className="max-w-[1400px] mx-auto px-4 md:px-8">
+        <div className="h-[3px] bg-[var(--rc-gold)] opacity-20" />
       </div>
       <form
         onSubmit={onSearch}
-        className="max-w-[1600px] mx-auto px-4 md:px-8 py-4 flex flex-wrap items-center gap-3 md:gap-4 lg:gap-6"
+        className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 flex flex-wrap items-center gap-3 md:gap-4 lg:gap-6"
       >
         {/* Location */}
         <div className="flex-1 min-w-[120px]">
           <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none cursor-pointer appearance-none"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none cursor-pointer appearance-none"
             style={selectStyle}
           >
             <option value="" className="text-gray-900 normal-case">Locations</option>
@@ -458,14 +447,14 @@ function SearchBar({
           </select>
         </div>
 
-        <div className="hidden md:block w-px h-6 bg-white" />
+        <div className="hidden md:block w-px h-6 bg-white/15" />
 
         {/* Price Min */}
         <div className="flex-1 min-w-[100px]">
           <select
             value={priceMin}
             onChange={(e) => setPriceMin(e.target.value)}
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none cursor-pointer appearance-none"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none cursor-pointer appearance-none"
             style={selectStyle}
           >
             <option value="" className="text-gray-900 normal-case">Min Price</option>
@@ -475,14 +464,14 @@ function SearchBar({
           </select>
         </div>
 
-        <div className="hidden md:block w-px h-6 bg-white" />
+        <div className="hidden md:block w-px h-6 bg-white/15" />
 
         {/* Price Max */}
         <div className="flex-1 min-w-[100px]">
           <select
             value={priceMax}
             onChange={(e) => setPriceMax(e.target.value)}
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none cursor-pointer appearance-none"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none cursor-pointer appearance-none"
             style={selectStyle}
           >
             <option value="" className="text-gray-900 normal-case">Max Price</option>
@@ -492,7 +481,7 @@ function SearchBar({
           </select>
         </div>
 
-        <div className="hidden md:block w-px h-6 bg-white" />
+        <div className="hidden md:block w-px h-6 bg-white/15" />
 
         {/* Keyword / MLS# */}
         <div className="flex-[2] min-w-[150px]">
@@ -501,7 +490,7 @@ function SearchBar({
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="KEYWORD OR MLS#"
-            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white focus:border-white focus:ring-0 outline-none placeholder:text-white/40 placeholder:uppercase placeholder:tracking-[0.15em]"
+            className="w-full bg-transparent text-white/80 text-[11px] uppercase tracking-[0.15em] py-2 border-0 border-b border-white/20 focus:border-[var(--rc-gold)] focus:ring-0 outline-none placeholder:text-white/40 placeholder:uppercase placeholder:tracking-[0.15em]"
           />
         </div>
 

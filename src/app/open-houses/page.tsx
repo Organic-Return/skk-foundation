@@ -1,64 +1,17 @@
 import type { Metadata } from 'next';
 import { getOpenHouseListings } from '@/lib/listings';
-import { client } from '@/sanity/client';
 import OpenHouseGrid from '@/components/OpenHouseGrid';
 
 export const revalidate = 60;
 
-interface OpenHousesPageData {
-  heroTitle?: string;
-  heroSubtitle?: string;
-  cities?: Array<{ city: string; enabled: boolean }>;
-  seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-  };
-}
-
-async function getOpenHousesPageData(): Promise<OpenHousesPageData | null> {
-  try {
-    return await client.fetch<OpenHousesPageData>(
-      `*[_type == "openHousesPage" && _id == "openHousesPage"][0]{
-        heroTitle,
-        heroSubtitle,
-        cities,
-        seo
-      }`,
-      {},
-      { next: { revalidate: 60 } }
-    );
-  } catch {
-    return null;
-  }
-}
-
-export async function generateMetadata(): Promise<Metadata> {
-  const pageData = await getOpenHousesPageData();
-  return {
-    title: pageData?.seo?.metaTitle || pageData?.heroTitle || 'Open Houses',
-    description:
-      pageData?.seo?.metaDescription ||
-      'Browse upcoming open houses from Retter & Company Sotheby\'s International Realty.',
-  };
-}
+export const metadata: Metadata = {
+  title: 'Open Houses',
+  description:
+    'Browse upcoming open houses from Retter & Company Sotheby\'s International Realty.',
+};
 
 export default async function OpenHousesPage() {
-  const pageData = await getOpenHousesPageData();
-
-  // Extract enabled cities from CMS config
-  const enabledCities = pageData?.cities
-    ?.filter((c) => c.enabled)
-    .map((c) => c.city) || [];
-
-  // Pass cities filter only if configured; otherwise show all
-  const listings = await getOpenHouseListings(
-    enabledCities.length > 0 ? enabledCities : undefined
-  );
-
-  const heroTitle = pageData?.heroTitle || 'Open Houses';
-  const heroSubtitle =
-    pageData?.heroSubtitle ||
-    'Visit our upcoming open houses and find your next home';
+  const listings = await getOpenHouseListings();
 
   return (
     <main className="min-h-screen">
@@ -72,10 +25,10 @@ export default async function OpenHousesPage() {
               lineHeight: '1.1em',
             }}
           >
-            {heroTitle}
+            Open Houses
           </h1>
           <p className="text-white/60 text-base md:text-lg font-normal max-w-2xl mx-auto">
-            {heroSubtitle}
+            Visit our upcoming open houses and find your next home
           </p>
           {listings.length > 0 && (
             <p className="text-white/40 text-sm mt-3 font-light">

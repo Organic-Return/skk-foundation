@@ -78,37 +78,6 @@ export const homepage = defineType({
           description: 'Toggle the hero title and subtitle on/off',
           initialValue: true,
         },
-        {
-          name: 'officeName',
-          title: 'Office Name Filter',
-          type: 'string',
-          description: 'Only show hero listings from this office (partial match). Leave empty for all offices.',
-        },
-        {
-          name: 'minPrice',
-          title: 'Minimum Price',
-          type: 'number',
-          description: 'Only show hero listings above this price. Leave empty for no minimum.',
-        },
-        {
-          name: 'sortBy',
-          title: 'Sort By',
-          type: 'string',
-          options: {
-            list: [
-              { title: 'Newest First', value: 'date' },
-              { title: 'Highest Price First', value: 'price' },
-            ],
-          },
-          initialValue: 'date',
-        },
-        {
-          name: 'excludeLand',
-          title: 'Exclude Land/Lots',
-          type: 'boolean',
-          description: 'Hide land and lot listings from the hero gallery',
-          initialValue: false,
-        },
       ],
     }),
     defineField({

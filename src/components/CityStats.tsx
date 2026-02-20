@@ -153,7 +153,7 @@ export default function CityStats({
                 onClick={() => handlePropertyFilterChange(filter.value)}
                 className={`px-6 py-3 text-xs uppercase tracking-[0.15em] font-light transition-all duration-300 ${
                   propertyFilter === filter.value
-                    ? 'bg-[var(--color-gold)] text-white'
+                    ? 'bg-[var(--color-sothebys-blue)] dark:bg-white text-white dark:text-[#1a1a1a]'
                     : 'bg-white dark:bg-[#1a1a1a] text-[#6a6a6a] dark:text-gray-400 hover:text-[#1a1a1a] dark:hover:text-white'
                 }`}
               >
@@ -171,8 +171,8 @@ export default function CityStats({
               onClick={() => setActiveCity(city)}
               className={`px-5 py-2.5 text-xs uppercase tracking-[0.15em] font-light transition-all duration-300 border ${
                 activeCity === city
-                  ? 'bg-[var(--color-gold)] text-white border-[var(--color-gold)]'
-                  : 'bg-transparent text-[#6a6a6a] dark:text-gray-400 border-[#d0d0d0] dark:border-gray-600 hover:border-[var(--color-gold)] hover:text-[#1a1a1a] dark:hover:text-white'
+                  ? 'bg-[var(--color-sothebys-blue)] dark:bg-white text-white dark:text-[#1a1a1a] border-[var(--color-sothebys-blue)] dark:border-white'
+                  : 'bg-transparent text-[#6a6a6a] dark:text-gray-400 border-[#d0d0d0] dark:border-gray-600 hover:border-[var(--color-sothebys-blue)] dark:hover:border-white hover:text-[#1a1a1a] dark:hover:text-white'
               }`}
             >
               {city}
@@ -236,7 +236,7 @@ export default function CityStats({
               </div>
 
               {/* Bottom Row - Secondary Metrics */}
-              <div className="grid grid-cols-2">
+              <div className="grid grid-cols-2 md:grid-cols-4">
                 <div className="p-6 md:p-8 text-center border-r border-[#e8e6e3] dark:border-gray-700">
                   <p className="text-xl md:text-2xl font-light text-[var(--color-gold)] mb-2">
                     {formatPrice(activeCityStats.highestPrice)}
@@ -246,12 +246,30 @@ export default function CityStats({
                   </p>
                 </div>
 
-                <div className="p-6 md:p-8 text-center">
+                <div className="p-6 md:p-8 text-center border-r border-[#e8e6e3] dark:border-gray-700 md:border-r">
                   <p className="text-xl md:text-2xl font-light text-[#1a1a1a] dark:text-white mb-2">
                     {formatPrice(activeCityStats.lowestPrice)}
                   </p>
                   <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a8a8a] font-light">
                     Lowest Listing
+                  </p>
+                </div>
+
+                <div className="p-6 md:p-8 text-center border-r border-[#e8e6e3] dark:border-gray-700">
+                  <p className="text-xl md:text-2xl font-light text-[#1a1a1a] dark:text-white mb-2">
+                    {activeCityStats.avgSoldPrice ? formatPrice(activeCityStats.avgSoldPrice) : 'N/A'}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a8a8a] font-light">
+                    Avg. Sold Price (1 Yr)
+                  </p>
+                </div>
+
+                <div className="p-6 md:p-8 text-center">
+                  <p className="text-xl md:text-2xl font-light text-[#1a1a1a] dark:text-white mb-2">
+                    {activeCityStats.avgDaysOnMarket != null ? `${activeCityStats.avgDaysOnMarket} days` : 'N/A'}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a8a8a] font-light">
+                    Avg. Days on Market
                   </p>
                 </div>
               </div>
@@ -261,7 +279,7 @@ export default function CityStats({
             <div className="text-center mt-10">
               <Link
                 href="/listings"
-                className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.15em] font-black transition-colors duration-200 bg-[var(--color-gold)] text-white px-8 py-4 hover:opacity-90"
+                className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] font-light transition-all duration-300 bg-[var(--color-gold)] text-white px-8 py-4 border border-[var(--color-gold)] hover:bg-transparent hover:border-[#1a1a1a] hover:text-[#1a1a1a] dark:hover:border-white dark:hover:text-white"
               >
                 View All Listings
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

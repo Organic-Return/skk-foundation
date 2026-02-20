@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNewestHighPricedByCity, getNewestHighPricedByCities, getNewestHighPriced } from '@/lib/listings';
-
-export const dynamic = 'force-dynamic';
+import { getNewestHighPricedByCity, getNewestHighPricedByCities } from '@/lib/listings';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -17,10 +15,9 @@ export async function GET(request: NextRequest) {
   const minPriceParam = searchParams.get('minPrice');
   const minPrice = minPriceParam ? parseInt(minPriceParam, 10) : undefined;
   const sortBy = searchParams.get('sortBy') === 'price' ? 'price' as const : undefined;
-  const excludeLand = searchParams.get('excludeLand') === 'true' ? true : undefined;
 
-  const filterOptions: { officeName?: string; agentIds?: string[]; minPrice?: number; sortBy?: 'date' | 'price'; excludeLand?: boolean } | undefined =
-    officeName ? { officeName, minPrice, sortBy, excludeLand } : agentIds ? { agentIds, minPrice, sortBy, excludeLand } : (minPrice || sortBy || excludeLand) ? { minPrice, sortBy, excludeLand } : undefined;
+  const filterOptions: { officeName?: string; agentIds?: string[]; minPrice?: number; sortBy?: 'date' | 'price' } | undefined =
+    officeName ? { officeName, minPrice, sortBy } : agentIds ? { agentIds, minPrice, sortBy } : (minPrice || sortBy) ? { minPrice, sortBy } : undefined;
 
   try {
     let properties;
@@ -31,8 +28,7 @@ export async function GET(request: NextRequest) {
     } else if (city) {
       properties = await getNewestHighPricedByCity(city, limit, filterOptions);
     } else {
-      // No city specified — fetch from all properties in the database
-      properties = await getNewestHighPriced(limit, filterOptions);
+      properties = await getNewestHighPricedByCity('Aspen', limit, filterOptions);
     }
 
     return NextResponse.json({ properties });

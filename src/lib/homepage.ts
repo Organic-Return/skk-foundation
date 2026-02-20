@@ -10,10 +10,6 @@ interface HomepageData {
     fallbackImage?: any;
     showSearch?: boolean;
     showTitleSubtitle?: boolean;
-    officeName?: string;
-    minPrice?: number;
-    sortBy?: string;
-    excludeLand?: boolean;
   };
   teamSection?: {
     enabled?: boolean;
@@ -118,11 +114,7 @@ const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
       }
     },
     showSearch,
-    showTitleSubtitle,
-    officeName,
-    minPrice,
-    sortBy,
-    excludeLand
+    showTitleSubtitle
   },
   teamSection {
     enabled,

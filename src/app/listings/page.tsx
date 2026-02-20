@@ -118,9 +118,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Force dynamic rendering — never serve stale cached data
+// Force dynamic rendering to ensure fresh data on each request
 export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
 
 interface ListingsPageProps {
   searchParams: Promise<{

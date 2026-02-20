@@ -45,19 +45,10 @@ export default defineConfig({
                   .schemaType('buyPage')
                   .documentId('buyPage')
               ),
-            // Open Houses Page singleton
-            S.listItem()
-              .title('Open Houses Page')
-              .icon(() => '📅')
-              .child(
-                S.document()
-                  .schemaType('openHousesPage')
-                  .documentId('openHousesPage')
-              ),
             S.divider(),
             // All other document types
             ...S.documentTypeListItems().filter(
-              (listItem) => !['settings', 'homepage', 'buyPage', 'openHousesPage'].includes(listItem.getId() || '')
+              (listItem) => !['settings', 'homepage', 'buyPage'].includes(listItem.getId() || '')
             ),
           ]),
     }),
