@@ -305,6 +305,7 @@ export interface ListingsFilters {
   excludedPropertySubTypes?: string[];   // Excluded property subtypes
   allowedCities?: string[];  // If set, only show listings from these cities
   excludedStatuses?: string[];
+  allowedStatuses?: string[];   // If set, only show listings with these statuses
   // Sorting
   sort?: SortOption;
 }
@@ -407,7 +408,10 @@ export async function getListings(
   if (filters.allowedCities && filters.allowedCities.length > 0) {
     query = query.in('city', filters.allowedCities);
   }
-  if (filters.excludedStatuses && filters.excludedStatuses.length > 0) {
+  if (filters.allowedStatuses && filters.allowedStatuses.length > 0) {
+    // Only show listings with these specific statuses (excludes NULL status rows)
+    query = query.in('status', filters.allowedStatuses);
+  } else if (filters.excludedStatuses && filters.excludedStatuses.length > 0) {
     // Use OR to also include rows where status is NULL (NOT IN excludes NULLs in SQL)
     query = query.or(`status.not.in.(${filters.excludedStatuses.join(',')}),status.is.null`);
   }

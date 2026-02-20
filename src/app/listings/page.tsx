@@ -180,8 +180,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const allowedCities = getAllowedCities(mlsConfig);
   const excludedStatuses = getExcludedStatuses(mlsConfig);
 
-  // Always exclude Closed/Sold from results
-  const allExcludedStatuses = [...new Set([...excludedStatuses, 'Closed', 'Sold'])];
+  // Only show active-type statuses in results and dropdown
+  const allowedStatusList = ['Active', 'Active Under Contract', 'Active U/C w/ Bump'];
 
   // Filter dropdown options based on MLS configuration
   // If allowedCities is configured, use those directly for the dropdown
@@ -189,10 +189,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const filteredCities = allowedCities.length > 0 ? allowedCities : cities;
   const filteredPropertyTypes = propertyTypes.filter((t) => !excludedPropertyTypes.includes(t));
   const filteredPropertySubTypes = propertySubTypes.filter((t) => !excludedPropertySubTypes.includes(t));
-  // Only show active-type statuses in the dropdown
-  const allowedDropdownStatuses = ['Active', 'Active Under Contract', 'Active U/C w/ Bump'];
   const filteredStatuses = statuses.filter(
-    (s) => allowedDropdownStatuses.includes(s) && !excludedStatuses.includes(s)
+    (s) => allowedStatusList.includes(s) && !excludedStatuses.includes(s)
   );
 
   // Collect all team agent MLS IDs and names for "Our Properties Only" filter
@@ -224,7 +222,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     excludedPropertyTypes,
     excludedPropertySubTypes,
     allowedCities,
-    excludedStatuses: allExcludedStatuses,
+    allowedStatuses: status ? undefined : allowedStatusList,
     sort,
   });
 
