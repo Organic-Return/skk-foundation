@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
-// Temporary debug endpoint to inspect raw media data from Supabase
-// DELETE THIS FILE after debugging
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   _request: Request,
@@ -13,62 +12,98 @@ export async function GET(
   }
 
   const { id } = await params;
+  const diagnostics: Record<string, any> = { __version: 'v2-raw-table' };
 
-  const { data, error } = await supabase
+  // 1. Check the view (graphql_listings)
+  const { data: viewData, error: viewError } = await supabase
     .from('graphql_listings')
-    .select('id, listing_id, media, preferred_photo')
-    .eq('id', id)
-    .single();
+    .select('id, listing_id, preferred_photo, media')
+    .or(`id.eq.${id},listing_id.eq.${id}`)
+    .limit(1);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!data) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-
-  const rawMedia = data.media;
-  const mediaType = typeof rawMedia;
-  const isArray = Array.isArray(rawMedia);
-
-  // Try parsing if string
-  let parsed: any = null;
-  let parseError: string | null = null;
-  if (typeof rawMedia === 'string') {
-    try {
-      parsed = JSON.parse(rawMedia);
-    } catch (e: any) {
-      parseError = e.message;
-    }
-  }
-
-  // Extract first item details
-  let firstItem: any = null;
-  const items = isArray ? rawMedia : (Array.isArray(parsed) ? parsed : []);
-  if (items.length > 0) {
-    const item = items[0];
-    firstItem = {
-      type: typeof item,
-      isString: typeof item === 'string',
-      keys: item && typeof item === 'object' ? Object.keys(item) : null,
-      value: typeof item === 'string' ? item.slice(0, 200) : item,
+  if (viewError) {
+    diagnostics.viewError = viewError.message;
+  } else if (viewData?.[0]) {
+    const r = viewData[0];
+    const rawMedia: any = r.media;
+    diagnostics.view = {
+      id: r.id,
+      listing_id: r.listing_id,
+      preferred_photo: r.preferred_photo,
+      media_is_null: rawMedia === null,
+      media_typeof: typeof rawMedia,
+      media_preview: rawMedia === null ? null : (typeof rawMedia === 'string' ? rawMedia.slice(0, 300) : JSON.stringify(rawMedia).slice(0, 300)),
     };
+  } else {
+    diagnostics.view = 'NOT FOUND';
   }
 
-  return NextResponse.json({
-    id: data.id,
-    listing_id: data.listing_id,
-    preferred_photo: data.preferred_photo,
-    media: {
-      type: mediaType,
-      isArray,
-      isNull: rawMedia === null,
-      length: isArray ? rawMedia.length : (typeof rawMedia === 'string' ? rawMedia.length : null),
-      preview: typeof rawMedia === 'string' ? rawMedia.slice(0, 500) : (isArray ? `Array(${rawMedia.length})` : String(rawMedia)),
-      parseResult: parsed ? { type: typeof parsed, isArray: Array.isArray(parsed), length: Array.isArray(parsed) ? parsed.length : null } : null,
-      parseError,
-      firstItem,
-    },
-  });
+  // 2. Check the raw rc-listings table — look for photo/media columns
+  const { data: rawData, error: rawError } = await supabase
+    .from('rc-listings')
+    .select('id, "ListingId", "PrefferedPhoto", "Media", "StandardStatus", "MlsStatus", "Status", "UnparsedAddress", "City"')
+    .or(`id.eq.${id},"ListingId".eq.${id}`)
+    .limit(2);
+
+  if (rawError) {
+    diagnostics.rawTableError = rawError.message;
+    // If column doesn't exist, try without PrefferedPhoto
+    const { data: rawData2, error: rawError2 } = await supabase
+      .from('rc-listings')
+      .select('id, "ListingId", "Media", "StandardStatus", "MlsStatus", "Status", "UnparsedAddress"')
+      .or(`id.eq.${id},"ListingId".eq.${id}`)
+      .limit(2);
+
+    if (rawError2) {
+      diagnostics.rawTableError2 = rawError2.message;
+    } else {
+      diagnostics.rawRows = (rawData2 || []).map((r: any) => ({
+        id: r.id,
+        ListingId: r.ListingId,
+        Status: r.Status,
+        StandardStatus: r.StandardStatus,
+        MlsStatus: r.MlsStatus,
+        address: r.UnparsedAddress,
+        media_is_null: r.Media === null,
+        media_typeof: typeof r.Media,
+        media_preview: r.Media === null ? null : (typeof r.Media === 'string' ? r.Media.slice(0, 300) : JSON.stringify(r.Media).slice(0, 300)),
+      }));
+    }
+  } else {
+    diagnostics.rawRows = (rawData || []).map((r: any) => ({
+      id: r.id,
+      ListingId: r.ListingId,
+      PrefferedPhoto: r.PrefferedPhoto,
+      Status: r.Status,
+      StandardStatus: r.StandardStatus,
+      MlsStatus: r.MlsStatus,
+      address: r.UnparsedAddress,
+      city: r.City,
+      media_is_null: r.Media === null,
+      media_typeof: typeof r.Media,
+      media_isArray: Array.isArray(r.Media),
+      media_preview: r.Media === null ? null : (typeof r.Media === 'string' ? r.Media.slice(0, 300) : JSON.stringify(r.Media).slice(0, 300)),
+    }));
+  }
+
+  // 3. Check media_lookup table
+  const listingId = viewData?.[0]?.listing_id || id;
+  const { data: lookupData, error: lookupError } = await supabase
+    .from('media_lookup')
+    .select('listing_id, media')
+    .eq('listing_id', listingId)
+    .limit(1);
+
+  if (lookupError) {
+    diagnostics.mediaLookupError = lookupError.message;
+  } else {
+    diagnostics.mediaLookup = (lookupData || []).map((r: any) => ({
+      listing_id: r.listing_id,
+      media_is_null: r.media === null,
+      media_typeof: typeof r.media,
+      media_preview: r.media === null ? null : (typeof r.media === 'string' ? r.media.slice(0, 300) : JSON.stringify(r.media).slice(0, 300)),
+    }));
+  }
+
+  return NextResponse.json(diagnostics);
 }
