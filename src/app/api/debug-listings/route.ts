@@ -146,5 +146,45 @@ export async function GET() {
     };
   }
 
+  // 10. Check specific listing raw data (newest active by listing_date)
+  const { data: rawListing } = await supabase
+    .from('graphql_listings')
+    .select('listing_id, preferred_photo, media')
+    .eq('status', 'Active')
+    .not('media', 'is', null)
+    .order('listing_date', { ascending: false })
+    .limit(1);
+
+  if (rawListing?.[0]) {
+    const r = rawListing[0];
+    diagnostics.newestActiveWithMedia = {
+      listing_id: r.listing_id,
+      has_preferred_photo: !!r.preferred_photo,
+      media_is_array: Array.isArray(r.media),
+      media_type: typeof r.media,
+      media_length: Array.isArray(r.media) ? r.media.length : null,
+      first_item_type: Array.isArray(r.media) && r.media[0] ? typeof r.media[0] : null,
+      first_item_keys: Array.isArray(r.media) && r.media[0] && typeof r.media[0] === 'object' ? Object.keys(r.media[0]) : null,
+      first_item_MediaUrl: Array.isArray(r.media) && r.media[0] ? r.media[0].MediaUrl : null,
+    };
+  }
+
+  // 11. Check if listing 290647 (from featured) has media
+  const { data: specificListing } = await supabase
+    .from('graphql_listings')
+    .select('listing_id, preferred_photo, media, status')
+    .eq('listing_id', '290647')
+    .limit(1);
+
+  if (specificListing?.[0]) {
+    const r = specificListing[0];
+    diagnostics.listing290647 = {
+      listing_id: r.listing_id,
+      status: r.status,
+      has_media: r.media !== null,
+      media_type: r.media === null ? 'null' : Array.isArray(r.media) ? `array[${r.media.length}]` : typeof r.media,
+    };
+  }
+
   return NextResponse.json(diagnostics);
 }
