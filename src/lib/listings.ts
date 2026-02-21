@@ -378,8 +378,14 @@ export async function getListings(
     query = query.lte('square_feet', filters.maxSqft);
   }
   if (filters.keyword) {
-    // Search by MLS number (listing_id) or address
-    query = query.or(`listing_id.ilike.%${filters.keyword}%,address.ilike.%${filters.keyword}%`);
+    // Use exact match for MLS# (fast) and prefix match for address to avoid
+    // full table scan timeouts on 100K+ rows with ILIKE %...%
+    const isNumeric = /^\d+$/.test(filters.keyword.trim());
+    if (isNumeric) {
+      query = query.eq('listing_id', filters.keyword.trim());
+    } else {
+      query = query.ilike('address', `%${filters.keyword}%`);
+    }
   }
 
   // Filter by team agent MLS IDs, names, and/or office names (Our Listings Only)
