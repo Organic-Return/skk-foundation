@@ -327,7 +327,7 @@ export default function RCSothebysPropertyCarousel({
         {/* Prev Arrow — positioned at left edge of active card */}
         <button
           onClick={handlePrev}
-          className="absolute z-20 top-[28%] -translate-y-1/2 hover:scale-105 transition-transform duration-200"
+          className="absolute z-20 top-[37%] -translate-y-1/2 hover:scale-105 transition-transform duration-200"
           style={{ left: 'calc(20% - 12px)', }}
           aria-label="Previous property"
         >
@@ -339,7 +339,7 @@ export default function RCSothebysPropertyCarousel({
         {/* Next Arrow — positioned at right edge of active card */}
         <button
           onClick={handleNext}
-          className="absolute z-20 top-[28%] -translate-y-1/2 hover:scale-105 transition-transform duration-200"
+          className="absolute z-20 top-[37%] -translate-y-1/2 hover:scale-105 transition-transform duration-200"
           style={{ right: 'calc(20% - 12px)', }}
           aria-label="Next property"
         >
