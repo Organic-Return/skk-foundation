@@ -371,7 +371,7 @@ export default function RCSothebysPropertyCarousel({
         <button
           onClick={handlePrev}
           className="absolute z-20 top-[42%] -translate-y-1/2 hover:scale-105 transition-transform duration-200"
-          style={{ left: 'calc(20% - 42px)', }}
+          style={{ left: 'calc(20% - 12px)', }}
           aria-label="Previous property"
         >
           <div className="w-[36px] h-[72px] md:w-[48px] md:h-[96px] lg:w-[60px] lg:h-[120px]">
@@ -383,7 +383,7 @@ export default function RCSothebysPropertyCarousel({
         <button
           onClick={handleNext}
           className="absolute z-20 top-[42%] -translate-y-1/2 hover:scale-105 transition-transform duration-200"
-          style={{ right: 'calc(20% - 42px)', }}
+          style={{ right: 'calc(20% - 12px)', }}
           aria-label="Next property"
         >
           <div className="w-[36px] h-[72px] md:w-[48px] md:h-[96px] lg:w-[60px] lg:h-[120px]">
