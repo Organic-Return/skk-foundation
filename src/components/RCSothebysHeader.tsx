@@ -199,9 +199,7 @@ export default function RCSothebysHeader({
                   <Link
                     href={item.url || '#'}
                     target={item.openInNewTab ? '_blank' : undefined}
-                    className={`text-[var(--rc-navy)] rc-nav py-2 border-b-2 hover:border-[var(--rc-gold)] hover:text-[var(--rc-gold)] transition-all duration-300 ${
-                      pathname === item.url ? 'border-[var(--rc-gold)]' : 'border-transparent'
-                    }`}
+                    className="text-[var(--rc-navy)] rc-nav py-2 border-b-2 border-transparent hover:border-[var(--rc-gold)] hover:text-[var(--rc-gold)] transition-all duration-300"
                   >
                     {item.label}
                   </Link>
