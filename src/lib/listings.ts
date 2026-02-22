@@ -484,15 +484,6 @@ export async function getListings(
   const total = count || 0;
   const listings = (data || []).map(transformListing);
 
-  // Debug logging for count mismatch investigation
-  console.log(`[Listings] Page ${page}: count=${count}, data.length=${data?.length || 0}, filters:`, {
-    city: filters.city || 'all',
-    status: filters.status || 'all',
-    excludedStatuses: filters.excludedStatuses,
-    excludedPropertyTypes: filters.excludedPropertyTypes?.length || 0,
-    allowedCities: filters.allowedCities?.length || 0,
-  });
-
   return {
     listings,
     total,

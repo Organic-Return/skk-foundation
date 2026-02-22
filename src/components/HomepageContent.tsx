@@ -1,5 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+
 // Classic template components
 import HeroWithSearch from '@/components/HeroWithSearch';
 import TeamSection from '@/components/TeamSection';
@@ -8,32 +10,32 @@ import ClassicFeaturedProperty from '@/components/ClassicFeaturedProperty';
 import FeaturedAspenProperties from '@/components/FeaturedAspenProperties';
 import CityStats from '@/components/CityStats';
 
-// RC Sotheby's template components
+// RC Sotheby's template components — hero eagerly loaded, rest lazy
 import RCSothebysHero from '@/components/RCSothebysHero';
-import RCSothebysPropertyCarousel from '@/components/RCSothebysPropertyCarousel';
-import RCSothebysAbout from '@/components/RCSothebysAbout';
-import RCSothebysInquirySection from '@/components/RCSothebysInquirySection';
+const RCSothebysPropertyCarousel = dynamic(() => import('@/components/RCSothebysPropertyCarousel'), { ssr: false });
+const RCSothebysAbout = dynamic(() => import('@/components/RCSothebysAbout'), { ssr: false });
+const RCSothebysInquirySection = dynamic(() => import('@/components/RCSothebysInquirySection'), { ssr: false });
 
 // Luxury template components
 import LuxuryHero from '@/components/LuxuryHero';
-import LuxuryPropertyCarousel from '@/components/LuxuryPropertyCarousel';
-import LuxuryAbout from '@/components/LuxuryAbout';
-import LuxuryQuoteBlock from '@/components/LuxuryQuoteBlock';
-import LuxuryCityStats from '@/components/LuxuryCityStats';
-import LuxuryFeaturedProperty from '@/components/LuxuryFeaturedProperty';
-import LuxuryCommunities from '@/components/LuxuryCommunities';
+const LuxuryPropertyCarousel = dynamic(() => import('@/components/LuxuryPropertyCarousel'), { ssr: false });
+const LuxuryAbout = dynamic(() => import('@/components/LuxuryAbout'), { ssr: false });
+const LuxuryQuoteBlock = dynamic(() => import('@/components/LuxuryQuoteBlock'), { ssr: false });
+const LuxuryCityStats = dynamic(() => import('@/components/LuxuryCityStats'), { ssr: false });
+const LuxuryFeaturedProperty = dynamic(() => import('@/components/LuxuryFeaturedProperty'), { ssr: false });
+const LuxuryCommunities = dynamic(() => import('@/components/LuxuryCommunities'), { ssr: false });
 
 // Modern template components
 import ModernHero from '@/components/ModernHero';
-import ModernAbout from '@/components/ModernAbout';
-import ModernQuoteBlock from '@/components/ModernQuoteBlock';
-import ModernFeaturedProperty from '@/components/ModernFeaturedProperty';
-import ModernPropertyCarousel from '@/components/ModernPropertyCarousel';
-import ModernCityStats from '@/components/ModernCityStats';
-import ModernAgentListingsGallery from '@/components/ModernAgentListingsGallery';
-import ModernNewestListings from '@/components/ModernNewestListings';
-import ModernCommunities from '@/components/ModernCommunities';
-import ModernContactCTA from '@/components/ModernContactCTA';
+const ModernAbout = dynamic(() => import('@/components/ModernAbout'), { ssr: false });
+const ModernQuoteBlock = dynamic(() => import('@/components/ModernQuoteBlock'), { ssr: false });
+const ModernFeaturedProperty = dynamic(() => import('@/components/ModernFeaturedProperty'), { ssr: false });
+const ModernPropertyCarousel = dynamic(() => import('@/components/ModernPropertyCarousel'), { ssr: false });
+const ModernCityStats = dynamic(() => import('@/components/ModernCityStats'), { ssr: false });
+const ModernAgentListingsGallery = dynamic(() => import('@/components/ModernAgentListingsGallery'), { ssr: false });
+const ModernNewestListings = dynamic(() => import('@/components/ModernNewestListings'), { ssr: false });
+const ModernCommunities = dynamic(() => import('@/components/ModernCommunities'), { ssr: false });
+const ModernContactCTA = dynamic(() => import('@/components/ModernContactCTA'), { ssr: false });
 
 interface HomepageContentProps {
   // Template selection from Sanity
@@ -297,6 +299,7 @@ export default function HomepageContent({
             officeName={officeName}
             minPrice={heroMinPrice}
             sortBy={heroSortBy}
+            initialProperties={heroProperties}
           />
         )}
 

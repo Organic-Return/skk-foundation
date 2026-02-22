@@ -29,6 +29,7 @@ interface RCSothebysPropertyCarouselProps {
   officeName?: string;
   minPrice?: number;
   sortBy?: 'date' | 'price';
+  initialProperties?: Property[];
 }
 
 function formatPrice(price: number): string {
@@ -89,12 +90,14 @@ export default function RCSothebysPropertyCarousel({
   officeName,
   minPrice,
   sortBy,
+  initialProperties,
 }: RCSothebysPropertyCarouselProps) {
   const resolvedCities = cities || ['Aspen'];
+  const hasInitial = initialProperties && initialProperties.length > 0;
 
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<Property[]>(hasInitial ? initialProperties : []);
   const [activeIndex, setActiveIndex] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!hasInitial);
   const [isMobile, setIsMobile] = useState(false);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -110,6 +113,7 @@ export default function RCSothebysPropertyCarousel({
   }, []);
 
   useEffect(() => {
+    if (hasInitial) return; // Skip fetch when server-provided data exists
     async function fetchProperties() {
       try {
         const citiesParam = resolvedCities.length > 1
@@ -287,6 +291,12 @@ export default function RCSothebysPropertyCarousel({
             {properties.map((property, index) => {
               const isActive = index === activeIndex;
               const photo = property.photos?.[0] || null;
+              // Only render images for slides within ±2 of active (handles wrapping)
+              const dist = Math.min(
+                Math.abs(index - activeIndex),
+                properties.length - Math.abs(index - activeIndex)
+              );
+              const shouldRenderImage = dist <= 2;
 
               return (
                 <div
@@ -305,7 +315,7 @@ export default function RCSothebysPropertyCarousel({
                   >
                     {/* Photo */}
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      {photo ? (
+                      {shouldRenderImage && photo ? (
                         <Image
                           src={photo}
                           alt={property.address || 'Property'}

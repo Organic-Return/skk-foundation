@@ -48,9 +48,6 @@ interface Coordinates {
 export async function fetchDemographicData(coordinates: Coordinates): Promise<CensusData | null> {
   const apiKey = await getCensusApiKey();
 
-  console.log('🔍 Fetching demographic data for coordinates:', coordinates);
-  console.log('🔑 API Key configured:', apiKey ? 'Yes' : 'No');
-
   if (!apiKey) {
     console.warn('⚠️  CENSUS_API_KEY not configured. Demographic data will not be fetched.');
     return null;
@@ -59,11 +56,9 @@ export async function fetchDemographicData(coordinates: Coordinates): Promise<Ce
   try {
     // First, get the FIPS code (state and county) from coordinates using Census Geocoder
     const geocodeUrl = `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${coordinates.lng}&y=${coordinates.lat}&benchmark=Public_AR_Current&vintage=Current_Current&format=json`;
-    console.log('📍 Geocoding URL:', geocodeUrl);
 
     const geocodeResponse = await fetch(geocodeUrl);
     const geocodeData = await geocodeResponse.json();
-    console.log('📊 Geocode response:', JSON.stringify(geocodeData, null, 2));
 
     if (!geocodeData.result?.geographies?.['Census Tracts']?.[0]) {
       console.error('❌ Unable to geocode coordinates');
@@ -107,14 +102,10 @@ export async function fetchDemographicData(coordinates: Coordinates): Promise<Ce
     ].join(',');
 
     const censusUrl = `https://api.census.gov/data/2022/acs/acs5?get=${variables}&for=tract:${tractCode}&in=state:${state}+county:${county}&key=${apiKey}`;
-    console.log('📊 Census API URL:', censusUrl.replace(apiKey, 'API_KEY_HIDDEN'));
 
     const censusResponse = await fetch(censusUrl);
     const responseText = await censusResponse.text();
-    console.log('📥 Census API response text:', responseText.substring(0, 200));
-
     const censusData = JSON.parse(responseText);
-    console.log('✅ Census data received, rows:', censusData?.length);
 
     if (!censusData || censusData.length < 2) {
       console.error('❌ No census data returned');
@@ -210,7 +201,6 @@ export async function fetchDemographicData(coordinates: Coordinates): Promise<Ce
       medianGrossRent,
     };
 
-    console.log('✅ Successfully fetched demographic data:', result);
     return result;
   } catch (error) {
     console.error('❌ Error fetching demographic data:', error);

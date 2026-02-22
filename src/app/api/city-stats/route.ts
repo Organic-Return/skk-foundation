@@ -420,21 +420,25 @@ export async function GET(request: Request) {
 
     // If specific cities are requested, compute stats for those cities directly
     // This ensures cities outside the MLS config are still queryable
+    const cacheHeaders = {
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+    };
+
     if (cityFilter) {
       const result = await computeCityStats(propertyFilter, [cityFilter]);
-      return NextResponse.json(result);
+      return NextResponse.json(result, { headers: cacheHeaders });
     }
 
     if (citiesFilter) {
       const requestedCities = citiesFilter.split(',').map(c => c.trim());
       const result = await computeCityStats(propertyFilter, requestedCities);
-      return NextResponse.json(result);
+      return NextResponse.json(result, { headers: cacheHeaders });
     }
 
     // No specific cities requested — use cached default (MLS config cities)
     const cachedFn = getCachedCityStats(propertyFilter);
     const result = await cachedFn();
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: cacheHeaders });
   } catch (error) {
     console.error('Error in city-stats API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

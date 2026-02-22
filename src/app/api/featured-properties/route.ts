@@ -31,7 +31,11 @@ export async function GET(request: NextRequest) {
       properties = await getNewestHighPricedByCity('Aspen', limit, filterOptions);
     }
 
-    return NextResponse.json({ properties });
+    return NextResponse.json({ properties }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('Error fetching featured properties:', error);
     return NextResponse.json({ properties: [], error: 'Failed to fetch properties' }, { status: 500 });
