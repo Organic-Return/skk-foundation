@@ -200,7 +200,7 @@ export default function RCSothebysHero({
             {/* City Tabs */}
             <div className="max-w-[1400px] mx-auto px-4 md:px-8">
               <div className="relative flex items-center justify-center gap-3 md:gap-6 lg:gap-10 pb-0 mb-0 flex-wrap">
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-white" />
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white" />
                 <button
                   onClick={() => { setActiveCity(null); setLocation(''); }}
                   className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
@@ -349,7 +349,7 @@ export default function RCSothebysHero({
           {/* City Tabs */}
           <div className="max-w-[1400px] mx-auto px-4 md:px-8">
             <div className="relative flex items-center justify-center gap-3 md:gap-6 lg:gap-10 pb-0 mb-0 flex-wrap">
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-white" />
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white" />
               <button
                 onClick={() => { setActiveCity(null); setLocation(''); }}
                 className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
