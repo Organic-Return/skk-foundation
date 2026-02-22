@@ -32,6 +32,9 @@ interface RCSothebysPropertyCarouselProps {
   initialProperties?: Property[];
 }
 
+// Tiny 4x3 neutral blur placeholder for property images
+const BLUR_DATA_URL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAADAAQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAFRABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AhgA//9k=';
+
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -322,8 +325,10 @@ export default function RCSothebysPropertyCarousel({
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 100vw, 50vw"
-                          quality={90}
+                          quality={isActive ? 90 : 75}
                           priority={index < 3}
+                          placeholder="blur"
+                          blurDataURL={BLUR_DATA_URL}
                         />
                       ) : (
                         <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">

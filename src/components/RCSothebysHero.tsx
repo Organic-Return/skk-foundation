@@ -29,6 +29,8 @@ interface RCSothebysHeroProps {
   initialProperties?: Property[];
 }
 
+const BLUR_DATA_URL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAADAAQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAFRABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AhgA//9k=';
+
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -248,25 +250,32 @@ export default function RCSothebysHero({
 
   return (
     <div className="relative w-full overflow-hidden" style={{ height: 'calc(80vh + 120px)' }}>
-      {/* Property Images — crossfade slideshow */}
+      {/* Property Images — crossfade slideshow (only render ±1 of active to save bandwidth) */}
       {filteredProperties.map((property, index) => {
         const photo = property.photos?.[0] || null;
+        const dist = Math.min(
+          Math.abs(index - activeIndex),
+          filteredProperties.length - Math.abs(index - activeIndex)
+        );
+        const shouldRender = dist <= 1;
         return (
           <div
             key={property.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
+            className={`absolute inset-0 transition-opacity duration-700 ${
               index === activeIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}
           >
-            {photo ? (
+            {shouldRender && photo ? (
               <Image
                 src={photo}
                 alt={property.address || 'Featured property'}
                 fill
                 className="object-cover"
                 sizes="100vw"
-                quality={90}
+                quality={85}
                 priority={index === 0}
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
               />
             ) : (
               <div className="w-full h-full bg-[var(--rc-navy)]" />

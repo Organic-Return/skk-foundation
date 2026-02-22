@@ -440,6 +440,25 @@ address {
   animation: scrollBounce 2s ease-in-out infinite;
 }
 
+/* Disable heavy animations on mobile for battery/performance */
+@media (max-width: 768px) {
+  .animate-ken-burns {
+    animation: none;
+    transform: scale(1);
+  }
+  .animate-scroll-bounce {
+    animation: none;
+  }
+}
+
+/* Respect user's reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ken-burns,
+  .animate-scroll-bounce {
+    animation: none;
+  }
+}
+
 /* Gallery carousel — responsive slide width */
 .gallery-carousel-track {
   --gallery-slide-width: 100%;

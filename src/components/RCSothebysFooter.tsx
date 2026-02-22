@@ -65,7 +65,7 @@ export default function RCSothebysFooter({
   const currentYear = new Date().getFullYear();
 
   const footerBgUrl = footer?.portraitImage
-    ? urlFor(footer.portraitImage).width(1200).height(900).quality(85).url()
+    ? urlFor(footer.portraitImage).width(800).height(600).quality(80).url()
     : FALLBACK_FOOTER_BG;
 
   const brokerageLogoUrl = footer?.brokerageLogo
@@ -94,7 +94,8 @@ export default function RCSothebysFooter({
               alt=""
               fill
               className="object-cover"
-              sizes="100vw"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              loading="lazy"
             />
           </div>
 

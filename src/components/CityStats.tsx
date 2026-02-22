@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
 interface MonthlyData {
@@ -60,7 +60,22 @@ export default function CityStats({
   const [propertyFilter, setPropertyFilter] = useState<PropertyFilter>('all');
   const [isLoading, setIsLoading] = useState(true);
 
+  const statsCache = useRef<Record<string, { cities: string[]; stats: CityStatsData[] }>>({});
+
   const fetchStats = useCallback(async (filter: PropertyFilter) => {
+    // Return cached data if available
+    const cacheKey = `${filter}-${configuredCities?.join(',') || 'all'}`;
+    if (statsCache.current[cacheKey]) {
+      const cached = statsCache.current[cacheKey];
+      setCities(cached.cities);
+      setStats(cached.stats);
+      if (cached.cities.length > 0) {
+        setActiveCity((prev) => prev && cached.cities.includes(prev) ? prev : cached.cities[0]);
+      }
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Build URL with optional cities parameter
@@ -76,12 +91,16 @@ export default function CityStats({
       let resultStats = data.stats || [];
 
       if (configuredCities && configuredCities.length > 0) {
-        // Filter to only include configured cities and maintain the configured order
+        // Use Map for O(1) lookup instead of find()
+        const statsMap = new Map(resultStats.map((s: CityStatsData) => [s.city, s]));
         resultCities = configuredCities.filter(city => resultCities.includes(city));
         resultStats = configuredCities
-          .map(city => resultStats.find((s: CityStatsData) => s.city === city))
+          .map(city => statsMap.get(city))
           .filter((s): s is CityStatsData => s !== undefined);
       }
+
+      // Cache the result
+      statsCache.current[cacheKey] = { cities: resultCities, stats: resultStats };
 
       setCities(resultCities);
       setStats(resultStats);

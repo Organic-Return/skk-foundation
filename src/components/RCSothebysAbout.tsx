@@ -73,7 +73,7 @@ export default function RCSothebysAbout({
     >
       {/* Centered Section Title */}
       <div
-        className={`text-center mb-10 md:mb-14 transition-all duration-1000 ${
+        className={`text-center mb-10 md:mb-14 transition-all duration-700 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`}
       >
@@ -87,7 +87,7 @@ export default function RCSothebysAbout({
 
       {/* Gold Divider */}
       <div
-        className={`max-w-[1400px] mx-auto px-6 md:px-8 mb-10 md:mb-14 transition-all duration-1000 delay-200 ${
+        className={`max-w-[1400px] mx-auto px-6 md:px-8 mb-10 md:mb-14 transition-all duration-700 delay-200 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -99,7 +99,7 @@ export default function RCSothebysAbout({
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-14">
           {/* Image */}
           <div
-            className={`w-full lg:w-[55%] transition-all duration-1000 delay-200 ${
+            className={`w-full lg:w-[55%] transition-all duration-700 delay-200 ${
               isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
             }`}
           >
@@ -121,7 +121,7 @@ export default function RCSothebysAbout({
 
           {/* Content */}
           <div
-            className={`w-full lg:w-[45%] flex flex-col justify-center transition-all duration-1000 delay-400 ${
+            className={`w-full lg:w-[45%] flex flex-col justify-center transition-all duration-700 delay-200 ${
               isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
             }`}
           >
