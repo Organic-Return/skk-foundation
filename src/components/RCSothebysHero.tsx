@@ -216,7 +216,7 @@ export default function RCSothebysHero({
                 <div className="absolute bottom-0 left-0 right-0 h-px bg-white" />
                 <button
                   onClick={() => { setActiveCity(null); setLocation(''); }}
-                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
+                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b transition-all duration-300 ${
                     !location
                       ? 'text-white border-white font-bold'
                       : 'text-white border-transparent hover:text-white'
@@ -228,7 +228,7 @@ export default function RCSothebysHero({
                   <button
                     key={city}
                     onClick={() => { setActiveCity(city); setLocation(city); }}
-                    className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
+                    className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b transition-all duration-300 ${
                       location === city
                         ? 'text-white border-white font-bold'
                         : 'text-white border-transparent hover:text-white'
@@ -365,7 +365,7 @@ export default function RCSothebysHero({
               <div className="absolute bottom-0 left-0 right-0 h-px bg-white" />
               <button
                 onClick={() => { setActiveCity(null); setLocation(''); }}
-                className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
+                className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b transition-all duration-300 ${
                   !location
                     ? 'text-white border-white font-bold'
                     : 'text-white border-transparent hover:text-white'
@@ -377,7 +377,7 @@ export default function RCSothebysHero({
                 <button
                   key={city}
                   onClick={() => { setActiveCity(city); setLocation(city); }}
-                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b-2 transition-all duration-300 ${
+                  className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium pb-2 border-b transition-all duration-300 ${
                     location === city
                       ? 'text-white border-white font-bold'
                       : 'text-white border-transparent hover:text-white'
@@ -430,7 +430,7 @@ function SearchBar({
   return (
     <div className="bg-transparent">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
-        <div className="h-[3px] bg-white" />
+        <div className="h-px bg-white" />
       </div>
       <form
         onSubmit={onSearch}
