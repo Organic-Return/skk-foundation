@@ -152,7 +152,7 @@ export default function RCSothebysHeader({
                   <>
                     <button
                       onClick={() => toggleDropdown(index)}
-                      className="flex items-center gap-1 text-[var(--rc-navy)] rc-nav py-2 border-b-2 border-transparent hover:border-[var(--rc-gold)] hover:text-[var(--rc-gold)] transition-all duration-300"
+                      className="flex items-center gap-1 text-[var(--rc-navy)] rc-nav py-2 border-b-2 border-transparent hover:border-[var(--rc-navy)] transition-all duration-300"
                     >
                       {item.label}
                       <svg
@@ -228,7 +228,7 @@ export default function RCSothebysHeader({
                   <Link
                     href={item.url || '#'}
                     target={item.openInNewTab ? '_blank' : undefined}
-                    className="text-[var(--rc-navy)] rc-nav py-2 border-b-2 border-transparent hover:border-[var(--rc-gold)] hover:text-[var(--rc-gold)] transition-all duration-300"
+                    className="text-[var(--rc-navy)] rc-nav py-2 border-b-2 border-transparent hover:border-[var(--rc-navy)] transition-all duration-300"
                   >
                     {item.label}
                   </Link>
@@ -239,7 +239,7 @@ export default function RCSothebysHeader({
             {/* Search Icon */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="text-[var(--rc-navy)] p-1 hover:text-[var(--rc-gold)] transition-colors duration-300"
+              className="text-[var(--rc-navy)] p-1 hover:opacity-70 transition-opacity duration-300"
               aria-label="Search"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
