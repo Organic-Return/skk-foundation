@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import { getHomepageData, getAllCommunities } from '@/lib/homepage';
-import { getSettings } from '@/lib/settings';
+import { getSettings, getBranding } from '@/lib/settings';
 import { getNewestHighPricedByCities, getNewestHighPricedByCity } from '@/lib/listings';
 import StructuredData from '@/components/StructuredData';
 import HomepageContent from '@/components/HomepageContent';
@@ -42,9 +42,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const [homepage, settings] = await Promise.all([
+  const [homepage, settings, branding] = await Promise.all([
     getHomepageData(),
     getSettings(),
+    getBranding(),
   ]);
 
   const hero = homepage?.hero;
@@ -218,6 +219,8 @@ export default async function Home() {
           subtitle: homepage?.marketStatsSection?.subtitle,
           cities: homepage?.marketStatsSection?.cities,
         }}
+        logoUrl={branding?.logo?.asset?.url ? urlFor(branding.logo).width(420).url() : undefined}
+        logoAlt={branding?.logoAlt || settings?.title}
       />
     </>
   );

@@ -1019,8 +1019,8 @@ address {
   font-size: clamp(1.25rem, 3vw, 1.75rem);
 }
 
-/* RC Sotheby's links */
-.rcsothebys-template a {
+/* RC Sotheby's links — exclude button-styled links that set their own text color */
+.rcsothebys-template a:not([class*="text-white"]):not([class*="btn-rc"]) {
   color: var(--rc-navy);
 }
 

@@ -12,6 +12,7 @@ import CityStats from '@/components/CityStats';
 import RCSothebysHero from '@/components/RCSothebysHero';
 import RCSothebysPropertyCarousel from '@/components/RCSothebysPropertyCarousel';
 import RCSothebysAbout from '@/components/RCSothebysAbout';
+import RCSothebysInquirySection from '@/components/RCSothebysInquirySection';
 
 // Luxury template components
 import LuxuryHero from '@/components/LuxuryHero';
@@ -124,6 +125,10 @@ interface HomepageContentProps {
       enabled: boolean;
     }>;
   };
+
+  // Branding logo for sections that need it
+  logoUrl?: string;
+  logoAlt?: string;
 }
 
 export default function HomepageContent({
@@ -146,6 +151,8 @@ export default function HomepageContent({
   featuredPropertiesCarousel,
   featuredCommunities,
   marketStatsSection,
+  logoUrl,
+  logoAlt,
 }: HomepageContentProps) {
   // Extract enabled cities from market stats configuration
   const marketStatsCities = marketStatsSection?.cities
@@ -301,6 +308,12 @@ export default function HomepageContent({
             configuredCities={marketStatsCities.length > 0 ? marketStatsCities : undefined}
           />
         )}
+
+        {/* Inquiry Section */}
+        <RCSothebysInquirySection
+          logoUrl={logoUrl}
+          logoAlt={logoAlt}
+        />
 
         {/* Accolades Section */}
         {accolades?.enabled !== false && accolades?.items && accolades.items.length > 0 && (
