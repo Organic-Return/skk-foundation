@@ -8,6 +8,7 @@ import {
   getDistinctStatuses,
   getDistinctNeighborhoods,
   getNeighborhoodsByCity,
+  getNeighborhoodsByCities,
   formatPrice,
   type SortOption,
   type MLSProperty,
@@ -146,7 +147,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const status = params.status;
   const propertyType = params.type;
   const propertySubType = params.subtype;
-  const city = params.city;
+  const selectedCities = params.city ? params.city.split(',').map(c => c.trim()).filter(Boolean) : [];
   const neighborhood = params.neighborhood;
   const minPrice = params.minPrice ? parseInt(params.minPrice, 10) : undefined;
   const maxPrice = params.maxPrice ? parseInt(params.maxPrice, 10) : undefined;
@@ -172,8 +173,12 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     ),
   ]);
 
-  // Fetch neighborhoods filtered by city if a city is selected
-  const neighborhoods = city ? await getNeighborhoodsByCity(city) : allNeighborhoods;
+  // Fetch neighborhoods filtered by selected cities
+  const neighborhoods = selectedCities.length > 0
+    ? (selectedCities.length === 1
+        ? await getNeighborhoodsByCity(selectedCities[0])
+        : await getNeighborhoodsByCities(selectedCities))
+    : allNeighborhoods;
 
   // Get filter lists from MLS configuration
   const excludedPropertyTypes = [...getExcludedPropertyTypes(mlsConfig), 'Commercial Sale'];
@@ -210,7 +215,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     status,
     propertyType,
     propertySubType,
-    city,
+    cities: selectedCities.length > 0 ? selectedCities : undefined,
     neighborhood,
     minPrice,
     maxPrice,
@@ -238,7 +243,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   if (status) currentSearchParams.set('status', status);
   if (propertyType) currentSearchParams.set('type', propertyType);
   if (propertySubType) currentSearchParams.set('subtype', propertySubType);
-  if (city) currentSearchParams.set('city', city);
+  if (selectedCities.length > 0) currentSearchParams.set('city', selectedCities.join(','));
   if (neighborhood) currentSearchParams.set('neighborhood', neighborhood);
   if (minPrice) currentSearchParams.set('minPrice', minPrice.toString());
   if (maxPrice) currentSearchParams.set('maxPrice', maxPrice.toString());
@@ -262,7 +267,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               status={status}
               propertyType={propertyType}
               propertySubType={propertySubType}
-              city={city}
+              selectedCities={selectedCities}
               neighborhood={neighborhood}
               minPrice={minPrice}
               maxPrice={maxPrice}
@@ -287,7 +292,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           total={total}
           searchParams={currentSearchParams.toString()}
           currentSort={sort}
-          hasLocationFilter={!!(city || neighborhood)}
+          hasLocationFilter={!!(selectedCities.length > 0 || neighborhood)}
           template={settings?.template || 'classic'}
         />
       </div>

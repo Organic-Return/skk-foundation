@@ -101,7 +101,7 @@ export async function GET(request: Request) {
 
     // Test with minimal filters (just city + statuses + excludedPropertyTypes)
     const resultMinimal = await getListings(1, 5, {
-      city,
+      cities: [city],
       excludedPropertyTypes: ['Commercial Sale'],
       allowedStatuses,
     });
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
 
     // Test with full page filters
     const result = await getListings(1, 5, {
-      city,
+      cities: [city],
       excludedPropertyTypes,
       excludedPropertySubTypes,
       allowedCities,
@@ -138,7 +138,7 @@ export async function GET(request: Request) {
 
   // Also test adding filters one by one
   const result = await getListings(1, 5, {
-    city,
+    cities: [city],
     excludedPropertyTypes: ['Commercial Sale'],
     allowedStatuses,
   });

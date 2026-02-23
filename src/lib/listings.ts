@@ -314,7 +314,7 @@ export interface ListingsFilters {
   status?: string;
   propertyType?: string;      // Main property type (e.g., Residential, Commercial Sale)
   propertySubType?: string;   // Property subtype (e.g., Single Family Residence, Condominium)
-  city?: string;
+  cities?: string[];
   neighborhood?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -362,7 +362,7 @@ export async function getListings(
 
   let query = supabase
     .from('graphql_listings')
-    .select('*', { count: 'exact' });
+    .select('*', { count: 'estimated' });
 
   // Apply filters
   if (filters.status) {
@@ -376,8 +376,8 @@ export async function getListings(
     // Match against property_sub_type column
     query = query.eq('property_sub_type', filters.propertySubType);
   }
-  if (filters.city) {
-    query = query.ilike('city', `%${filters.city}%`);
+  if (filters.cities && filters.cities.length > 0) {
+    query = query.in('city', filters.cities);
   }
   if (filters.neighborhood) {
     // Search subdivision_name or mls_area_minor
@@ -482,7 +482,7 @@ export async function getListings(
   const { data, error, count } = await query.range(from, to);
 
   if (error) {
-    console.error('Error fetching listings:', error);
+    console.error('Error fetching listings:', error.code, error.message, error.details);
     return {
       listings: [],
       total: 0,
@@ -796,6 +796,40 @@ export function getNeighborhoodsByCity(city: string): Promise<string[]> {
 
       if (error) {
         console.error('Error fetching neighborhoods for city:', error);
+        break;
+      }
+      if (!data || data.length === 0) break;
+
+      data.forEach((d) => { if (d.subdivision_name) allNeighborhoods.add(d.subdivision_name); });
+      if (data.length < batchSize) break;
+      offset += batchSize;
+    }
+
+    return [...allNeighborhoods].sort();
+  });
+}
+
+export function getNeighborhoodsByCities(cities: string[]): Promise<string[]> {
+  const cacheKey = `neighborhoodsByCities:${[...cities].sort().join(',')}`;
+  return getCached(cacheKey, 5 * 60 * 1000, async () => {
+    if (!isSupabaseConfigured() || cities.length === 0) return [];
+
+    const allNeighborhoods = new Set<string>();
+    let offset = 0;
+    const batchSize = 1000;
+    const maxBatches = 5;
+
+    for (let batch = 0; batch < maxBatches; batch++) {
+      const { data, error } = await supabase
+        .from('graphql_listings')
+        .select('subdivision_name')
+        .in('city', cities)
+        .not('subdivision_name', 'is', null)
+        .order('subdivision_name')
+        .range(offset, offset + batchSize - 1);
+
+      if (error) {
+        console.error('Error fetching neighborhoods for cities:', error);
         break;
       }
       if (!data || data.length === 0) break;

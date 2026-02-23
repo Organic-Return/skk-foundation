@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface ListingFiltersProps {
@@ -9,7 +9,7 @@ interface ListingFiltersProps {
   status?: string;
   propertyType?: string;
   propertySubType?: string;
-  city?: string;
+  selectedCities?: string[];
   neighborhood?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -31,7 +31,7 @@ export default function ListingFilters({
   status: initialStatus,
   propertyType: initialPropertyType,
   propertySubType: initialPropertySubType,
-  city: initialCity,
+  selectedCities: initialSelectedCities,
   neighborhood: initialNeighborhood,
   minPrice: initialMinPrice,
   maxPrice: initialMaxPrice,
@@ -52,7 +52,7 @@ export default function ListingFilters({
   const [status, setStatus] = useState(initialStatus || '');
   const [propertyType, setPropertyType] = useState(initialPropertyType || '');
   const [propertySubType, setPropertySubType] = useState(initialPropertySubType || '');
-  const [selectedCity, setSelectedCity] = useState(initialCity || '');
+  const [selectedCities, setSelectedCities] = useState<string[]>(initialSelectedCities || []);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState(initialNeighborhood || '');
   const [minPrice, setMinPrice] = useState(initialMinPrice?.toString() || '');
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice?.toString() || '');
@@ -64,13 +64,34 @@ export default function ListingFilters({
   const [neighborhoods, setNeighborhoods] = useState<string[]>(initialNeighborhoods);
   const [loadingNeighborhoods, setLoadingNeighborhoods] = useState(false);
 
+  // City dropdown state
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close city dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(e.target as Node)) {
+        setCityDropdownOpen(false);
+        setCitySearch('');
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Stable key for comparing selectedCities in effects
+  const selectedCitiesKey = JSON.stringify(selectedCities);
+  const initialSelectedCitiesKey = JSON.stringify(initialSelectedCities || []);
+
   // Sync state when URL params change (e.g., on back navigation)
   useEffect(() => {
     setKeyword(initialKeyword || '');
     setStatus(initialStatus || '');
     setPropertyType(initialPropertyType || '');
     setPropertySubType(initialPropertySubType || '');
-    setSelectedCity(initialCity || '');
+    setSelectedCities(initialSelectedCities || []);
     setSelectedNeighborhood(initialNeighborhood || '');
     setMinPrice(initialMinPrice?.toString() || '');
     setMaxPrice(initialMaxPrice?.toString() || '');
@@ -82,7 +103,7 @@ export default function ListingFilters({
     initialStatus,
     initialPropertyType,
     initialPropertySubType,
-    initialCity,
+    initialSelectedCitiesKey,
     initialNeighborhood,
     initialMinPrice,
     initialMaxPrice,
@@ -99,7 +120,7 @@ export default function ListingFilters({
     if (status) params.set('status', status);
     if (propertyType) params.set('type', propertyType);
     if (propertySubType) params.set('subtype', propertySubType);
-    if (selectedCity) params.set('city', selectedCity);
+    if (selectedCities.length > 0) params.set('city', selectedCities.join(','));
     if (selectedNeighborhood) params.set('neighborhood', selectedNeighborhood);
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
@@ -109,19 +130,19 @@ export default function ListingFilters({
 
     const queryString = params.toString();
     router.push(queryString ? `/listings?${queryString}` : '/listings');
-  }, [keyword, status, propertyType, propertySubType, selectedCity, selectedNeighborhood, minPrice, maxPrice, beds, baths, ourTeam, router]);
+  }, [keyword, status, propertyType, propertySubType, selectedCitiesKey, selectedNeighborhood, minPrice, maxPrice, beds, baths, ourTeam, router]);
 
-  // Fetch neighborhoods when city changes
+  // Fetch neighborhoods when selected cities change
   useEffect(() => {
     async function fetchNeighborhoods() {
-      if (!selectedCity) {
+      if (selectedCities.length === 0) {
         setNeighborhoods(initialNeighborhoods);
         return;
       }
 
       setLoadingNeighborhoods(true);
       try {
-        const response = await fetch(`/api/neighborhoods?city=${encodeURIComponent(selectedCity)}`);
+        const response = await fetch(`/api/neighborhoods?city=${encodeURIComponent(selectedCities.join(','))}`);
         const data = await response.json();
         setNeighborhoods(data.neighborhoods || []);
         // Clear neighborhood selection if it's not in the new list
@@ -137,18 +158,23 @@ export default function ListingFilters({
     }
 
     fetchNeighborhoods();
-  }, [selectedCity, initialNeighborhoods, selectedNeighborhood]);
+  }, [selectedCitiesKey, initialNeighborhoods, selectedNeighborhood]);
 
   // Auto-submit when select filters change (immediate)
   const handleSelectChange = (setter: (value: string) => void) => (e: React.ChangeEvent<HTMLSelectElement>) => {
     setter(e.target.value);
   };
 
-  // For city, we need to handle it specially to trigger navigation after neighborhoods load
-  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newCity = e.target.value;
-    setSelectedCity(newCity);
-    // Clear neighborhood when city changes
+  // Toggle a city in the multi-select
+  const handleCityToggle = (city: string) => {
+    setSelectedCities(prev => {
+      if (prev.includes(city)) {
+        return prev.filter(c => c !== city);
+      } else {
+        return [...prev, city];
+      }
+    });
+    // Clear neighborhood when cities change
     setSelectedNeighborhood('');
   };
 
@@ -159,7 +185,7 @@ export default function ListingFilters({
       status === (initialStatus || '') &&
       propertyType === (initialPropertyType || '') &&
       propertySubType === (initialPropertySubType || '') &&
-      selectedCity === (initialCity || '') &&
+      selectedCitiesKey === initialSelectedCitiesKey &&
       selectedNeighborhood === (initialNeighborhood || '') &&
       beds === (initialBeds?.toString() || '') &&
       baths === (initialBaths?.toString() || '') &&
@@ -168,7 +194,7 @@ export default function ListingFilters({
     if (!isInitialState) {
       navigateWithFilters();
     }
-  }, [status, propertyType, propertySubType, selectedCity, selectedNeighborhood, beds, baths, ourTeam]);
+  }, [status, propertyType, propertySubType, selectedCitiesKey, selectedNeighborhood, beds, baths, ourTeam]);
 
   // Debounced navigation for text inputs (keyword, price)
   useEffect(() => {
@@ -185,14 +211,14 @@ export default function ListingFilters({
     return () => clearTimeout(timer);
   }, [keyword, minPrice, maxPrice]);
 
-  const hasFilters = keyword || status || propertyType || propertySubType || selectedCity || selectedNeighborhood || minPrice || maxPrice || beds || baths || ourTeam;
+  const hasFilters = keyword || status || propertyType || propertySubType || selectedCities.length > 0 || selectedNeighborhood || minPrice || maxPrice || beds || baths || ourTeam;
 
   const handleClearFilters = () => {
     setKeyword('');
     setStatus('');
     setPropertyType('');
     setPropertySubType('');
-    setSelectedCity('');
+    setSelectedCities([]);
     setSelectedNeighborhood('');
     setMinPrice('');
     setMaxPrice('');
@@ -201,6 +227,27 @@ export default function ListingFilters({
     setOurTeam(false);
     router.push('/listings');
   };
+
+  // City dropdown label
+  const cityButtonLabel = selectedCities.length === 0
+    ? 'All Cities'
+    : selectedCities.length === 1
+      ? selectedCities[0]
+      : `${selectedCities.length} Cities`;
+
+  // Filter cities by search term
+  const filteredDropdownCities = citySearch
+    ? cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase()))
+    : cities;
+
+  // Neighborhood placeholder text
+  const neighborhoodPlaceholder = loadingNeighborhoods
+    ? 'Loading...'
+    : selectedCities.length === 1
+      ? `Neighborhoods in ${selectedCities[0]}`
+      : selectedCities.length > 1
+        ? `Neighborhoods in ${selectedCities.length} cities`
+        : 'All Neighborhoods';
 
   return (
     <div className="flex flex-wrap gap-4 items-center">
@@ -255,21 +302,73 @@ export default function ListingFilters({
         ))}
       </select>
 
-      {/* City Filter */}
-      <select
-        value={selectedCity}
-        onChange={handleCityChange}
-        className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">All Cities</option>
-        {cities.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
+      {/* City Multi-Select Filter */}
+      <div ref={cityDropdownRef} className="relative">
+        <button
+          type="button"
+          onClick={() => {
+            setCityDropdownOpen(!cityDropdownOpen);
+            if (!cityDropdownOpen) setCitySearch('');
+          }}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 bg-white text-left min-w-[140px] flex items-center justify-between gap-2"
+        >
+          <span className="truncate">{cityButtonLabel}</span>
+          <svg className="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={cityDropdownOpen ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+          </svg>
+        </button>
 
-      {/* Neighborhood Filter - Dynamic based on city */}
+        {cityDropdownOpen && (
+          <div className="absolute z-50 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg">
+            {/* Search input */}
+            <div className="p-2 border-b border-gray-200">
+              <input
+                type="text"
+                value={citySearch}
+                onChange={(e) => setCitySearch(e.target.value)}
+                placeholder="Search cities..."
+                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500"
+                autoFocus
+              />
+            </div>
+            {/* Selected cities summary + clear */}
+            {selectedCities.length > 0 && (
+              <div className="px-3 py-1.5 border-b border-gray-200 flex items-center justify-between">
+                <span className="text-xs text-gray-500">{selectedCities.length} selected</span>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedCities([]); setSelectedNeighborhood(''); }}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+            {/* City checkboxes */}
+            <div className="max-h-60 overflow-y-auto">
+              {filteredDropdownCities.map((city) => (
+                <label
+                  key={city}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCities.includes(city)}
+                    onChange={() => handleCityToggle(city)}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  {city}
+                </label>
+              ))}
+              {filteredDropdownCities.length === 0 && (
+                <div className="px-3 py-2 text-sm text-gray-500">No cities found</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Neighborhood Filter - Dynamic based on selected cities */}
       {neighborhoods.length > 0 ? (
         <select
           value={selectedNeighborhood}
@@ -277,9 +376,7 @@ export default function ListingFilters({
           disabled={loadingNeighborhoods}
           className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
         >
-          <option value="">
-            {loadingNeighborhoods ? 'Loading...' : selectedCity ? `Neighborhoods in ${selectedCity}` : 'All Neighborhoods'}
-          </option>
+          <option value="">{neighborhoodPlaceholder}</option>
           {neighborhoods.map((n) => (
             <option key={n} value={n}>
               {n}
@@ -291,7 +388,7 @@ export default function ListingFilters({
           type="text"
           value={selectedNeighborhood}
           onChange={(e) => setSelectedNeighborhood(e.target.value)}
-          placeholder={selectedCity ? `Search in ${selectedCity}...` : 'Search neighborhood...'}
+          placeholder={selectedCities.length > 0 ? `Search in ${selectedCities.length === 1 ? selectedCities[0] : selectedCities.length + ' cities'}...` : 'Search neighborhood...'}
           className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
         />
       )}
