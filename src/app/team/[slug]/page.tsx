@@ -126,11 +126,11 @@ export default async function TeamMemberPage({ params }: Props) {
   return (
     <main className="min-h-screen">
       {/* Hero Gallery (RC with active listings) or Standard Hero */}
-      {showHeroGallery ? (
-        <>
-          <AgentHeroGallery listings={heroListings} />
+      {/* RC Hero Gallery (only when agent has active listings with photos) */}
+      {showHeroGallery && <AgentHeroGallery listings={heroListings} />}
 
-          {/* Agent Profile Section — photo left, info right */}
+      {/* RC Agent Profile — always uses side-by-side layout (photo left, info right) */}
+      {isRC ? (
           <section className="rc-inverted bg-[var(--rc-navy)] py-16 md:py-20">
             <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-16">
               <div className="flex flex-col md:flex-row gap-10 md:gap-14">
@@ -261,10 +261,9 @@ export default async function TeamMemberPage({ params }: Props) {
               )}
             </div>
           </section>
-        </>
       ) : (
       <>
-      <section className={`relative py-16 md:py-24 ${isRC ? 'rc-inverted bg-[var(--rc-navy)]' : 'bg-[var(--color-navy)]'}`}>
+      <section className="relative py-16 md:py-24 bg-[var(--color-navy)]">
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
           {/* Breadcrumb */}
           <div className="mb-8 text-center">
@@ -272,8 +271,8 @@ export default async function TeamMemberPage({ params }: Props) {
               Home
             </Link>
             <span className="text-white/30 mx-2">/</span>
-            <Link href={isRC ? '/agents' : '/team'} className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
-              {isRC ? 'Agents' : 'Team'}
+            <Link href="/team" className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
+              Team
             </Link>
             <span className="text-white/30 mx-2">/</span>
             <span className="text-white/80 text-sm font-light">{member.name}</span>
@@ -281,28 +280,6 @@ export default async function TeamMemberPage({ params }: Props) {
 
           <div className="flex flex-col items-center">
             {/* Photo */}
-            {isRC ? (
-              <div
-                className="relative w-[225px] md:w-[300px] overflow-hidden mb-8 bg-[var(--rc-navy)]/50"
-                style={{ aspectRatio: '450 / 560' }}
-              >
-                {member.image ? (
-                  <Image
-                    src={urlFor(member.image).width(450).height(560).url()}
-                    alt={member.name}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[var(--rc-brown)]/30">
-                    <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            ) : (
               <div className="relative w-40 h-40 md:w-52 md:h-52 rounded-full overflow-hidden mb-8 bg-[#f0f0f0] dark:bg-gray-800 border-4 border-[var(--color-gold)]/30">
                 {member.image ? (
                   <Image
@@ -320,21 +297,13 @@ export default async function TeamMemberPage({ params }: Props) {
                   </div>
                 )}
               </div>
-            )}
 
             {/* Name & Title */}
-            <h1
-              className={`text-white mb-3 text-center ${
-                isRC
-                  ? 'text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em]'
-                  : 'font-serif'
-              }`}
-              style={isRC ? { fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em' } : undefined}
-            >
+            <h1 className="text-white mb-3 text-center font-serif">
               {member.name}
             </h1>
             {member.title && (
-              <p className={`text-lg font-light mb-4 ${isRC ? 'text-[var(--rc-gold)]' : 'text-[var(--color-gold)]'}`}>
+              <p className="text-lg font-light mb-4 text-[var(--color-gold)]">
                 {member.title}
               </p>
             )}
@@ -389,24 +358,13 @@ export default async function TeamMemberPage({ params }: Props) {
 
       {/* Bio Section */}
       {member.bio && (
-        <section className={`py-16 md:py-24 ${isRC ? 'rc-inverted bg-[var(--rc-navy)]' : 'bg-white dark:bg-[#1a1a1a]'}`}>
+        <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a]">
           <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
-            <h2
-              className={
-                isRC
-                  ? 'text-2xl md:text-3xl font-light uppercase tracking-[0.08em] text-white mb-6'
-                  : 'text-2xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6'
-              }
-              style={isRC ? { fontFamily: 'var(--font-figtree), Figtree, sans-serif' } : undefined}
-            >
+            <h2 className="text-2xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6">
               About {member.name.split(' ')[0]}
             </h2>
             <div
-              className={`prose prose-lg max-w-none font-light leading-relaxed ${
-                isRC
-                  ? '[&_*]:text-white/80 [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h4]:text-white [&_strong]:text-white [&_a]:!text-[var(--rc-gold)] [&_a]:underline hover:[&_a]:opacity-80'
-                  : 'dark:prose-invert text-[#4a4a4a] dark:text-gray-300 [&_a]:text-[var(--color-gold)] [&_a]:underline hover:[&_a]:opacity-80'
-              }`}
+              className="prose prose-lg max-w-none font-light leading-relaxed dark:prose-invert text-[#4a4a4a] dark:text-gray-300 [&_a]:text-[var(--color-gold)] [&_a]:underline hover:[&_a]:opacity-80"
               dangerouslySetInnerHTML={{ __html: member.bio }}
             />
           </div>

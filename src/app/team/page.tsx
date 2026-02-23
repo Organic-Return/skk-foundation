@@ -71,7 +71,7 @@ export default async function TeamPage() {
       <section
         className={
           isRC
-            ? "bg-[var(--rc-navy)] py-16 md:py-24"
+            ? "rc-inverted bg-[var(--rc-navy)] py-16 md:py-24"
             : "bg-[var(--color-navy,#002349)] py-16 md:py-24"
         }
       >

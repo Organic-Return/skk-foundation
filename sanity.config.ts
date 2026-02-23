@@ -45,10 +45,19 @@ export default defineConfig({
                   .schemaType('buyPage')
                   .documentId('buyPage')
               ),
+            // Relocation Page singleton
+            S.listItem()
+              .title('Relocation Page')
+              .icon(() => '🚚')
+              .child(
+                S.document()
+                  .schemaType('relocationPage')
+                  .documentId('relocationPage')
+              ),
             S.divider(),
             // All other document types
             ...S.documentTypeListItems().filter(
-              (listItem) => !['settings', 'homepage', 'buyPage'].includes(listItem.getId() || '')
+              (listItem) => !['settings', 'homepage', 'buyPage', 'relocationPage'].includes(listItem.getId() || '')
             ),
           ]),
     }),

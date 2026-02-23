@@ -30,16 +30,17 @@ function formatOpenHouseDate(dateStr: string | null): string {
 }
 
 function formatTime(t: string): string {
-  // Handle ISO timestamps like "2026-02-16 18:00:00+00" and simple "HH:MM" times
+  // RESO OpenHouse times are stored in UTC (e.g. "2026-02-16 20:00:00+00").
+  // Convert to the property's local timezone (Pacific for Tri-Cities WA).
   const date = new Date(t);
   if (!isNaN(date.getTime())) {
-    const hours = date.getUTCHours();
-    const minutes = date.getUTCMinutes();
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'America/Los_Angeles',
+    });
   }
-  // Fallback: try splitting by ':'
+  // Fallback for simple "HH:MM" strings
   const [hours, minutes] = t.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
   const displayHours = hours % 12 || 12;
