@@ -180,7 +180,7 @@ export default function TeamGrid({ members, isRC }: TeamGridProps) {
         {filtered.filter((m) => m.slug?.current).map((member) => (
           <Link
             key={member._id}
-            href={`/team/${member.slug.current}`}
+            href={`${isRC ? '/agents' : '/team'}/${member.slug.current}`}
             className={isRC ? 'group' : 'group text-center'}
           >
             {/* Photo */}

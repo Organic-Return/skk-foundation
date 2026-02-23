@@ -394,11 +394,12 @@ async function computeCityStats(propertyFilter: string, requestedCities?: string
   };
 }
 
-// Create cached version of the stats function for each property filter type
-const getCachedCityStats = (propertyFilter: string) => {
+// Create cached version of the stats function, keyed by filter + cities
+const getCachedCityStats = (propertyFilter: string, cities?: string[]) => {
+  const citiesKey = cities ? cities.sort().join(',') : 'default';
   return unstable_cache(
-    async () => computeCityStats(propertyFilter),
-    [`city-stats-${propertyFilter}`],
+    async () => computeCityStats(propertyFilter, cities),
+    [`city-stats-${propertyFilter}-${citiesKey}`],
     {
       revalidate: CACHE_DURATION,
       tags: [`city-stats`, `city-stats-${propertyFilter}`],
@@ -412,31 +413,24 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Get property type filter and optional city filters from query params
     const { searchParams } = new URL(request.url);
     const propertyFilter = searchParams.get('propertyType') || 'all';
-    const cityFilter = searchParams.get('city'); // Single city filter
-    const citiesFilter = searchParams.get('cities'); // Multiple cities filter (comma-separated)
+    const cityFilter = searchParams.get('city');
+    const citiesFilter = searchParams.get('cities');
 
-    // If specific cities are requested, compute stats for those cities directly
-    // This ensures cities outside the MLS config are still queryable
     const cacheHeaders = {
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
     };
 
+    // All paths now use the 24-hour server cache
+    let requestedCities: string[] | undefined;
     if (cityFilter) {
-      const result = await computeCityStats(propertyFilter, [cityFilter]);
-      return NextResponse.json(result, { headers: cacheHeaders });
+      requestedCities = [cityFilter];
+    } else if (citiesFilter) {
+      requestedCities = citiesFilter.split(',').map(c => c.trim());
     }
 
-    if (citiesFilter) {
-      const requestedCities = citiesFilter.split(',').map(c => c.trim());
-      const result = await computeCityStats(propertyFilter, requestedCities);
-      return NextResponse.json(result, { headers: cacheHeaders });
-    }
-
-    // No specific cities requested — use cached default (MLS config cities)
-    const cachedFn = getCachedCityStats(propertyFilter);
+    const cachedFn = getCachedCityStats(propertyFilter, requestedCities);
     const result = await cachedFn();
     return NextResponse.json(result, { headers: cacheHeaders });
   } catch (error) {

@@ -69,7 +69,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-  const canonicalUrl = `${baseUrl}/team/${slug}`;
+  const isRCTemplate = process.env.NEXT_PUBLIC_SITE_TEMPLATE === 'rcsothebys-custom';
+  const canonicalUrl = `${baseUrl}/${isRCTemplate ? 'agents' : 'team'}/${slug}`;
 
   return {
     title: `${member.name}${member.title ? ` | ${member.title}` : ''} | Klug Properties`,
@@ -271,8 +272,8 @@ export default async function TeamMemberPage({ params }: Props) {
               Home
             </Link>
             <span className="text-white/30 mx-2">/</span>
-            <Link href="/team" className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
-              Team
+            <Link href={isRC ? '/agents' : '/team'} className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
+              {isRC ? 'Agents' : 'Team'}
             </Link>
             <span className="text-white/30 mx-2">/</span>
             <span className="text-white/80 text-sm font-light">{member.name}</span>

@@ -614,7 +614,7 @@ export default function RCSothebysListingContent({
                 <div className="flex items-start gap-5">
                   {/* Agent Photo */}
                   {agent.imageUrl ? (
-                    <Link href={`/team/${agent.slug.current}`} className="flex-shrink-0">
+                    <Link href={`/agents/${agent.slug.current}`} className="flex-shrink-0">
                       <div className="relative w-28 h-36 overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
                         <Image
                           src={agent.imageUrl}
@@ -636,7 +636,7 @@ export default function RCSothebysListingContent({
                   {/* Agent Info */}
                   <div className="min-w-0 pt-2">
                     <Link
-                      href={`/team/${agent.slug.current}`}
+                      href={`/agents/${agent.slug.current}`}
                       className="text-[var(--rc-navy)] text-base font-bold uppercase tracking-[0.08em] hover:text-[var(--rc-gold)] transition-colors"
                       style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif' }}
                     >
@@ -680,7 +680,7 @@ export default function RCSothebysListingContent({
                     <p className="text-[var(--rc-brown)]/60 text-xs uppercase tracking-[0.15em] mb-3">Co-Listing Agent</p>
                     <div className="flex items-start gap-5">
                       {coAgent.imageUrl ? (
-                        <Link href={`/team/${coAgent.slug.current}`} className="flex-shrink-0">
+                        <Link href={`/agents/${coAgent.slug.current}`} className="flex-shrink-0">
                           <div className="relative w-28 h-36 overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
                             <Image
                               src={coAgent.imageUrl}
@@ -700,7 +700,7 @@ export default function RCSothebysListingContent({
                       )}
                       <div className="min-w-0 pt-2">
                         <Link
-                          href={`/team/${coAgent.slug.current}`}
+                          href={`/agents/${coAgent.slug.current}`}
                           className="text-[var(--rc-navy)] text-base font-bold uppercase tracking-[0.08em] hover:text-[var(--rc-gold)] transition-colors"
                           style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif' }}
                         >
