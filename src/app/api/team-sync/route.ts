@@ -283,15 +283,18 @@ async function executeSync() {
         // UPDATE existing member — only non-overridden fields
         const patchData = buildPatchData(agent, existing);
         patchData.lastSyncedAt = new Date().toISOString();
+        const overrides = existing.overrides || {};
 
-        // If agent was inactive, reactivate
+        // If agent is inactive, never reactivate — lock the override if not already set
         if (existing.inactive) {
-          patchData.inactive = false;
+          if (!overrides.inactive) {
+            patchData['overrides.inactive'] = true;
+          }
+          // Do not set inactive = false
         }
 
         // Handle photo updates
         const photoUrl = normalizePhotoUrl(agent.photo_url);
-        const overrides = existing.overrides || {};
         if (!overrides.image && photoUrl && photoUrl !== existing.syncPhotoUrl) {
           const imageData = await uploadPhotoToSanity(photoUrl);
           if (imageData) {

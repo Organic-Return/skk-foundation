@@ -174,13 +174,14 @@ export const teamMember = defineType({
         { name: 'address', type: 'boolean', title: 'Address' },
         { name: 'image', type: 'boolean', title: 'Image' },
         { name: 'mlsAgentId', type: 'boolean', title: 'MLS Agent ID' },
+        { name: 'inactive', type: 'boolean', title: 'Inactive' },
       ],
     }),
     defineField({
       name: 'inactive',
       title: 'Inactive',
       type: 'boolean',
-      description: 'Set by sync when agent leaves all configured offices. Hidden from team page.',
+      description: 'Hide from team/agents page. When manually set, sync will not reactivate this agent.',
       initialValue: false,
     }),
     defineField({
