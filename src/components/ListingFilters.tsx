@@ -249,213 +249,244 @@ export default function ListingFilters({
         ? `Neighborhoods in ${selectedCities.length} cities`
         : 'All Neighborhoods';
 
+  const [showAdvanced, setShowAdvanced] = useState(
+    !!(propertySubType || selectedNeighborhood)
+  );
+
+  // Auto-open advanced when those filters are active from URL
+  useEffect(() => {
+    if (propertySubType || selectedNeighborhood) {
+      setShowAdvanced(true);
+    }
+  }, [propertySubType, selectedNeighborhood]);
+
   return (
-    <div className="flex flex-wrap gap-4 items-center">
-      {/* Keyword Search */}
-      <input
-        type="text"
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
-        placeholder="Search MLS# or address..."
-        className="w-48 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      />
+    <div className="space-y-2">
+      {/* Main Filters Row */}
+      <div className="flex flex-wrap gap-4 items-center">
+        {/* Keyword Search */}
+        <input
+          type="text"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="Search MLS# or address..."
+          className="w-48 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+        />
 
-      {/* Status Filter */}
-      <select
-        value={status}
-        onChange={handleSelectChange(setStatus)}
-        className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">All Statuses</option>
-        {statuses.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
-
-      {/* Property Type Filter (Main Types) */}
-      <select
-        value={propertyType}
-        onChange={handleSelectChange(setPropertyType)}
-        className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">All Types</option>
-        {propertyTypes.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
-
-      {/* Property SubType Filter */}
-      <select
-        value={propertySubType}
-        onChange={handleSelectChange(setPropertySubType)}
-        className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">All Subtypes</option>
-        {propertySubTypes.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
-
-      {/* City Multi-Select Filter */}
-      <div ref={cityDropdownRef} className="relative">
-        <button
-          type="button"
-          onClick={() => {
-            setCityDropdownOpen(!cityDropdownOpen);
-            if (!cityDropdownOpen) setCitySearch('');
-          }}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 bg-white text-left min-w-[140px] flex items-center justify-between gap-2"
-        >
-          <span className="truncate">{cityButtonLabel}</span>
-          <svg className="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={cityDropdownOpen ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
-          </svg>
-        </button>
-
-        {cityDropdownOpen && (
-          <div className="absolute z-50 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg">
-            {/* Search input */}
-            <div className="p-2 border-b border-gray-200">
-              <input
-                type="text"
-                value={citySearch}
-                onChange={(e) => setCitySearch(e.target.value)}
-                placeholder="Search cities..."
-                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500"
-                autoFocus
-              />
-            </div>
-            {/* Selected cities summary + clear */}
-            {selectedCities.length > 0 && (
-              <div className="px-3 py-1.5 border-b border-gray-200 flex items-center justify-between">
-                <span className="text-xs text-gray-500">{selectedCities.length} selected</span>
-                <button
-                  type="button"
-                  onClick={() => { setSelectedCities([]); setSelectedNeighborhood(''); }}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  Clear
-                </button>
-              </div>
-            )}
-            {/* City checkboxes */}
-            <div className="max-h-60 overflow-y-auto">
-              {filteredDropdownCities.map((city) => (
-                <label
-                  key={city}
-                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCities.includes(city)}
-                    onChange={() => handleCityToggle(city)}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  {city}
-                </label>
-              ))}
-              {filteredDropdownCities.length === 0 && (
-                <div className="px-3 py-2 text-sm text-gray-500">No cities found</div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Neighborhood Filter - Dynamic based on selected cities */}
-      {neighborhoods.length > 0 ? (
+        {/* Status Filter */}
         <select
-          value={selectedNeighborhood}
-          onChange={handleSelectChange(setSelectedNeighborhood)}
-          disabled={loadingNeighborhoods}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+          value={status}
+          onChange={handleSelectChange(setStatus)}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="">{neighborhoodPlaceholder}</option>
-          {neighborhoods.map((n) => (
-            <option key={n} value={n}>
-              {n}
+          <option value="">All Statuses</option>
+          {statuses.map((s) => (
+            <option key={s} value={s}>
+              {s}
             </option>
           ))}
         </select>
-      ) : (
-        <input
-          type="text"
-          value={selectedNeighborhood}
-          onChange={(e) => setSelectedNeighborhood(e.target.value)}
-          placeholder={selectedCities.length > 0 ? `Search in ${selectedCities.length === 1 ? selectedCities[0] : selectedCities.length + ' cities'}...` : 'Search neighborhood...'}
+
+        {/* Property Type Filter (Main Types) */}
+        <select
+          value={propertyType}
+          onChange={handleSelectChange(setPropertyType)}
           className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">All Types</option>
+          {propertyTypes.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+
+        {/* City Multi-Select Filter */}
+        <div ref={cityDropdownRef} className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setCityDropdownOpen(!cityDropdownOpen);
+              if (!cityDropdownOpen) setCitySearch('');
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 bg-white text-left min-w-[140px] flex items-center justify-between gap-2"
+          >
+            <span className="truncate">{cityButtonLabel}</span>
+            <svg className="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={cityDropdownOpen ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+            </svg>
+          </button>
+
+          {cityDropdownOpen && (
+            <div className="absolute z-50 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg">
+              {/* Search input */}
+              <div className="p-2 border-b border-gray-200">
+                <input
+                  type="text"
+                  value={citySearch}
+                  onChange={(e) => setCitySearch(e.target.value)}
+                  placeholder="Search cities..."
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500"
+                  autoFocus
+                />
+              </div>
+              {/* Selected cities summary + clear */}
+              {selectedCities.length > 0 && (
+                <div className="px-3 py-1.5 border-b border-gray-200 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">{selectedCities.length} selected</span>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedCities([]); setSelectedNeighborhood(''); }}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+              {/* City checkboxes */}
+              <div className="max-h-60 overflow-y-auto">
+                {filteredDropdownCities.map((city) => (
+                  <label
+                    key={city}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCities.includes(city)}
+                      onChange={() => handleCityToggle(city)}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    {city}
+                  </label>
+                ))}
+                {filteredDropdownCities.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-gray-500">No cities found</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Price Range */}
+        <input
+          type="number"
+          value={minPrice}
+          onChange={(e) => setMinPrice(e.target.value)}
+          placeholder="Min Price"
+          className="w-32 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
         />
-      )}
+        <input
+          type="number"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          placeholder="Max Price"
+          className="w-32 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+        />
 
-      {/* Price Range */}
-      <input
-        type="number"
-        value={minPrice}
-        onChange={(e) => setMinPrice(e.target.value)}
-        placeholder="Min Price"
-        className="w-32 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      />
-      <input
-        type="number"
-        value={maxPrice}
-        onChange={(e) => setMaxPrice(e.target.value)}
-        placeholder="Max Price"
-        className="w-32 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      />
+        {/* Beds/Baths */}
+        <select
+          value={beds}
+          onChange={handleSelectChange(setBeds)}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Any Beds</option>
+          <option value="1">1+ Beds</option>
+          <option value="2">2+ Beds</option>
+          <option value="3">3+ Beds</option>
+          <option value="4">4+ Beds</option>
+          <option value="5">5+ Beds</option>
+        </select>
 
-      {/* Beds/Baths */}
-      <select
-        value={beds}
-        onChange={handleSelectChange(setBeds)}
-        className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">Any Beds</option>
-        <option value="1">1+ Beds</option>
-        <option value="2">2+ Beds</option>
-        <option value="3">3+ Beds</option>
-        <option value="4">4+ Beds</option>
-        <option value="5">5+ Beds</option>
-      </select>
+        <select
+          value={baths}
+          onChange={handleSelectChange(setBaths)}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Any Baths</option>
+          <option value="1">1+ Baths</option>
+          <option value="2">2+ Baths</option>
+          <option value="3">3+ Baths</option>
+          <option value="4">4+ Baths</option>
+        </select>
 
-      <select
-        value={baths}
-        onChange={handleSelectChange(setBaths)}
-        className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">Any Baths</option>
-        <option value="1">1+ Baths</option>
-        <option value="2">2+ Baths</option>
-        <option value="3">3+ Baths</option>
-        <option value="4">4+ Baths</option>
-      </select>
+        {/* Our Listings Only checkbox */}
+        {showOurTeamFilter && (
+          <label className="flex items-center gap-2 px-4 py-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={ourTeam}
+              onChange={(e) => setOurTeam(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Our Listings</span>
+          </label>
+        )}
 
-      {/* Our Listings Only checkbox */}
-      {showOurTeamFilter && (
-        <label className="flex items-center gap-2 px-4 py-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={ourTeam}
-            onChange={(e) => setOurTeam(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Our Listings</span>
-        </label>
-      )}
-
-      {hasFilters && (
+        {/* Advanced Search Toggle */}
         <button
           type="button"
-          onClick={handleClearFilters}
-          className="px-6 py-2 text-gray-600 font-medium border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-1.5"
         >
-          Clear Filters
+          Advanced Search
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showAdvanced ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+          </svg>
         </button>
+
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            className="px-6 py-2 text-gray-600 font-medium border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
+
+      {/* Advanced Filters Row */}
+      {showAdvanced && (
+        <div className="flex flex-wrap gap-4 items-center pt-1">
+          {/* Property SubType Filter */}
+          <select
+            value={propertySubType}
+            onChange={handleSelectChange(setPropertySubType)}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">All Subtypes</option>
+            {propertySubTypes.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+
+          {/* Neighborhood Filter - Dynamic based on selected cities */}
+          {neighborhoods.length > 0 ? (
+            <select
+              value={selectedNeighborhood}
+              onChange={handleSelectChange(setSelectedNeighborhood)}
+              disabled={loadingNeighborhoods}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+            >
+              <option value="">{neighborhoodPlaceholder}</option>
+              {neighborhoods.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={selectedNeighborhood}
+              onChange={(e) => setSelectedNeighborhood(e.target.value)}
+              placeholder={selectedCities.length > 0 ? `Search in ${selectedCities.length === 1 ? selectedCities[0] : selectedCities.length + ' cities'}...` : 'Search neighborhood...'}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+            />
+          )}
+        </div>
       )}
     </div>
   );
