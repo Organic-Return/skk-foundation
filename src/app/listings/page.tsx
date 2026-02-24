@@ -21,8 +21,7 @@ import {
 } from '@/lib/mlsConfiguration';
 import { getSettings } from '@/lib/settings';
 import { client } from '@/sanity/client';
-import ListingsContent from '@/components/ListingsContent';
-import ListingFilters from '@/components/ListingFilters';
+import ListingsSearchClient from '@/components/ListingsSearchClient';
 import StructuredData from '@/components/StructuredData';
 
 // Generate ItemList schema for listings
@@ -254,44 +253,33 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       {schemas.map((schema, index) => (
         <StructuredData key={index} data={schema} />
       ))}
-      <div className="h-full flex flex-col overflow-hidden">
-        {/* Filters */}
-        <div className="bg-white shadow-sm flex-shrink-0">
-          <div className="px-4 pt-0 pb-1 sm:px-6 lg:px-8">
-            <ListingFilters
-              keyword={keyword}
-              status={status}
-              propertyType={propertyType}
-              propertySubType={propertySubType}
-              selectedCities={selectedCities}
-              neighborhood={neighborhood}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              beds={beds}
-              baths={baths}
-              statuses={filteredStatuses}
-              propertyTypes={filteredPropertyTypes}
-              propertySubTypes={filteredPropertySubTypes}
-              cities={filteredCities}
-              initialNeighborhoods={neighborhoods}
-              ourTeam={ourTeam}
-              showOurTeamFilter={teamAgentIds.length > 0 || teamOfficeNames.length > 0}
-            />
-          </div>
-        </div>
-
-        {/* Listings Content with View Toggle */}
-        <ListingsContent
-          listings={listings}
-          currentPage={page}
-          totalPages={totalPages}
-          total={total}
-          searchParams={currentSearchParams.toString()}
-          currentSort={sort}
-          hasLocationFilter={!!(selectedCities.length > 0 || neighborhood)}
-          template={settings?.template || 'classic'}
-        />
-      </div>
+      <ListingsSearchClient
+        initialListings={listings}
+        initialTotal={total}
+        initialTotalPages={totalPages}
+        initialPage={page}
+        initialSearchParams={currentSearchParams.toString()}
+        initialSort={sort}
+        keyword={keyword}
+        status={status}
+        propertyType={propertyType}
+        propertySubType={propertySubType}
+        selectedCities={selectedCities}
+        neighborhood={neighborhood}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        beds={beds}
+        baths={baths}
+        ourTeam={ourTeam}
+        statuses={filteredStatuses}
+        propertyTypes={filteredPropertyTypes}
+        propertySubTypes={filteredPropertySubTypes}
+        cities={filteredCities}
+        neighborhoods={neighborhoods}
+        showOurTeamFilter={teamAgentIds.length > 0 || teamOfficeNames.length > 0}
+        hasLocationFilter={!!(selectedCities.length > 0 || neighborhood)}
+        template={settings?.template || 'classic'}
+      />
     </>
   );
 }

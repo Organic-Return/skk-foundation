@@ -24,6 +24,8 @@ interface ListingFiltersProps {
   initialNeighborhoods: string[];
   // Show "Our Listings" checkbox (only when team data is available)
   showOurTeamFilter?: boolean;
+  // Client-side mode: call this instead of router.push
+  onFilterChange?: (params: URLSearchParams) => void;
 }
 
 export default function ListingFilters({
@@ -44,6 +46,7 @@ export default function ListingFilters({
   cities,
   initialNeighborhoods,
   showOurTeamFilter,
+  onFilterChange,
 }: ListingFiltersProps) {
   const router = useRouter();
 
@@ -112,7 +115,7 @@ export default function ListingFilters({
     initialOurTeam,
   ]);
 
-  // Build URL and navigate
+  // Build URL and navigate (or call onFilterChange if in client-side mode)
   const navigateWithFilters = useCallback(() => {
     const params = new URLSearchParams();
 
@@ -128,9 +131,13 @@ export default function ListingFilters({
     if (baths) params.set('baths', baths);
     if (ourTeam) params.set('ourTeam', 'true');
 
-    const queryString = params.toString();
-    router.push(queryString ? `/listings?${queryString}` : '/listings');
-  }, [keyword, status, propertyType, propertySubType, selectedCitiesKey, selectedNeighborhood, minPrice, maxPrice, beds, baths, ourTeam, router]);
+    if (onFilterChange) {
+      onFilterChange(params);
+    } else {
+      const queryString = params.toString();
+      router.push(queryString ? `/listings?${queryString}` : '/listings');
+    }
+  }, [keyword, status, propertyType, propertySubType, selectedCitiesKey, selectedNeighborhood, minPrice, maxPrice, beds, baths, ourTeam, router, onFilterChange]);
 
   // Fetch neighborhoods when selected cities change
   useEffect(() => {
@@ -225,7 +232,11 @@ export default function ListingFilters({
     setBeds('');
     setBaths('');
     setOurTeam(false);
-    router.push('/listings');
+    if (onFilterChange) {
+      onFilterChange(new URLSearchParams());
+    } else {
+      router.push('/listings');
+    }
   };
 
   // City dropdown label
