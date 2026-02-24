@@ -5,9 +5,11 @@ import ScheduleTourModal from './ScheduleTourModal';
 
 interface ScheduleTourButtonProps {
   propertyAddress: string;
+  propertyMlsId?: string;
+  propertyPrice?: number;
 }
 
-export default function ScheduleTourButton({ propertyAddress }: ScheduleTourButtonProps) {
+export default function ScheduleTourButton({ propertyAddress, propertyMlsId, propertyPrice }: ScheduleTourButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -26,6 +28,8 @@ export default function ScheduleTourButton({ propertyAddress }: ScheduleTourButt
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         propertyAddress={propertyAddress}
+        propertyMlsId={propertyMlsId}
+        propertyPrice={propertyPrice}
       />
     </>
   );

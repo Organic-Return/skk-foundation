@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { getUTMData } from './UTMCapture';
 
 export default function ModernContactCTA() {
   const [isVisible, setIsVisible] = useState(false);
@@ -46,6 +47,7 @@ export default function ModernContactCTA() {
         body: JSON.stringify({
           ...formState,
           source: 'Homepage Contact Form',
+          ...getUTMData(),
         }),
       });
 

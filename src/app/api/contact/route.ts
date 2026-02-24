@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createLeadFromForm, isClozeConfigured } from '@/lib/cloze';
+import { createLead, determineLeadRouting, updateLeadClozeId } from '@/lib/leads';
+import { sendLeadNotificationEmail, isSendGridConfigured } from '@/lib/sendgrid';
 
 interface ContactFormData {
   name: string;
@@ -7,6 +9,14 @@ interface ContactFormData {
   phone?: string;
   interest?: string;
   message?: string;
+  // UTM + source tracking
+  sourceUrl?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
 }
 
 export async function POST(request: Request) {
@@ -33,30 +43,79 @@ export async function POST(request: Request) {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    if (!isClozeConfigured()) {
-      console.warn('Cloze CRM is not configured. Contact form lead will not be synced.');
-      return NextResponse.json({
-        success: true,
-        message: 'Message received (CRM not configured)',
-        clozeSync: false,
-      });
+    // Route to fallback email (general contact, not a property inquiry)
+    const routing = await determineLeadRouting();
+
+    // Store lead in Supabase
+    const lead = await createLead(
+      {
+        firstName,
+        lastName,
+        email: body.email,
+        phone: body.phone,
+        message: body.message,
+        leadType: 'contact',
+        source: 'Website Contact Form',
+        sourceUrl: body.sourceUrl,
+        referrer: body.referrer,
+        utmSource: body.utmSource,
+        utmMedium: body.utmMedium,
+        utmCampaign: body.utmCampaign,
+        utmContent: body.utmContent,
+        utmTerm: body.utmTerm,
+      },
+      routing
+    );
+
+    // Send email notification
+    if (isSendGridConfigured() && routing.agentEmail) {
+      try {
+        await sendLeadNotificationEmail(routing.agentEmail, {
+          firstName,
+          lastName,
+          email: body.email,
+          phone: body.phone,
+          message: body.message,
+          leadType: 'contact',
+          sourceUrl: body.sourceUrl,
+          utmSource: body.utmSource,
+          utmMedium: body.utmMedium,
+          utmCampaign: body.utmCampaign,
+        });
+      } catch (emailError) {
+        console.error('Error sending contact notification email:', emailError);
+      }
     }
 
-    const result = await createLeadFromForm({
-      firstName,
-      lastName,
-      email: body.email,
-      phone: body.phone,
-      message: body.message,
-      propertyInterest: body.interest,
-      source: 'Website Contact Form',
-    });
+    // Sync to Cloze CRM (existing behavior)
+    let clozeId: string | undefined;
+    if (isClozeConfigured()) {
+      try {
+        const clozeResult = await createLeadFromForm({
+          firstName,
+          lastName,
+          email: body.email,
+          phone: body.phone,
+          message: body.message,
+          propertyInterest: body.interest,
+          source: 'Website Contact Form',
+        });
+        clozeId = clozeResult.id;
+
+        if (lead && clozeId) {
+          await updateLeadClozeId(lead.id, clozeId);
+        }
+      } catch (clozeError) {
+        console.error('Error syncing to Cloze:', clozeError);
+      }
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Message sent successfully',
-      clozeSync: true,
-      clozeId: result.id,
+      leadId: lead?.id,
+      clozeSync: !!clozeId,
+      clozeId,
     });
   } catch (error) {
     console.error('Error processing contact form:', error);

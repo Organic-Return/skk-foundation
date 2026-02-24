@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getUTMData } from './UTMCapture';
 
 interface AgentContactFormProps {
   agentName: string;
@@ -34,6 +35,7 @@ export default function AgentContactForm({ agentName, agentEmail }: AgentContact
         body: JSON.stringify({
           ...formData,
           interest: `Agent inquiry for ${agentName}`,
+          ...getUTMData(),
         }),
       });
 

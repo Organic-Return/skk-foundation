@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { getUTMData } from './UTMCapture';
 
 interface RCSothebysInquirySectionProps {
   title?: string;
@@ -48,6 +49,7 @@ export default function RCSothebysInquirySection({
           phone: formData.phone,
           message: formData.message,
           interest: 'General inquiry from homepage',
+          ...getUTMData(),
         }),
       });
 

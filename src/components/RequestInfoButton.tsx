@@ -5,9 +5,11 @@ import RequestInfoModal from './RequestInfoModal';
 
 interface RequestInfoButtonProps {
   propertyAddress: string;
+  propertyMlsId?: string;
+  propertyPrice?: number;
 }
 
-export default function RequestInfoButton({ propertyAddress }: RequestInfoButtonProps) {
+export default function RequestInfoButton({ propertyAddress, propertyMlsId, propertyPrice }: RequestInfoButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -26,6 +28,8 @@ export default function RequestInfoButton({ propertyAddress }: RequestInfoButton
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         propertyAddress={propertyAddress}
+        propertyMlsId={propertyMlsId}
+        propertyPrice={propertyPrice}
       />
     </>
   );

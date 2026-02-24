@@ -949,7 +949,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                   </div>
                   </StickyRequestInfo>
                 ) : (
-                  <ScheduleTourButton propertyAddress={listing.address || `Property ${listing.mls_number}`} />
+                  <ScheduleTourButton propertyAddress={listing.address || `Property ${listing.mls_number}`} propertyMlsId={listing.mls_number || undefined} propertyPrice={listing.list_price || undefined} />
                 )}
               </div>
             </div>
@@ -1260,7 +1260,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     </div>
                   )}
 
-                  <RequestInfoButton propertyAddress={listing.address || `Property ${listing.mls_number}`} />
+                  <RequestInfoButton propertyAddress={listing.address || `Property ${listing.mls_number}`} propertyMlsId={listing.mls_number || undefined} propertyPrice={listing.list_price || undefined} />
                 </div>
 
                 {/* MLS Disclaimer */}

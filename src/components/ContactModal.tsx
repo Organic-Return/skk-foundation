@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { getUTMData } from './UTMCapture';
 
 interface AgentInfo {
   name?: string;
@@ -73,7 +74,7 @@ export default function ContactModal({ isOpen, onClose, agent }: ContactModalPro
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, ...getUTMData() }),
       });
 
       if (response.ok) {

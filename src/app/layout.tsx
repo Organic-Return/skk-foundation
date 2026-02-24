@@ -12,6 +12,7 @@ import LuxuryStayConnected from "@/components/LuxuryStayConnected";
 import RCSothebysFooter from "@/components/RCSothebysFooter";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { AuthProvider } from "@/components/AuthProvider";
+import UTMCapture from "@/components/UTMCapture";
 import { getSettings, getBranding } from "@/lib/settings";
 import { getMainNavigation, getFooterNavigation, groupFooterLinks } from "@/lib/navigation";
 import { getAllCommunities } from "@/lib/homepage";
@@ -159,6 +160,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${lora.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} antialiased ${templateClass}`}>
         <AuthProvider>
+        <UTMCapture />
         <LayoutWrapper
           header={renderHeader()}
           template={template}
