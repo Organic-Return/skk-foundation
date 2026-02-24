@@ -889,6 +889,10 @@ export async function getNewestHighPricedByCity(
 ): Promise<MLSProperty[]> {
   if (!isSupabaseConfigured()) return [];
 
+  // When filtering by officeName, skip the DB filter (no index on list_office_name causes timeouts)
+  // Instead, overfetch and filter in JS
+  const overfetchMultiplier = options?.officeName ? 5 : 1;
+
   let query = supabase
     .from('graphql_listings')
     .select('*')
@@ -902,9 +906,7 @@ export async function getNewestHighPricedByCity(
     query = query.gte('list_price', options.minPrice);
   }
 
-  if (options?.officeName) {
-    query = query.ilike('list_office_name', `%${options.officeName}%`);
-  } else if (options?.agentIds && options.agentIds.length > 0) {
+  if (!options?.officeName && options?.agentIds && options.agentIds.length > 0) {
     const agentFilter = options.agentIds.map(id => `list_agent_mls_id.ilike.${id}`).join(',');
     query = query.or(agentFilter);
   }
@@ -917,14 +919,23 @@ export async function getNewestHighPricedByCity(
       .order('list_price', { ascending: false });
   }
 
-  const { data, error } = await query.limit(limit);
+  const { data, error } = await query.limit(limit * overfetchMultiplier);
 
   if (error) {
     console.error('Error fetching newest high-priced listings:', error);
     return [];
   }
 
-  const listings = (data || []).map(transformListing);
+  let rows = data || [];
+
+  // Filter by office name in JS to avoid query timeout
+  if (options?.officeName) {
+    const officeNameLower = options.officeName.toLowerCase();
+    rows = rows.filter(row => row.list_office_name?.toLowerCase().includes(officeNameLower));
+    rows = rows.slice(0, limit);
+  }
+
+  const listings = rows.map(transformListing);
   return enrichListingsWithSIRMedia(listings);
 }
 
@@ -987,6 +998,10 @@ export async function getNewestHighPricedByCities(
   // Build OR filter for multiple cities (case-insensitive)
   const cityFilters = cities.map(city => `city.ilike.${city}`).join(',');
 
+  // When filtering by officeName, skip the DB filter (no index on list_office_name causes timeouts)
+  // Instead, overfetch and filter in JS
+  const overfetchMultiplier = options?.officeName ? 5 : 1;
+
   let query = supabase
     .from('graphql_listings')
     .select('*')
@@ -1000,9 +1015,7 @@ export async function getNewestHighPricedByCities(
     query = query.gte('list_price', options.minPrice);
   }
 
-  if (options?.officeName) {
-    query = query.ilike('list_office_name', `%${options.officeName}%`);
-  } else if (options?.agentIds && options.agentIds.length > 0) {
+  if (!options?.officeName && options?.agentIds && options.agentIds.length > 0) {
     const agentFilter = options.agentIds.map(id => `list_agent_mls_id.ilike.${id}`).join(',');
     query = query.or(agentFilter);
   }
@@ -1015,14 +1028,23 @@ export async function getNewestHighPricedByCities(
       .order('list_price', { ascending: false });
   }
 
-  const { data, error } = await query.limit(limit);
+  const { data, error } = await query.limit(limit * overfetchMultiplier);
 
   if (error) {
     console.error('Error fetching newest high-priced listings by cities:', error);
     return [];
   }
 
-  const listings = (data || []).map(transformListing);
+  let rows = data || [];
+
+  // Filter by office name in JS to avoid query timeout
+  if (options?.officeName) {
+    const officeNameLower = options.officeName.toLowerCase();
+    rows = rows.filter(row => row.list_office_name?.toLowerCase().includes(officeNameLower));
+    rows = rows.slice(0, limit);
+  }
+
+  const listings = rows.map(transformListing);
   return enrichListingsWithSIRMedia(listings);
 }
 
