@@ -1236,6 +1236,7 @@ async function getRealogyListingsByAgentName(agentName: string): Promise<AgentLi
       primary_agent_name, latitude, longitude, created_at, synced_at
     `)
     .ilike('primary_agent_name', agentName)
+    .eq('listing_type', 'ForSale')
     .order('listed_on', { ascending: false })
     .limit(200);
 
