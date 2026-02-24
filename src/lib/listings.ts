@@ -1367,15 +1367,6 @@ export async function getListingsByAgentId(
       }
     }
 
-    // SIR-only listings (no MLS match)
-    for (const listing of sirListings) {
-      const key = `${listing.address}-${listing.city}-${listing.list_price}`.toLowerCase();
-      if (!seen.has(key)) {
-        seen.add(key);
-        result.push(listing);
-      }
-    }
-
     return result;
   };
 
