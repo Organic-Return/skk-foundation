@@ -1291,7 +1291,7 @@ export async function getListingsByAgentId(
               .or(activeFilter)
               .or('status.in.(Active,Coming Soon,Active Under Contract,Contingent),status.like.Pending*')
               .or('close_date.is.null,close_date.gte.now()')
-              .order('listing_date', { ascending: false })
+              .order('list_price', { ascending: false })
               .limit(200),
             supabase
               .from('graphql_listings')
