@@ -357,8 +357,6 @@ export async function getListings(
     return { listings: [], total: 0, page, pageSize, totalPages: 0 };
   }
 
-  const cacheKey = `listings:${page}:${pageSize}:${JSON.stringify(filters)}`;
-  return getCached(cacheKey, 60_000, async () => {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
@@ -523,7 +521,6 @@ export async function getListings(
     pageSize,
     totalPages: Math.ceil(total / pageSize),
   };
-  });
 }
 
 // Look up SIR media for a listing by its MLS number
