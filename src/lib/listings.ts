@@ -135,10 +135,9 @@ export interface MLSProperty {
   updated_at: string;
 }
 
-// Build listing URL — uses MLS number for RC Sotheby's, database ID for others
+// Build listing URL — uses MLS number when available, falls back to database ID
 export function getListingHref(listing: { id: string; mls_number?: string }): string {
-  const isRC = process.env.NEXT_PUBLIC_SITE_TEMPLATE === 'rcsothebys-custom';
-  return `/listings/${isRC && listing.mls_number ? listing.mls_number : listing.id}`;
+  return `/listings/${listing.mls_number || listing.id}`;
 }
 
 // Resolve listing by slug — tries MLS number first, then database ID
