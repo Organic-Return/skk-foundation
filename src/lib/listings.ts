@@ -377,11 +377,12 @@ export async function getListings(
     query = query.eq('property_sub_type', filters.propertySubType);
   }
   if (filters.cities && filters.cities.length > 0) {
-    // Case-insensitive city matching so URL params don't need normalization
+    // Use ilike for single city (case-insensitive), in() for multiple
+    // Avoids multiple .or() calls which can conflict in PostgREST
     if (filters.cities.length === 1) {
       query = query.ilike('city', filters.cities[0]);
     } else {
-      query = query.or(filters.cities.map(c => `city.ilike.${c}`).join(','));
+      query = query.in('city', filters.cities);
     }
   }
   if (filters.neighborhood) {
@@ -483,11 +484,24 @@ export async function getListings(
       break;
   }
 
-  // Apply pagination
-  const { data, error, count } = await query.range(from, to);
+  // Apply pagination (with retry for transient errors)
+  let data: any[] | null = null;
+  let count: number | null = null;
+  let lastError: any = null;
 
-  if (error) {
-    console.error('Error fetching listings:', error.code, error.message, error.details);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const result = await query.range(from, to);
+    if (!result.error) {
+      data = result.data;
+      count = result.count;
+      lastError = null;
+      break;
+    }
+    lastError = result.error;
+    console.error(`Listings query attempt ${attempt + 1} failed:`, result.error.code, result.error.message);
+  }
+
+  if (lastError) {
     return {
       listings: [],
       total: 0,
