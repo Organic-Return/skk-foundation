@@ -250,13 +250,17 @@ function transformListing(row: GraphQLListing): MLSProperty {
     if (match) mlsNumber = match[1];
   }
 
-  // Auto-close: if close_date is in the past and status isn't already Closed, mark as Closed
+  // Auto-close: if close_date is in the past, mark as Sold
   let status = row.status;
-  if (row.close_date && status && !status.toLowerCase().startsWith('closed')) {
+  if (row.close_date) {
     const closeDate = new Date(row.close_date);
     if (closeDate.getTime() < Date.now()) {
-      status = 'Closed';
+      status = 'Sold';
     }
+  }
+  // Normalize: always show "Closed" as "Sold"
+  if (status?.toLowerCase() === 'closed') {
+    status = 'Sold';
   }
 
   return {
@@ -1227,13 +1231,14 @@ export async function getListingsByAgentId(
               .select('*')
               .or(activeFilter)
               .or('status.in.(Active,Coming Soon,Active Under Contract,Contingent),status.like.Pending*')
+              .or('close_date.is.null,close_date.gte.now()')
               .order('listing_date', { ascending: false })
               .limit(200),
             supabase
               .from('graphql_listings')
               .select('*')
               .or(soldFilter)
-              .or('status.eq.Closed,status.eq.Sold')
+              .or('status.eq.Closed,status.eq.Sold,close_date.lt.now()')
               .order('sold_price', { ascending: false, nullsFirst: false })
               .limit(200),
           ]);
