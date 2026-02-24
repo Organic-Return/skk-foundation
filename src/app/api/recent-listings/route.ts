@@ -27,8 +27,8 @@ async function fetchRecentListings(city: string, limit: number): Promise<Listing
   const mlsConfig = await getMLSConfiguration();
   const allowedCities = getAllowedCities(mlsConfig);
 
-  // If the requested city is not in allowed cities, return empty
-  if (!allowedCities.includes(city)) {
+  // If allowedCities is configured, only serve listed cities
+  if (allowedCities.length > 0 && !allowedCities.includes(city)) {
     return [];
   }
 

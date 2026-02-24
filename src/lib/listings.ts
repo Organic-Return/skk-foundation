@@ -641,19 +641,25 @@ export function getDistinctCities(): Promise<string[]> {
       return (rpcData as { city: string }[]).map((d) => d.city).filter(Boolean);
     }
 
-    // Fallback: sample rows to extract distinct cities (cap at 5 batches to avoid rate limits)
+    // Fallback: page through ALL cities using .gt() to skip past already-seen cities
     const allCities = new Set<string>();
-    let offset = 0;
+    let lastCity = '';
     const batchSize = 1000;
-    const maxBatches = 5;
+    const maxBatches = 20;
 
     for (let batch = 0; batch < maxBatches; batch++) {
-      const { data, error } = await supabase
+      let q = supabase
         .from('graphql_listings')
         .select('city')
         .not('city', 'is', null)
         .order('city')
-        .range(offset, offset + batchSize - 1);
+        .limit(batchSize);
+
+      if (lastCity) {
+        q = q.gt('city', lastCity);
+      }
+
+      const { data, error } = await q;
 
       if (error) {
         console.error('Error fetching cities:', error);
@@ -662,8 +668,10 @@ export function getDistinctCities(): Promise<string[]> {
       if (!data || data.length === 0) break;
 
       data.forEach((d) => { if (d.city) allCities.add(d.city); });
+      // Jump past all rows with the last city in this batch
+      const sorted = [...allCities].sort();
+      lastCity = sorted[sorted.length - 1];
       if (data.length < batchSize) break;
-      offset += batchSize;
     }
 
     return [...allCities].sort();
@@ -709,37 +717,23 @@ export async function getDistinctPropertySubTypes(): Promise<string[]> {
   return PROPERTY_SUB_TYPES;
 }
 
-export function getDistinctStatuses(): Promise<string[]> {
-  return getCached('distinctStatuses', 5 * 60 * 1000, async () => {
-    if (!isSupabaseConfigured()) return [];
+// Statuses from database — hardcoded to avoid multiple Supabase batch queries
+const STATUSES = [
+  'Active',
+  'Active Under Contract',
+  'Active U/C W/ Bump',
+  'Closed',
+  'Coming Soon',
+  'Contingent',
+  'Pending',
+  'Pending Inspect/Feasib',
+  'Sold',
+  'To Be Built',
+  'Withdrawn',
+];
 
-    // Sample rows to extract distinct statuses (cap at 3 batches to avoid rate limits)
-    const allStatuses = new Set<string>();
-    let offset = 0;
-    const batchSize = 1000;
-    const maxBatches = 3;
-
-    for (let batch = 0; batch < maxBatches; batch++) {
-      const { data, error } = await supabase
-        .from('graphql_listings')
-        .select('status')
-        .not('status', 'is', null)
-        .order('status')
-        .range(offset, offset + batchSize - 1);
-
-      if (error) {
-        console.error('Error fetching statuses:', error);
-        break;
-      }
-      if (!data || data.length === 0) break;
-
-      data.forEach((d) => { if (d.status) allStatuses.add(d.status); });
-      if (data.length < batchSize) break;
-      offset += batchSize;
-    }
-
-    return [...allStatuses].sort();
-  });
+export async function getDistinctStatuses(): Promise<string[]> {
+  return STATUSES;
 }
 
 export function getDistinctNeighborhoods(): Promise<string[]> {

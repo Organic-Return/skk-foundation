@@ -6,7 +6,6 @@ import {
   getDistinctPropertyTypes,
   getDistinctPropertySubTypes,
   getDistinctStatuses,
-  getDistinctNeighborhoods,
   getNeighborhoodsByCity,
   getNeighborhoodsByCities,
   formatPrice,
@@ -158,14 +157,14 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const ourTeam = params.ourTeam === 'true';
 
   // Fetch MLS configuration, settings, and data in parallel
-  const [mlsConfig, settings, cities, propertyTypes, propertySubTypes, statuses, allNeighborhoods, teamMembers] = await Promise.all([
+  // Note: property types, subtypes, and statuses are hardcoded (no Supabase queries needed)
+  const [mlsConfig, settings, cities, propertyTypes, propertySubTypes, statuses, teamMembers] = await Promise.all([
     getMLSConfiguration(),
     getSettings(),
     getDistinctCities(),
     getDistinctPropertyTypes(),
     getDistinctPropertySubTypes(),
     getDistinctStatuses(),
-    getDistinctNeighborhoods(),
     client.fetch<{ name: string; mlsAgentId?: string; mlsAgentIdSold?: string }[]>(
       `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{ name, mlsAgentId, mlsAgentIdSold }`,
       {},
@@ -198,12 +197,12 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     return match || sc;
   });
 
-  // Fetch neighborhoods filtered by selected cities (using normalized names)
+  // Fetch neighborhoods filtered by selected cities (only when cities are selected)
   const neighborhoods = normalizedCities.length > 0
     ? (normalizedCities.length === 1
         ? await getNeighborhoodsByCity(normalizedCities[0])
         : await getNeighborhoodsByCities(normalizedCities))
-    : allNeighborhoods;
+    : [];
 
   // Collect all team agent MLS IDs and names for "Our Properties Only" filter
   const teamAgentIds = teamMembers
@@ -234,7 +233,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     excludedPropertyTypes,
     excludedPropertySubTypes,
     allowedCities,
-    allowedStatuses: status ? undefined : allowedStatusList,
+    allowedStatuses: allowedStatusList,
     sort,
   });
 
