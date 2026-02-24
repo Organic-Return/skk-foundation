@@ -360,8 +360,10 @@ export async function getListings(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
+  // Use active_listings materialized view (~3K indexed rows) instead of
+  // graphql_listings view (~100K+ rows with COALESCE preventing index usage)
   let query = supabase
-    .from('graphql_listings')
+    .from('active_listings')
     .select('*', { count: 'estimated' });
 
   // Apply filters
@@ -660,12 +662,12 @@ export function getDistinctCities(): Promise<string[]> {
       return (rpcData as { city: string }[]).map((d) => d.city).filter(Boolean);
     }
 
-    // Fallback: fire parallel batch requests to cover the full table quickly
+    // Fallback: query active_listings materialized view (much smaller, ~3K rows)
     const batchSize = 1000;
-    const numBatches = 10;
+    const numBatches = 5;
     const batchPromises = Array.from({ length: numBatches }, (_, i) =>
       supabase
-        .from('graphql_listings')
+        .from('active_listings')
         .select('city')
         .not('city', 'is', null)
         .order('city')
@@ -752,7 +754,7 @@ export function getDistinctNeighborhoods(): Promise<string[]> {
 
     for (let batch = 0; batch < maxBatches; batch++) {
       const { data, error } = await supabase
-        .from('graphql_listings')
+        .from('active_listings')
         .select('subdivision_name')
         .not('subdivision_name', 'is', null)
         .order('subdivision_name')
@@ -785,7 +787,7 @@ export function getNeighborhoodsByCity(city: string): Promise<string[]> {
 
     for (let batch = 0; batch < maxBatches; batch++) {
       const { data, error } = await supabase
-        .from('graphql_listings')
+        .from('active_listings')
         .select('subdivision_name')
         .ilike('city', city)
         .not('subdivision_name', 'is', null)
@@ -819,7 +821,7 @@ export function getNeighborhoodsByCities(cities: string[]): Promise<string[]> {
 
     for (let batch = 0; batch < maxBatches; batch++) {
       const { data, error } = await supabase
-        .from('graphql_listings')
+        .from('active_listings')
         .select('subdivision_name')
         .in('city', cities)
         .not('subdivision_name', 'is', null)
