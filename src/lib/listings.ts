@@ -650,7 +650,7 @@ async function getRealogyListingBySlug(slug: string): Promise<MLSProperty | null
       city, state_province_code, postal_code, district, no_of_bedrooms, total_bath,
       full_bath, half_bath, three_quarter_bath, square_footage, building_area,
       lot_size, year_built, property_type, listed_on, default_photo_url, media,
-      primary_agent_name, latitude, longitude, created_at, synced_at, description
+      primary_agent_name, latitude, longitude, created_at, synced_at
     `)
     .or(`rfg_listing_id.eq.${slug},entity_id.eq.${slug}`)
     .limit(1)
