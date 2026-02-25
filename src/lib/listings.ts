@@ -672,15 +672,22 @@ export async function getOpenHouseListings(): Promise<MLSProperty[]> {
   const { data: listings, error: listError } = await supabase
     .from('graphql_listings')
     .select('*')
-    .in('listing_id', listingIds);
+    .in('listing_id', listingIds)
+    .not('status', 'is', null);
 
   if (listError || !listings) {
     if (listError) console.error('Error fetching open house listing data:', listError);
     return [];
   }
 
-  // Step 3: Merge open house data onto listings
-  const listingMap = new Map(listings.map((l) => [l.listing_id, l]));
+  // Step 3: Merge open house data onto listings (prefer rows with address data)
+  const listingMap = new Map<string, any>();
+  for (const l of listings) {
+    const existing = listingMap.get(l.listing_id);
+    if (!existing || (l.address && !existing.address)) {
+      listingMap.set(l.listing_id, l);
+    }
+  }
   const results: MLSProperty[] = [];
 
   for (const oh of ohData) {

@@ -149,11 +149,6 @@ function OpenHouseCard({ listing }: { listing: MLSProperty }) {
             </>
           )}
         </div>
-        {listing.open_house_remarks && (
-          <p className="text-[var(--rc-brown)]/70 text-xs mt-3 line-clamp-2 normal-case tracking-normal">
-            {listing.open_house_remarks}
-          </p>
-        )}
       </div>
     </Link>
   );
