@@ -1152,6 +1152,40 @@ function enrichListingWithSIRMedia(listing: MLSProperty, sir: SIRMediaAssets): M
   };
 }
 
+/**
+ * Bulk check which MLS numbers have videos in the SIR/Realogy data.
+ * Returns a Set of MLS numbers that have at least one video.
+ */
+export async function getMlsNumbersWithSIRVideos(mlsNumbers: string[]): Promise<Set<string>> {
+  if (!isRealogyConfigured() || mlsNumbers.length === 0) return new Set();
+
+  const realogySupabase = getRealogySupabase();
+  if (!realogySupabase) return new Set();
+
+  // Query realogy_listings for rows matching any of the MLS numbers
+  const { data, error } = await realogySupabase
+    .from('realogy_listings')
+    .select('mls_numbers, media')
+    .or(mlsNumbers.map(n => `mls_numbers.cs.[${JSON.stringify(n)}]`).join(','));
+
+  if (error || !data) return new Set();
+
+  const result = new Set<string>();
+  for (const row of data) {
+    // Check if this row has any Video format media
+    if (row.media && Array.isArray(row.media)) {
+      const hasVideo = row.media.some((item: any) => item?.format === 'Video' && item?.url);
+      if (hasVideo && Array.isArray(row.mls_numbers)) {
+        for (const mls of row.mls_numbers) {
+          if (mlsNumbers.includes(mls)) result.add(mls);
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 // Transform a Realogy/SIR listing to the MLSProperty format
 function transformRealogyListing(row: any): MLSProperty {
   const sir = extractSIRMedia(row);

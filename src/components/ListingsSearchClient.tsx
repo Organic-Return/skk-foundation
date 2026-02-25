@@ -36,6 +36,8 @@ interface ListingsSearchClientProps {
   template: string;
   listingsPerRow?: 2 | 3;
   googleMapsApiKey?: string;
+  mlsWithVideos?: string[];
+  teamAgentMlsIds?: string[];
 }
 
 export default function ListingsSearchClient({
@@ -66,6 +68,8 @@ export default function ListingsSearchClient({
   template,
   listingsPerRow,
   googleMapsApiKey,
+  mlsWithVideos: initialMlsWithVideos,
+  teamAgentMlsIds: initialTeamAgentMlsIds,
 }: ListingsSearchClientProps) {
   const [listings, setListings] = useState(initialListings);
   const [total, setTotal] = useState(initialTotal);
@@ -75,6 +79,8 @@ export default function ListingsSearchClient({
   const [searchParams, setSearchParams] = useState(initialSearchParams);
   const [loading, setLoading] = useState(false);
   const [locationFilter, setLocationFilter] = useState(hasLocationFilter);
+  const [mlsWithVideos, setMlsWithVideos] = useState<string[]>(initialMlsWithVideos || []);
+  const [teamAgentMlsIds, setTeamAgentMlsIds] = useState<string[]>(initialTeamAgentMlsIds || []);
 
   const fetchListings = useCallback(async (params: URLSearchParams, { keepPage }: { keepPage?: boolean } = {}) => {
     if (!keepPage) {
@@ -99,6 +105,8 @@ export default function ListingsSearchClient({
       setCurrentSort((params.get('sort') as SortOption) || 'newest');
       setSearchParams(params.toString());
       setLocationFilter(!!(params.get('city') || params.get('neighborhood')));
+      if (data.mlsWithVideos) setMlsWithVideos(data.mlsWithVideos);
+      if (data.teamAgentMlsIds) setTeamAgentMlsIds(data.teamAgentMlsIds);
     } catch (err) {
       console.error('Error fetching listings:', err);
     } finally {
@@ -185,6 +193,8 @@ export default function ListingsSearchClient({
           onSortChange={handleSortChange}
           onPageChange={handlePageChange}
           googleMapsApiKey={googleMapsApiKey}
+          mlsWithVideos={mlsWithVideos}
+          teamAgentMlsIds={teamAgentMlsIds}
         />
       </div>
     </div>

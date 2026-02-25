@@ -3,6 +3,7 @@ import {
   getListings,
   getListingHref,
   getDistinctCities,
+  getMlsNumbersWithSIRVideos,
   getDistinctPropertyTypes,
   getDistinctPropertySubTypes,
   getDistinctStatuses,
@@ -230,6 +231,14 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
   const { listings, total, totalPages } = listingsResult;
 
+  // Check which team listings have SIR videos
+  const teamListingMlsNumbers = listings
+    .filter(l => l.mls_number && l.list_agent_mls_id && teamAgentIds.includes(l.list_agent_mls_id))
+    .map(l => l.mls_number);
+  const mlsWithVideos = teamListingMlsNumbers.length > 0
+    ? await getMlsNumbersWithSIRVideos(teamListingMlsNumbers)
+    : new Set<string>();
+
   // Generate structured data
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
   const schemas = generateListingsSchema(listings, baseUrl, total);
@@ -282,6 +291,8 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         template={settings?.template || 'classic'}
         listingsPerRow={settings?.listingsPerRow}
         googleMapsApiKey={googleMapsApiKey}
+        mlsWithVideos={Array.from(mlsWithVideos)}
+        teamAgentMlsIds={teamAgentIds}
       />
     </>
   );

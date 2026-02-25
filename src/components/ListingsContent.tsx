@@ -21,6 +21,8 @@ interface ListingsContentProps {
   onSortChange?: (sort: SortOption) => void;
   onPageChange?: (page: number) => void;
   googleMapsApiKey?: string;
+  mlsWithVideos?: string[];
+  teamAgentMlsIds?: string[];
 }
 
 function formatPrice(price: number | null): string {
@@ -72,7 +74,7 @@ function getStreetAddress(fullAddress: string | null, city: string | null, state
 }
 
 // Property card - style varies by template
-function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty; template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom' }) {
+function PropertyCard({ listing, template = 'classic', hasVideo = false }: { listing: MLSProperty; template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom'; hasVideo?: boolean }) {
   const isModernStyle = template === 'modern' || template === 'custom-one';
   const isRCSothebys = template === 'rcsothebys-custom';
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -194,8 +196,20 @@ function PropertyCard({ listing, template = 'classic' }: { listing: MLSProperty;
             )}
           </div>
 
+          {/* Video flag - upper right */}
+          {hasVideo && (
+            <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#002349)] text-white flex items-center gap-1.5">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Video
+              </span>
+            </div>
+          )}
+
           {/* Save button */}
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className={`absolute ${hasVideo ? 'top-12' : 'top-3'} right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
             <SavePropertyButton listingId={listing.id} listingType="mls" />
           </div>
         </div>
@@ -412,6 +426,8 @@ export default function ListingsContent({
   onSortChange,
   onPageChange,
   googleMapsApiKey,
+  mlsWithVideos = [],
+  teamAgentMlsIds = [],
 }: ListingsContentProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
@@ -566,7 +582,7 @@ export default function ListingsContent({
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {displayListings.map((listing) => (
-                      <PropertyCard key={listing.id} listing={listing} template={template} />
+                      <PropertyCard key={listing.id} listing={listing} template={template} hasVideo={!!listing.mls_number && mlsWithVideos.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)} />
                     ))}
                   </div>
 
@@ -609,7 +625,7 @@ export default function ListingsContent({
                 <>
                   <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${listingsPerRow !== 2 ? 'xl:grid-cols-3' : ''}`}>
                     {displayListings.map((listing) => (
-                      <PropertyCard key={listing.id} listing={listing} template={template} />
+                      <PropertyCard key={listing.id} listing={listing} template={template} hasVideo={!!listing.mls_number && mlsWithVideos.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)} />
                     ))}
                   </div>
 

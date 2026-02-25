@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getListings, type SortOption } from '@/lib/listings';
+import { getListings, getMlsNumbersWithSIRVideos, type SortOption } from '@/lib/listings';
 import {
   getMLSConfiguration,
   getExcludedPropertyTypes,
@@ -37,27 +37,24 @@ export async function GET(request: NextRequest) {
   const keyword = sp.get('q') || undefined;
   const ourTeam = sp.get('ourTeam') === 'true';
 
-  // Fetch config in parallel
+  // Fetch config in parallel (always fetch team members for video flag logic)
   const [mlsConfig, settings, teamMembers] = await Promise.all([
     getMLSConfiguration(),
     getSettings(),
-    ourTeam
-      ? client.fetch<{ name: string; mlsAgentId?: string; mlsAgentIdSold?: string }[]>(
-          `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{ name, mlsAgentId, mlsAgentIdSold }`,
-          {},
-          { next: { revalidate: 3600 } }
-        )
-      : Promise.resolve([]),
+    client.fetch<{ name: string; mlsAgentId?: string; mlsAgentIdSold?: string }[]>(
+      `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{ name, mlsAgentId, mlsAgentIdSold }`,
+      {},
+      { next: { revalidate: 3600 } }
+    ),
   ]);
 
   const excludedPropertyTypes = [...getExcludedPropertyTypes(mlsConfig), 'Commercial Sale'];
   const excludedPropertySubTypes = getExcludedPropertySubTypes(mlsConfig);
   const allowedCities = getAllowedCities(mlsConfig);
 
-  const teamAgentIds = ourTeam && teamMembers
-    ? [...new Set(teamMembers.flatMap(m => [m.mlsAgentId, m.mlsAgentIdSold]).filter(Boolean) as string[])]
-    : undefined;
-  const teamAgentNames = ourTeam && teamMembers
+  const allTeamAgentIds = [...new Set(teamMembers.flatMap(m => [m.mlsAgentId, m.mlsAgentIdSold]).filter(Boolean) as string[])];
+  const teamAgentIds = ourTeam ? allTeamAgentIds : undefined;
+  const teamAgentNames = ourTeam
     ? [...new Set(teamMembers.map(m => m.name).filter(Boolean))]
     : undefined;
   const teamOfficeNames = ourTeam && settings?.teamSync?.offices
@@ -85,7 +82,19 @@ export async function GET(request: NextRequest) {
     sort,
   });
 
-  return NextResponse.json(result, {
+  // Check which team listings have SIR videos
+  const teamListingMlsNumbers = result.listings
+    .filter(l => l.mls_number && l.list_agent_mls_id && allTeamAgentIds.includes(l.list_agent_mls_id))
+    .map(l => l.mls_number);
+  const mlsWithVideos = teamListingMlsNumbers.length > 0
+    ? await getMlsNumbersWithSIRVideos(teamListingMlsNumbers)
+    : new Set<string>();
+
+  return NextResponse.json({
+    ...result,
+    mlsWithVideos: Array.from(mlsWithVideos),
+    teamAgentMlsIds: allTeamAgentIds,
+  }, {
     headers: {
       // Cache on Vercel CDN for 30s, serve stale while revalidating for 60s
       'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
