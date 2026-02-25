@@ -1021,9 +1021,13 @@ address {
   font-family: var(--font-figtree), "Figtree", sans-serif;
   font-weight: 300;
   text-transform: uppercase;
-  color: var(--rc-navy);
   line-height: 1em;
   letter-spacing: 0.05em;
+}
+
+/* Default heading color — low specificity so Tailwind text-white etc. can override */
+:where(.rcsothebys-template) :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--rc-navy);
 }
 
 .rcsothebys-template h1 {
