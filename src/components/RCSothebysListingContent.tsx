@@ -1215,7 +1215,8 @@ function MediaSection({ listing }: { listing: MLSProperty }) {
   const hasVideo = listing.video_urls && listing.video_urls.length > 0;
   const hasBoth = hasVirtualTour && hasVideo;
 
-  const [activeTab, setActiveTab] = useState<'video' | 'tour'>(hasVideo ? 'video' : 'tour');
+  // useState must be called unconditionally (React hooks rule)
+  const [activeTab, setActiveTab] = useState<'video' | 'tour'>('video');
 
   if (!hasVirtualTour && !hasVideo) return null;
 

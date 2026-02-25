@@ -431,13 +431,16 @@ export async function getListings(
     query = query.lte('square_feet', filters.maxSqft);
   }
   if (filters.keyword) {
-    // Use exact match for MLS# (fast) and prefix match for address to avoid
-    // full table scan timeouts on 100K+ rows with ILIKE %...%
-    const isNumeric = /^\d+$/.test(filters.keyword.trim());
+    const kw = filters.keyword.trim();
+    const isNumeric = /^\d+$/.test(kw);
     if (isNumeric) {
-      query = query.eq('listing_id', filters.keyword.trim());
+      // Search listing_id (primary) and also description (fallback for rows
+      // where ListingId is empty but MLS# appears in PublicRemarks)
+      query = query.or(`listing_id.eq.${kw},description.ilike.%MLS# ${kw}%`);
     } else {
-      query = query.ilike('address', `%${filters.keyword}%`);
+      // Search UnparsedAddress and street_name (fallback for rows where
+      // UnparsedAddress is NULL but street components exist)
+      query = query.or(`address.ilike.%${kw}%,street_name.ilike.%${kw}%`);
     }
   }
 
@@ -470,13 +473,14 @@ export async function getListings(
     }
   }
   // If allowedCities is set, only show listings from those cities
-  if (filters.allowedCities && filters.allowedCities.length > 0) {
+  // Skip for keyword searches — user is looking for a specific listing
+  if (filters.allowedCities && filters.allowedCities.length > 0 && !filters.keyword) {
     query = query.in('city', filters.allowedCities);
   }
-  if (filters.allowedStatuses && filters.allowedStatuses.length > 0) {
+  if (filters.allowedStatuses && filters.allowedStatuses.length > 0 && !filters.keyword) {
     // Only show listings with these specific statuses (excludes NULL status rows)
     query = query.in('status', filters.allowedStatuses);
-  } else if (filters.excludedStatuses && filters.excludedStatuses.length > 0) {
+  } else if (filters.excludedStatuses && filters.excludedStatuses.length > 0 && !filters.keyword) {
     query = query.not('status', 'in', `(${filters.excludedStatuses.join(',')})`);
   }
 
@@ -1395,14 +1399,15 @@ export async function getListingsByAgentId(
               ? buildAllRolesFilter(agentMlsId)
               : `${buildAllRolesFilter(agentMlsId)},${buildAllRolesFilter(soldId)}`;
 
+            const activeStatuses = ['Active', 'Coming Soon', 'Active Under Contract', 'Contingent', 'Pending', 'Pending Inspect/Feasib', 'Active U/C W/ Bump', 'To Be Built'];
+
             const [activeRes, soldRes] = await Promise.all([
               supabase
                 .from('graphql_listings')
                 .select('*')
                 .not('listing_id', 'is', null)
                 .or(activeFilter)
-                .or('status.in.(Active,Coming Soon,Active Under Contract,Contingent),status.like.Pending*')
-                .or('close_date.is.null,close_date.gte.now()')
+                .in('status', activeStatuses)
                 .order('list_price', { ascending: false })
                 .limit(200),
               supabase
@@ -1410,7 +1415,7 @@ export async function getListingsByAgentId(
                 .select('*')
                 .not('listing_id', 'is', null)
                 .or(soldFilter)
-                .or('status.eq.Closed,status.eq.Sold,close_date.lt.now()')
+                .in('status', ['Closed', 'Sold'])
                 .order('sold_price', { ascending: false, nullsFirst: false })
                 .limit(200),
             ]);
@@ -1426,14 +1431,15 @@ export async function getListingsByAgentId(
             // No MLS ID — fall back to name-based query on list_agent_full_name
             const nameFilter = `list_agent_full_name.eq.${agentName}`;
 
+            const activeStatusesName = ['Active', 'Coming Soon', 'Active Under Contract', 'Contingent', 'Pending', 'Pending Inspect/Feasib', 'Active U/C W/ Bump', 'To Be Built'];
+
             const [activeRes, soldRes] = await Promise.all([
               supabase
                 .from('graphql_listings')
                 .select('*')
                 .not('listing_id', 'is', null)
                 .or(nameFilter)
-                .or('status.in.(Active,Coming Soon,Active Under Contract,Contingent),status.like.Pending*')
-                .or('close_date.is.null,close_date.gte.now()')
+                .in('status', activeStatusesName)
                 .order('list_price', { ascending: false })
                 .limit(200),
               supabase
@@ -1441,7 +1447,7 @@ export async function getListingsByAgentId(
                 .select('*')
                 .not('listing_id', 'is', null)
                 .or(nameFilter)
-                .or('status.eq.Closed,status.eq.Sold,close_date.lt.now()')
+                .in('status', ['Closed', 'Sold'])
                 .order('sold_price', { ascending: false, nullsFirst: false })
                 .limit(200),
             ]);
