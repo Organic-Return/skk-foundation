@@ -1,37 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getAuthenticatedAgent } from '@/lib/dashboard-auth';
 import { getLeadsForAgent, getAllLeads, updateLeadStatus } from '@/lib/leads';
-
-/**
- * Verify the request has a valid Supabase auth session and return the agent profile.
- */
-async function getAuthenticatedAgent(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return null;
-  }
-
-  const token = authHeader.slice(7);
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !serviceKey) return null;
-
-  const supabase = createClient(url, serviceKey);
-
-  // Verify the JWT token
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) return null;
-
-  // Get agent profile
-  const { data: profile } = await supabase
-    .from('agent_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  return profile;
-}
 
 export async function GET(request: NextRequest) {
   const profile = await getAuthenticatedAgent(request);
