@@ -77,7 +77,7 @@ export default function AgentHeroGallery({ listings }: AgentHeroGalleryProps) {
   const currentListing = listings[activeIndex] || null;
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ height: '70vh', minHeight: '400px', maxHeight: '700px' }}>
+    <div className="relative w-full overflow-hidden" style={{ height: '100vh', minHeight: '500px' }}>
       {/* Property Images — crossfade slideshow */}
       {listings.map((listing, index) => {
         const photo = listing.photos?.[0] || null;

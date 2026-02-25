@@ -8,6 +8,7 @@ interface PropertyMapProps {
   longitude: number;
   address?: string;
   price?: number | null;
+  googleMapsApiKey?: string;
 }
 
 // Sotheby's blue color
@@ -33,11 +34,13 @@ const mapContainerStyle = {
 };
 
 
-export default function PropertyMap({ latitude, longitude, address, price }: PropertyMapProps) {
+export default function PropertyMap({ latitude, longitude, address, price, googleMapsApiKey }: PropertyMapProps) {
   const mapRef = useRef<google.maps.Map | null>(null);
 
+  const apiKey = googleMapsApiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
   const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    googleMapsApiKey: apiKey,
   });
 
   const center = useMemo(() => ({ lat: latitude, lng: longitude }), [latitude, longitude]);

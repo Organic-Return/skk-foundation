@@ -122,15 +122,30 @@ export default function ListingsSearchClient({
     fetchListings(params);
   }, [fetchListings]);
 
-  const handlePageChange = useCallback((page: number) => {
+  const handleLoadMore = useCallback(async () => {
+    const nextPage = currentPage + 1;
     const params = new URLSearchParams(searchParams);
-    if (page <= 1) {
-      params.delete('page');
-    } else {
-      params.set('page', page.toString());
+    params.set('page', nextPage.toString());
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/listings/search?${params.toString()}`);
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+
+      setListings(prev => [...prev, ...(data.listings || [])]);
+      setTotal(data.total || 0);
+      setTotalPages(data.totalPages || 0);
+      setCurrentPage(nextPage);
+      if (data.mlsWithVideos) setMlsWithVideos(prev => [...new Set([...prev, ...data.mlsWithVideos])]);
+      if (data.mlsWithMatterport) setMlsWithMatterport(prev => [...new Set([...prev, ...data.mlsWithMatterport])]);
+      if (data.teamAgentMlsIds) setTeamAgentMlsIds(prev => [...new Set([...prev, ...data.teamAgentMlsIds])]);
+    } catch (err) {
+      console.error('Error loading more listings:', err);
+    } finally {
+      setLoading(false);
     }
-    fetchListings(params, { keepPage: true });
-  }, [searchParams, fetchListings]);
+  }, [currentPage, searchParams]);
 
   const handleSortChange = useCallback((newSort: SortOption) => {
     const params = new URLSearchParams(searchParams);
@@ -195,7 +210,7 @@ export default function ListingsSearchClient({
           template={template as any}
           listingsPerRow={listingsPerRow}
           onSortChange={handleSortChange}
-          onPageChange={handlePageChange}
+          onLoadMore={handleLoadMore}
           googleMapsApiKey={googleMapsApiKey}
           mlsWithVideos={mlsWithVideos}
           mlsWithMatterport={mlsWithMatterport}

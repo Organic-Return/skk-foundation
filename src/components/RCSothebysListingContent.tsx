@@ -22,6 +22,7 @@ interface RCSothebysListingContentProps {
   listing: MLSProperty;
   agent: ListingAgentInfo | null;
   coAgent?: ListingAgentInfo | null;
+  googleMapsApiKey?: string;
 }
 
 // Left arrow — triangle points left, internal arrows point left
@@ -60,6 +61,7 @@ export default function RCSothebysListingContent({
   listing,
   agent,
   coAgent,
+  googleMapsApiKey,
 }: RCSothebysListingContentProps) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -1062,8 +1064,8 @@ export default function RCSothebysListingContent({
         </div>
       </section>
 
-      {/* Video & Virtual Tour — tabbed when both exist */}
-      <MediaSection listing={listing} />
+      {/* Media Section — Gallery / Video / Virtual Tour */}
+      <MediaSection listing={listing} isExclusive={!!agent} />
 
       {/* Map Section */}
       {listing.latitude && listing.longitude && (
@@ -1095,6 +1097,7 @@ export default function RCSothebysListingContent({
               longitude={listing.longitude}
               address={listing.address || undefined}
               price={listing.list_price}
+              googleMapsApiKey={googleMapsApiKey}
             />
           </div>
         </section>
@@ -1209,31 +1212,57 @@ export default function RCSothebysListingContent({
   );
 }
 
-// Tabbed media section for Video and Virtual Tour
-function MediaSection({ listing }: { listing: MLSProperty }) {
+// Tabbed media section: Gallery, Video, Virtual Tour
+function MediaSection({ listing, isExclusive }: { listing: MLSProperty; isExclusive: boolean }) {
+  const hasPhotos = listing.photos && listing.photos.length > 0;
   const hasVirtualTour = !!listing.virtual_tour_url;
   const hasVideo = listing.video_urls && listing.video_urls.length > 0;
-  const hasBoth = hasVirtualTour && hasVideo;
 
-  // useState must be called unconditionally (React hooks rule)
-  const [activeTab, setActiveTab] = useState<'video' | 'tour'>('video');
+  // For exclusive listings, show gallery tab + video/tour tabs
+  // For non-exclusive, keep the existing video/tour only behavior
+  const showGallery = isExclusive && hasPhotos;
+  const tabCount = (showGallery ? 1 : 0) + (hasVideo ? 1 : 0) + (hasVirtualTour ? 1 : 0);
 
-  if (!hasVirtualTour && !hasVideo) return null;
+  // Determine default tab
+  const defaultTab = showGallery ? 'gallery' : hasVideo ? 'video' : 'tour';
+  const [activeTab, setActiveTab] = useState<'gallery' | 'video' | 'tour'>(defaultTab);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+
+  if (tabCount === 0) return null;
+
+  const photos = listing.photos || [];
 
   return (
-    <>
-      {/* When both exist, show as one tabbed section */}
-      {hasBoth ? (
-        <section className="bg-[var(--rc-navy)] py-16 md:py-24">
-          <div className="text-center mb-10 md:mb-14">
-            <h2
-              className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em] mb-8"
-              style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em', color: '#c19b5f' }}
-            >
-              Media
-            </h2>
-            {/* Tabs */}
-            <div className="flex items-center justify-center gap-1">
+    <section className="bg-[var(--rc-navy)] py-16 md:py-24">
+      <div className="text-center mb-10 md:mb-14">
+        <h2
+          className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em] mb-8"
+          style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em', color: '#c19b5f' }}
+        >
+          Media
+        </h2>
+        {/* Tabs — only show if more than one tab */}
+        {tabCount > 1 && (
+          <div className="flex items-center justify-center gap-1">
+            {showGallery && (
+              <button
+                onClick={() => setActiveTab('gallery')}
+                className={`px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-200 ${
+                  activeTab === 'gallery'
+                    ? 'bg-[var(--rc-gold)] text-white'
+                    : 'bg-transparent border border-white/30 text-white/70 hover:text-white hover:border-white/60'
+                }`}
+                style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif' }}
+              >
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Gallery
+                </span>
+              </button>
+            )}
+            {hasVideo && (
               <button
                 onClick={() => setActiveTab('video')}
                 className={`px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-200 ${
@@ -1250,6 +1279,8 @@ function MediaSection({ listing }: { listing: MLSProperty }) {
                   Video
                 </span>
               </button>
+            )}
+            {hasVirtualTour && (
               <button
                 onClick={() => setActiveTab('tour')}
                 className={`px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-200 ${
@@ -1266,61 +1297,80 @@ function MediaSection({ listing }: { listing: MLSProperty }) {
                   Virtual Tour
                 </span>
               </button>
-            </div>
+            )}
           </div>
-          <div className="max-w-[1400px] mx-auto px-6 md:px-8">
-            {activeTab === 'video' && listing.video_urls && (
-              <div className="space-y-8">
-                {listing.video_urls.map((url, index) => (
-                  <div key={index} className="aspect-video w-full">
-                    {url.includes('brightcove') ? (
-                      <iframe
-                        src={url}
-                        className="w-full h-full border-0"
-                        allowFullScreen
-                        allow="encrypted-media"
-                        title={`Property Video ${index + 1}`}
-                      />
-                    ) : (
-                      <video
-                        src={url}
-                        controls
-                        className="w-full h-full bg-black"
-                        preload="metadata"
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
+        )}
+      </div>
+      <div className="max-w-[1400px] mx-auto px-6 md:px-8">
+        {/* Gallery Tab */}
+        {activeTab === 'gallery' && photos.length > 0 && (
+          <div>
+            <div className="relative aspect-video w-full overflow-hidden bg-black">
+              <Image
+                src={photos[galleryIndex]}
+                alt={`${listing.address || 'Property'} - Photo ${galleryIndex + 1}`}
+                fill
+                className="object-contain"
+                sizes="1400px"
+              />
+              {photos.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setGalleryIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1))}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white text-[#1a1a1a] flex items-center justify-center transition-colors z-10"
+                    aria-label="Previous photo"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setGalleryIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white text-[#1a1a1a] flex items-center justify-center transition-colors z-10"
+                    aria-label="Next photo"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  <div className="absolute top-4 right-4 z-10 bg-black/50 text-white text-xs px-3 py-1.5 tracking-wider">
+                    {galleryIndex + 1} / {photos.length}
                   </div>
+                </>
+              )}
+            </div>
+            {/* Thumbnail strip */}
+            {photos.length > 1 && (
+              <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                {photos.map((photo, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setGalleryIndex(index)}
+                    className={`relative flex-shrink-0 w-20 h-14 overflow-hidden transition-all duration-200 ${
+                      index === galleryIndex
+                        ? 'ring-2 ring-[var(--rc-gold)] opacity-100'
+                        : 'opacity-40 hover:opacity-70'
+                    }`}
+                    aria-label={`View photo ${index + 1}`}
+                  >
+                    <Image
+                      src={photo}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                  </button>
                 ))}
               </div>
             )}
-            {activeTab === 'tour' && listing.virtual_tour_url && (
-              <div className="aspect-video w-full">
-                <iframe
-                  src={listing.virtual_tour_url}
-                  className="w-full h-full border-0"
-                  allowFullScreen
-                  allow="xr-spatial-tracking"
-                  title="Virtual Tour"
-                />
-              </div>
-            )}
           </div>
-        </section>
-      ) : hasVideo ? (
-        /* Video only */
-        <section className="bg-[var(--rc-navy)] py-16 md:py-24">
-          <div className="text-center mb-10 md:mb-14">
-            <h2
-              className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em]"
-              style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em', color: '#c19b5f' }}
-            >
-              Property Video{listing.video_urls!.length > 1 ? 's' : ''}
-            </h2>
-          </div>
-          <div className="max-w-[1400px] mx-auto px-6 md:px-8 space-y-8">
-            {listing.video_urls!.map((url, index) => (
+        )}
+
+        {/* Video Tab */}
+        {activeTab === 'video' && listing.video_urls && (
+          <div className="space-y-8">
+            {listing.video_urls.map((url, index) => (
               <div key={index} className="aspect-video w-full">
                 {url.includes('brightcove') ? (
                   <iframe
@@ -1343,31 +1393,21 @@ function MediaSection({ listing }: { listing: MLSProperty }) {
               </div>
             ))}
           </div>
-        </section>
-      ) : (
-        /* Virtual Tour only */
-        <section className="bg-[var(--rc-cream)] py-16 md:py-24">
-          <div className="text-center mb-10 md:mb-14">
-            <h2
-              className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em]"
-              style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em', color: '#c19b5f' }}
-            >
-              Virtual Tour
-            </h2>
+        )}
+
+        {/* Virtual Tour Tab */}
+        {activeTab === 'tour' && listing.virtual_tour_url && (
+          <div className="aspect-video w-full">
+            <iframe
+              src={listing.virtual_tour_url}
+              className="w-full h-full border-0"
+              allowFullScreen
+              allow="xr-spatial-tracking"
+              title="Virtual Tour"
+            />
           </div>
-          <div className="max-w-[1400px] mx-auto px-6 md:px-8">
-            <div className="aspect-video w-full">
-              <iframe
-                src={listing.virtual_tour_url!}
-                className="w-full h-full border-0"
-                allowFullScreen
-                allow="xr-spatial-tracking"
-                title="Virtual Tour"
-              />
-            </div>
-          </div>
-        </section>
-      )}
-    </>
+        )}
+      </div>
+    </section>
   );
 }

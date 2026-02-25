@@ -19,7 +19,7 @@ interface ListingsContentProps {
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
   listingsPerRow?: 2 | 3;
   onSortChange?: (sort: SortOption) => void;
-  onPageChange?: (page: number) => void;
+  onLoadMore?: () => void;
   googleMapsApiKey?: string;
   mlsWithVideos?: string[];
   mlsWithMatterport?: string[];
@@ -337,93 +337,6 @@ function PropertyCard({ listing, template = 'classic', hasVideo = false, hasMatt
   );
 }
 
-function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-  scrollContainerId,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange?: (page: number) => void;
-  scrollContainerId?: string;
-}) {
-  if (totalPages <= 1) return null;
-
-  const handlePageClick = (page: number) => {
-    if (scrollContainerId) {
-      const container = document.getElementById(scrollContainerId);
-      if (container) {
-        container.scrollTo({ top: 0, behavior: 'instant' });
-      }
-    }
-    if (onPageChange) {
-      onPageChange(page);
-    }
-  };
-
-  const pages: (number | string)[] = [];
-  const showEllipsis = totalPages > 7;
-
-  if (!showEllipsis) {
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
-    }
-  } else {
-    pages.push(1);
-    if (currentPage > 3) pages.push('...');
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-      pages.push(i);
-    }
-    if (currentPage < totalPages - 2) pages.push('...');
-    pages.push(totalPages);
-  }
-
-  return (
-    <nav className="flex justify-center items-center gap-2 mt-12">
-      {currentPage > 1 && (
-        <button
-          onClick={() => handlePageClick(currentPage - 1)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-[var(--color-cream)] cursor-pointer"
-        >
-          Previous
-        </button>
-      )}
-
-      <div className="flex gap-1">
-        {pages.map((page, index) =>
-          typeof page === 'string' ? (
-            <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
-              ...
-            </span>
-          ) : (
-            <button
-              key={page}
-              onClick={() => handlePageClick(page as number)}
-              className={`px-4 py-2 text-sm font-medium rounded-md cursor-pointer ${
-                page === currentPage
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 bg-white border border-gray-300 hover:bg-[var(--color-cream)]'
-              }`}
-            >
-              {page}
-            </button>
-          )
-        )}
-      </div>
-
-      {currentPage < totalPages && (
-        <button
-          onClick={() => handlePageClick(currentPage + 1)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-[var(--color-cream)] cursor-pointer"
-        >
-          Next
-        </button>
-      )}
-    </nav>
-  );
-}
-
 export default function ListingsContent({
   listings,
   currentPage,
@@ -435,7 +348,7 @@ export default function ListingsContent({
   template = 'classic',
   listingsPerRow,
   onSortChange,
-  onPageChange,
+  onLoadMore,
   googleMapsApiKey,
   mlsWithVideos = [],
   mlsWithMatterport = [],
@@ -508,11 +421,11 @@ export default function ListingsContent({
       <div className="px-4 py-2.5 bg-white border-b flex items-center justify-between lg:px-6 flex-shrink-0">
         {/* Property count, sort, and area filter indicator */}
         <div className="flex items-center gap-3">
-          <p className="text-sm text-gray-600 h-[34px] leading-[34px]">
+          <span className="text-sm text-gray-600">
             {areaFilteredListings !== null
               ? <><span className="font-medium text-gray-900">{areaFilteredListings.length.toLocaleString()}</span> of {total.toLocaleString()} properties</>
               : <><span className="font-medium text-gray-900">{total.toLocaleString()}</span> properties found</>}
-          </p>
+          </span>
           <span className="w-px h-4 bg-gray-200" />
           <select
             value={currentSort}
@@ -602,13 +515,15 @@ export default function ListingsContent({
                     ))}
                   </div>
 
-                  {areaFilteredListings === null && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={onPageChange}
-                      scrollContainerId="listings-scroll-container"
-                    />
+                  {areaFilteredListings === null && currentPage < totalPages && onLoadMore && (
+                    <div className="flex justify-center mt-10">
+                      <button
+                        onClick={onLoadMore}
+                        className="px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] border border-[var(--rc-navy,#002349)] text-[var(--rc-navy,#002349)] hover:bg-[var(--rc-navy,#002349)] hover:text-white transition-colors duration-200"
+                      >
+                        Load More
+                      </button>
+                    </div>
                   )}
                 </>
               )}
@@ -645,13 +560,15 @@ export default function ListingsContent({
                     ))}
                   </div>
 
-                  {areaFilteredListings === null && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={onPageChange}
-                      scrollContainerId="listings-scroll-container"
-                    />
+                  {areaFilteredListings === null && currentPage < totalPages && onLoadMore && (
+                    <div className="flex justify-center mt-10">
+                      <button
+                        onClick={onLoadMore}
+                        className="px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] border border-[var(--rc-navy,#002349)] text-[var(--rc-navy,#002349)] hover:bg-[var(--rc-navy,#002349)] hover:text-white transition-colors duration-200"
+                      >
+                        Load More
+                      </button>
+                    </div>
                   )}
                 </>
               )}

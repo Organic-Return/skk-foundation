@@ -10,7 +10,7 @@ import {
   formatLotSize,
   type MLSProperty,
 } from '@/lib/listings';
-import { getSettings } from '@/lib/settings';
+import { getSettings, getGoogleMapsApiKey } from '@/lib/settings';
 import { client } from '@/sanity/client';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import PropertyGallery from '@/components/PropertyGallery';
@@ -393,9 +393,10 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 export default async function ListingPage({ params }: ListingPageProps) {
   const { id } = await params;
 
-  const [listing, settings] = await Promise.all([
+  const [listing, settings, googleMapsApiKey] = await Promise.all([
     getListingBySlug(id),
     getSettings(),
+    getGoogleMapsApiKey(),
   ]);
 
   if (!listing) {
@@ -530,6 +531,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             phone: coListingAgent.phone,
             mobile: coListingAgent.mobile,
           } : null}
+          googleMapsApiKey={googleMapsApiKey}
         />
       </>
     );
@@ -1315,6 +1317,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 longitude={listing.longitude}
                 address={listing.address || undefined}
                 price={listing.list_price}
+                googleMapsApiKey={googleMapsApiKey}
               />
             </div>
           </section>
