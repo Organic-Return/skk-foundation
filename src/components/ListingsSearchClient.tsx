@@ -35,6 +35,7 @@ interface ListingsSearchClientProps {
   hasLocationFilter: boolean;
   template: string;
   listingsPerRow?: 2 | 3;
+  googleMapsApiKey?: string;
 }
 
 export default function ListingsSearchClient({
@@ -64,6 +65,7 @@ export default function ListingsSearchClient({
   hasLocationFilter,
   template,
   listingsPerRow,
+  googleMapsApiKey,
 }: ListingsSearchClientProps) {
   const [listings, setListings] = useState(initialListings);
   const [total, setTotal] = useState(initialTotal);
@@ -170,6 +172,7 @@ export default function ListingsSearchClient({
           template={template as any}
           listingsPerRow={listingsPerRow}
           onSortChange={handleSortChange}
+          googleMapsApiKey={googleMapsApiKey}
         />
       </div>
     </div>

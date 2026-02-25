@@ -19,6 +19,7 @@ interface ListingsContentProps {
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
   listingsPerRow?: 2 | 3;
   onSortChange?: (sort: SortOption) => void;
+  googleMapsApiKey?: string;
 }
 
 function formatPrice(price: number | null): string {
@@ -414,6 +415,7 @@ export default function ListingsContent({
   template = 'classic',
   listingsPerRow,
   onSortChange,
+  googleMapsApiKey,
 }: ListingsContentProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
@@ -634,6 +636,7 @@ export default function ListingsContent({
                 onDrawComplete={handleDrawComplete}
                 onDrawClear={handleDrawClear}
                 hasLocationFilter={hasLocationFilter}
+                googleMapsApiKey={googleMapsApiKey}
               />
             </div>
           </>

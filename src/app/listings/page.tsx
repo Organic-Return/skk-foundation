@@ -19,7 +19,7 @@ import {
   getAllowedCities,
   getExcludedStatuses,
 } from '@/lib/mlsConfiguration';
-import { getSettings } from '@/lib/settings';
+import { getSettings, getGoogleMapsApiKey } from '@/lib/settings';
 import { client } from '@/sanity/client';
 import ListingsSearchClient from '@/components/ListingsSearchClient';
 import StructuredData from '@/components/StructuredData';
@@ -159,7 +159,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const allowedStatusList = ['Active', 'Active Under Contract', 'Active U/C W/ Bump', 'Pending', 'Pending Inspect/Feasib', 'To Be Built'];
 
   // Phase 1: Fast Sanity queries (CDN-cached, ~50-100ms) to get filter config
-  const [mlsConfig, settings, teamMembers] = await Promise.all([
+  const [mlsConfig, settings, teamMembers, googleMapsApiKey] = await Promise.all([
     getMLSConfiguration(),
     getSettings(),
     client.fetch<{ name: string; mlsAgentId?: string; mlsAgentIdSold?: string }[]>(
@@ -167,6 +167,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       {},
       { next: { revalidate: 3600 } }
     ),
+    getGoogleMapsApiKey(),
   ]);
 
   // Compute filters from MLS configuration (instant, no async)
@@ -280,6 +281,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         hasLocationFilter={!!(selectedCities.length > 0 || neighborhood)}
         template={settings?.template || 'classic'}
         listingsPerRow={settings?.listingsPerRow}
+        googleMapsApiKey={googleMapsApiKey}
       />
     </>
   );

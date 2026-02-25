@@ -9,6 +9,7 @@ interface ListingsMapProps {
   onDrawComplete?: (filteredListings: MLSProperty[]) => void;
   onDrawClear?: () => void;
   hasLocationFilter?: boolean; // true when city or neighborhood is selected
+  googleMapsApiKey?: string;
 }
 
 function formatPrice(price: number | null): string {
@@ -176,14 +177,14 @@ const polygonOptions = {
   strokeWeight: 2,
 };
 
-export default function ListingsMap({ listings, onDrawComplete, onDrawClear, hasLocationFilter }: ListingsMapProps) {
+export default function ListingsMap({ listings, onDrawComplete, onDrawClear, hasLocationFilter, googleMapsApiKey }: ListingsMapProps) {
   const [selectedListing, setSelectedListing] = useState<MLSProperty | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawingPoints, setDrawingPoints] = useState<google.maps.LatLngLiteral[]>([]);
   const [completedPolygon, setCompletedPolygon] = useState<google.maps.LatLngLiteral[] | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  const apiKey = googleMapsApiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: apiKey,
