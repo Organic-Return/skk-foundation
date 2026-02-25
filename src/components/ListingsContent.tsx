@@ -18,6 +18,7 @@ interface ListingsContentProps {
   hasLocationFilter?: boolean;
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
   listingsPerRow?: 2 | 3;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 function formatPrice(price: number | null): string {
@@ -412,6 +413,7 @@ export default function ListingsContent({
   hasLocationFilter,
   template = 'classic',
   listingsPerRow,
+  onSortChange,
 }: ListingsContentProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
@@ -429,14 +431,18 @@ export default function ListingsContent({
   };
 
   const handleSortChange = (newSort: SortOption) => {
-    const params = new URLSearchParams(searchParams);
-    if (newSort === 'newest') {
-      params.delete('sort');
+    if (onSortChange) {
+      onSortChange(newSort);
     } else {
-      params.set('sort', newSort);
+      const params = new URLSearchParams(searchParams);
+      if (newSort === 'newest') {
+        params.delete('sort');
+      } else {
+        params.set('sort', newSort);
+      }
+      params.delete('page');
+      router.push(`/listings?${params.toString()}`);
     }
-    params.delete('page'); // Reset to page 1 when sorting changes
-    router.push(`/listings?${params.toString()}`);
   };
 
   if (listings.length === 0) {

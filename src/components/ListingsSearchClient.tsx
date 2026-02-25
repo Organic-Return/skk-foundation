@@ -74,7 +74,7 @@ export default function ListingsSearchClient({
   const [loading, setLoading] = useState(false);
   const [locationFilter, setLocationFilter] = useState(hasLocationFilter);
 
-  const handleFilterChange = useCallback(async (params: URLSearchParams) => {
+  const fetchListings = useCallback(async (params: URLSearchParams) => {
     // Update URL without navigation
     const qs = params.toString();
     const url = qs ? `/listings?${qs}` : '/listings';
@@ -102,6 +102,21 @@ export default function ListingsSearchClient({
       setLoading(false);
     }
   }, []);
+
+  const handleFilterChange = useCallback((params: URLSearchParams) => {
+    fetchListings(params);
+  }, [fetchListings]);
+
+  const handleSortChange = useCallback((newSort: SortOption) => {
+    const params = new URLSearchParams(searchParams);
+    if (newSort === 'newest') {
+      params.delete('sort');
+    } else {
+      params.set('sort', newSort);
+    }
+    params.delete('page');
+    fetchListings(params);
+  }, [searchParams, fetchListings]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -154,6 +169,7 @@ export default function ListingsSearchClient({
           hasLocationFilter={locationFilter}
           template={template as any}
           listingsPerRow={listingsPerRow}
+          onSortChange={handleSortChange}
         />
       </div>
     </div>
