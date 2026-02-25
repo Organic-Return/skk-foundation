@@ -1025,9 +1025,16 @@ address {
   letter-spacing: 0.05em;
 }
 
-/* Default heading color — low specificity so Tailwind text-white etc. can override */
-:where(.rcsothebys-template) :where(h1, h2, h3, h4, h5, h6) {
-  color: var(--rc-navy);
+/* Default heading color — in @layer base so Tailwind v4 utilities can override */
+@layer base {
+  .rcsothebys-template h1,
+  .rcsothebys-template h2,
+  .rcsothebys-template h3,
+  .rcsothebys-template h4,
+  .rcsothebys-template h5,
+  .rcsothebys-template h6 {
+    color: var(--rc-navy);
+  }
 }
 
 .rcsothebys-template h1 {
