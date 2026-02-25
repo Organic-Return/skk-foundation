@@ -489,12 +489,12 @@ export default function ListingsContent({
       <div className="px-4 py-2.5 bg-white border-b flex items-center justify-between lg:px-6 flex-shrink-0">
         {/* Property count, sort, and area filter indicator */}
         <div className="flex items-center gap-3">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 h-[34px] leading-[34px]">
             {areaFilteredListings !== null
               ? <><span className="font-medium text-gray-900">{areaFilteredListings.length.toLocaleString()}</span> of {total.toLocaleString()} properties</>
               : <><span className="font-medium text-gray-900">{total.toLocaleString()}</span> properties found</>}
           </p>
-          <span className="w-px h-5 bg-gray-200" />
+          <span className="w-px h-4 bg-gray-200" />
           <select
             value={currentSort}
             onChange={(e) => handleSortChange(e.target.value as SortOption)}
