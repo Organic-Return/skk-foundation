@@ -79,6 +79,56 @@ export default function RCSothebysListingContent({
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formError, setFormError] = useState('');
 
+  // Bottom contact form state
+  const [btmFirstName, setBtmFirstName] = useState('');
+  const [btmLastName, setBtmLastName] = useState('');
+  const [btmEmail, setBtmEmail] = useState('');
+  const [btmPhone, setBtmPhone] = useState('');
+  const [btmMessage, setBtmMessage] = useState('');
+  const [btmSubmitting, setBtmSubmitting] = useState(false);
+  const [btmSubmitted, setBtmSubmitted] = useState(false);
+  const [btmError, setBtmError] = useState('');
+
+  const handleBtmFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!btmFirstName || !btmLastName || !btmEmail) return;
+    setBtmSubmitting(true);
+    setBtmError('');
+
+    try {
+      const utm = getUTMData();
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: btmFirstName,
+          lastName: btmLastName,
+          email: btmEmail,
+          phone: btmPhone || undefined,
+          message: btmMessage || undefined,
+          leadType: 'property_inquiry',
+          propertyAddress: listing.address || `Property ${listing.mls_number}`,
+          propertyMlsId: listing.mls_number || undefined,
+          propertyPrice: listing.list_price || undefined,
+          source: 'Property Detail Page - Bottom Form',
+          sourceUrl: utm.source_url,
+          referrer: utm.referrer,
+          utmSource: utm.utm_source,
+          utmMedium: utm.utm_medium,
+          utmCampaign: utm.utm_campaign,
+          utmContent: utm.utm_content,
+          utmTerm: utm.utm_term,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to send');
+      setBtmSubmitted(true);
+    } catch {
+      setBtmError('Something went wrong. Please try again.');
+    } finally {
+      setBtmSubmitting(false);
+    }
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formFirstName || !formLastName || !formEmail) return;
@@ -330,49 +380,53 @@ export default function RCSothebysListingContent({
         {/* Property Info Card — full width, non-exclusive only */}
         {!agent && (
           <div className="bg-white shadow-lg border-t-[3px] border-[var(--rc-gold)] mb-8">
-            <div className="px-6 py-5 flex flex-wrap items-center gap-x-8 gap-y-3">
-              <div className="flex-1 min-w-0">
-                <h1
-                  className="text-[var(--rc-navy)] font-bold uppercase tracking-[0.1em] line-clamp-1"
-                  style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', fontSize: '1.125rem' }}
-                >
-                  {listing.address?.split(',')[0] || listing.address}
-                </h1>
-                <div className="text-[var(--rc-brown)]/70 text-xs uppercase tracking-[0.1em] mt-0.5">
-                  {listing.city}{listing.state ? `, ${listing.state}` : ''} {listing.zip_code}
+            <div className="px-6 py-5">
+              {/* Top row: address + save */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h1
+                    className="text-[var(--rc-navy)] font-bold uppercase tracking-[0.1em] line-clamp-1"
+                    style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', fontSize: '1.125rem' }}
+                  >
+                    {listing.address?.split(',')[0] || listing.address}
+                  </h1>
+                  <div className="text-[var(--rc-brown)]/70 text-xs uppercase tracking-[0.1em] mt-0.5">
+                    {listing.city}{listing.state ? `, ${listing.state}` : ''} {listing.zip_code}
+                  </div>
                 </div>
-              </div>
-              <div className="text-[var(--rc-navy)] text-xl md:text-2xl font-bold">
-                {formatPrice(listing.list_price)}
-              </div>
-              <div className="flex items-center gap-4 text-[var(--rc-brown)] text-xs">
-                {listing.bedrooms !== null && (
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-[var(--rc-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                    </svg>
-                    <span>{listing.bedrooms} BD</span>
-                  </div>
-                )}
-                {listing.bathrooms !== null && (
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-[var(--rc-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{listing.bathrooms} BA</span>
-                  </div>
-                )}
-                {listing.square_feet && (
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-[var(--rc-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                    </svg>
-                    <span>{listing.square_feet.toLocaleString()} SF</span>
-                  </div>
-                )}
-              </div>
-              <div>
                 <SavePropertyButton listingId={listing.id} listingType="mls" variant="icon" />
+              </div>
+              {/* Bottom row: price + stats */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3">
+                <div className="text-[var(--rc-navy)] text-xl md:text-2xl font-bold">
+                  {formatPrice(listing.list_price)}
+                </div>
+                <div className="flex items-center gap-4 text-[var(--rc-brown)] text-xs">
+                  {listing.bedrooms !== null && (
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 text-[var(--rc-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                      </svg>
+                      <span>{listing.bedrooms} BD</span>
+                    </div>
+                  )}
+                  {listing.bathrooms !== null && (
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 text-[var(--rc-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>{listing.bathrooms} BA</span>
+                    </div>
+                  )}
+                  {listing.square_feet && (
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 text-[var(--rc-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                      </svg>
+                      <span>{listing.square_feet.toLocaleString()} SF</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1153,6 +1207,90 @@ export default function RCSothebysListingContent({
           </p>
         </div>
       </div>
+
+      {/* Bottom Contact Form */}
+      <section className="bg-[var(--rc-navy)] py-16 md:py-24">
+        <div className="max-w-3xl mx-auto px-6 md:px-8">
+          <div className="text-center mb-10">
+            <h2
+              className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em] mb-4"
+              style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em', color: '#c19b5f' }}
+            >
+              Inquire About This Property
+            </h2>
+            <p className="text-white/60 text-base max-w-lg mx-auto">
+              Interested in {listing.address?.split(',')[0] || 'this property'}? Fill out the form below and an agent will be in touch.
+            </p>
+          </div>
+
+          {btmSubmitted ? (
+            <div className="text-center py-10">
+              <div className="w-14 h-14 rounded-full bg-[var(--rc-gold)]/20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-[var(--rc-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-white text-lg font-medium mb-1">Thank You!</p>
+              <p className="text-white/60 text-sm">Your inquiry has been sent. An agent will respond within 24 hours.</p>
+            </div>
+          ) : (
+            <form className="space-y-5" onSubmit={handleBtmFormSubmit}>
+              {btmError && <p className="text-red-400 text-sm text-center">{btmError}</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <input
+                  type="text"
+                  placeholder="First name"
+                  value={btmFirstName}
+                  onChange={(e) => setBtmFirstName(e.target.value)}
+                  required
+                  className="w-full bg-transparent border-0 border-b border-white/30 text-white text-sm py-3 px-0 placeholder:text-white/40 focus:border-[var(--rc-gold)] focus:ring-0 outline-none transition-colors"
+                />
+                <input
+                  type="text"
+                  placeholder="Last name"
+                  value={btmLastName}
+                  onChange={(e) => setBtmLastName(e.target.value)}
+                  required
+                  className="w-full bg-transparent border-0 border-b border-white/30 text-white text-sm py-3 px-0 placeholder:text-white/40 focus:border-[var(--rc-gold)] focus:ring-0 outline-none transition-colors"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={btmEmail}
+                  onChange={(e) => setBtmEmail(e.target.value)}
+                  required
+                  className="w-full bg-transparent border-0 border-b border-white/30 text-white text-sm py-3 px-0 placeholder:text-white/40 focus:border-[var(--rc-gold)] focus:ring-0 outline-none transition-colors"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone"
+                  value={btmPhone}
+                  onChange={(e) => setBtmPhone(e.target.value)}
+                  className="w-full bg-transparent border-0 border-b border-white/30 text-white text-sm py-3 px-0 placeholder:text-white/40 focus:border-[var(--rc-gold)] focus:ring-0 outline-none transition-colors"
+                />
+              </div>
+              <textarea
+                placeholder="Message..."
+                rows={4}
+                value={btmMessage}
+                onChange={(e) => setBtmMessage(e.target.value)}
+                className="w-full bg-transparent border-0 border-b border-white/30 text-white text-sm py-3 px-0 placeholder:text-white/40 focus:border-[var(--rc-gold)] focus:ring-0 outline-none transition-colors resize-none"
+              />
+              <div className="pt-2 text-center">
+                <button
+                  type="submit"
+                  disabled={btmSubmitting || !btmFirstName || !btmLastName || !btmEmail}
+                  className="bg-transparent border border-white/30 text-white text-[11px] font-bold uppercase tracking-[0.15em] px-12 py-3.5 hover:bg-[var(--rc-gold)] hover:border-[var(--rc-gold)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {btmSubmitting ? 'Sending...' : 'Send Inquiry'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </section>
 
       {/* Fullscreen Lightbox */}
       {lightboxOpen && photos.length > 0 && (
