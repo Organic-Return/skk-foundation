@@ -675,36 +675,64 @@ export async function getOpenHouseListings(): Promise<MLSProperty[]> {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // The graphql_listings view includes open house columns from the base rc-listings table
-  // (open_house_date, open_house_start_time, open_house_end_time, open_house_remarks).
-  // Query directly for listings with upcoming open house dates.
-  const { data, error } = await supabase
-    .from('graphql_listings')
-    .select('*')
-    .not('open_house_date', 'is', null)
-    .gte('open_house_date', today)
-    .not('status', 'is', null)
-    .order('open_house_date', { ascending: true })
+  // Open house data lives in the dedicated "open_houses" table (synced from
+  // SparkAPI RESO OpenHouse endpoint). The graphql_listings view's open_house_date
+  // column has unreliable data, so we query open_houses and join with
+  // graphql_listings for full listing details (photos, beds, baths, etc.).
+
+  // Step 1: Get upcoming open house records
+  const { data: ohData, error: ohError } = await supabase
+    .from('open_houses')
+    .select('"ListingId", "OpenHouseDate", "OpenHouseStartTime", "OpenHouseEndTime", "OpenHouseRemarks"')
+    .gte('OpenHouseDate', today)
+    .order('OpenHouseDate', { ascending: true })
     .limit(200);
 
-  if (error) {
-    console.error('Error fetching open house listings:', error);
+  if (ohError || !ohData || ohData.length === 0) {
+    if (ohError) console.error('Error fetching open house records:', ohError);
     return [];
   }
 
-  if (!data || data.length === 0) return [];
+  // Step 2: Get unique listing IDs and fetch full listing data
+  const listingIds = [...new Set(ohData.map((oh: any) => oh.ListingId).filter(Boolean))];
+  if (listingIds.length === 0) return [];
 
-  // Deduplicate by listing_id (prefer rows with address + most data)
-  const seen = new Map<string, any>();
-  for (const row of data) {
-    const key = row.listing_id;
-    const existing = seen.get(key);
-    if (!existing || (row.address && !existing.address)) {
-      seen.set(key, row);
+  const { data: listings, error: listError } = await supabase
+    .from('graphql_listings')
+    .select('*')
+    .in('listing_id', listingIds)
+    .not('status', 'is', null);
+
+  if (listError || !listings) {
+    if (listError) console.error('Error fetching open house listing data:', listError);
+    return [];
+  }
+
+  // Step 3: Merge open house data onto listings (prefer rows with address data)
+  const listingMap = new Map<string, any>();
+  for (const l of listings) {
+    const existing = listingMap.get(l.listing_id);
+    if (!existing || (l.address && !existing.address)) {
+      listingMap.set(l.listing_id, l);
     }
   }
 
-  return Array.from(seen.values()).map(transformListing);
+  const results: MLSProperty[] = [];
+  for (const oh of ohData as any[]) {
+    const listing = listingMap.get(oh.ListingId);
+    if (!listing) continue;
+
+    const merged = transformListing({
+      ...listing,
+      open_house_date: oh.OpenHouseDate,
+      open_house_start_time: oh.OpenHouseStartTime,
+      open_house_end_time: oh.OpenHouseEndTime,
+      open_house_remarks: oh.OpenHouseRemarks,
+    });
+    results.push(merged);
+  }
+
+  return results;
 }
 
 export function getDistinctCities(): Promise<string[]> {
@@ -1401,9 +1429,42 @@ export async function getListingsByAgentId(
             if (activeRes.error) console.error('Error fetching active MLS listings:', activeRes.error);
             if (soldRes.error) console.error('Error fetching sold MLS listings:', soldRes.error);
 
+            const activeData = activeRes.data || [];
+            const soldData = soldRes.data || [];
+
+            // If MLS ID returned no results but we have an agent name,
+            // fall back to name-based query (handles cases where Sanity has
+            // a non-numeric ID like a username instead of the real MLS ID)
+            if (activeData.length === 0 && soldData.length === 0 && agentName) {
+              console.log(`No listings found for MLS ID "${agentMlsId}", falling back to name "${agentName}"`);
+              const nameFilter = `list_agent_full_name.eq.${agentName}`;
+              const [activeByName, soldByName] = await Promise.all([
+                supabase
+                  .from('graphql_listings')
+                  .select('*')
+                  .not('listing_id', 'is', null)
+                  .or(nameFilter)
+                  .in('status', activeStatuses)
+                  .order('list_price', { ascending: false })
+                  .limit(200),
+                supabase
+                  .from('graphql_listings')
+                  .select('*')
+                  .not('listing_id', 'is', null)
+                  .or(nameFilter)
+                  .in('status', ['Closed', 'Sold'])
+                  .order('sold_price', { ascending: false, nullsFirst: false })
+                  .limit(200),
+              ]);
+              return {
+                activeListings: dedup(activeByName.data || []).map(transformListing),
+                soldListings: dedup(soldByName.data || []).map(transformListing),
+              };
+            }
+
             return {
-              activeListings: dedup(activeRes.data || []).map(transformListing),
-              soldListings: dedup(soldRes.data || []).map(transformListing),
+              activeListings: dedup(activeData).map(transformListing),
+              soldListings: dedup(soldData).map(transformListing),
             };
           } else {
             // No MLS ID — fall back to name-based query on list_agent_full_name
