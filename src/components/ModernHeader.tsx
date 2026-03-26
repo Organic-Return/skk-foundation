@@ -117,9 +117,7 @@ export default function ModernHeader({
       >
         {/* Top Bar */}
         <div
-          className={`hidden lg:block border-b transition-colors duration-500 ${
-            showScrolledState ? 'border-white/10' : 'border-white/10'
-          }`}
+          className="hidden lg:block transition-colors duration-500"
         >
           <div className="max-w-[1800px] mx-auto px-8">
             <div className="flex items-center justify-between h-10">
