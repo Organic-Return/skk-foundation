@@ -263,15 +263,15 @@ export default function ModernHeader({
               ))}
             </nav>
 
-            {/* Center Logo */}
-            <Link href="/" className="flex-shrink-0">
+            {/* Center Logo - spans both nav rows */}
+            <Link href="/" className="flex-shrink-0 relative z-10">
               {logo?.asset ? (
                 <Image
-                  src={urlFor(logo).width(200).url()}
+                  src={urlFor(logo).width(400).url()}
                   alt={logoAlt}
-                  width={160}
-                  height={50}
-                  className="h-12 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
+                  width={320}
+                  height={100}
+                  className="h-24 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[30px]"
                   priority
                 />
               ) : (
