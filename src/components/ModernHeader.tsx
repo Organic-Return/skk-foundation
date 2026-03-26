@@ -115,69 +115,11 @@ export default function ModernHeader({
             : 'bg-transparent'
         }`}
       >
-        {/* Top Bar - Logo + Contact */}
-        <div className="hidden lg:block">
-          <div className="max-w-[1800px] mx-auto px-8">
-            <div className="flex items-center justify-between h-[calc(66px+20px)]">
-              {/* Left - Contact */}
-              <div className="flex items-end gap-6 pb-[10px] h-full">
-                <button
-                  onClick={() => setContactModalOpen(true)}
-                  className="modern-nav transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
-                >
-                  Contact
-                </button>
-                {phoneNumber && (
-                  <a
-                    href={`tel:${phoneNumber}`}
-                    className="transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
-                    aria-label="Call us"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                    </svg>
-                  </a>
-                )}
-                {email && (
-                  <a
-                    href={`mailto:${email}`}
-                    className="transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
-                    aria-label="Email us"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                    </svg>
-                  </a>
-                )}
-              </div>
-
-              {/* Center Logo */}
-              <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-                <Image
-                  src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
-                  alt={logoAlt}
-                  width={200}
-                  height={63}
-                  className="h-[66px] w-auto object-contain transition-all duration-500 brightness-0 invert"
-                  priority
-                />
-              </Link>
-
-              {/* Right - empty for balance */}
-              <div className="flex items-center gap-6">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Horizontal line */}
-        <div className="hidden lg:block border-b border-white/10" />
-
-        {/* Main Navigation */}
+        {/* Single Row Navigation: Left Nav | Logo | Right Nav */}
         <div className="max-w-[1800px] mx-auto px-8">
-          <div className="flex items-center justify-between h-12">
+          <div className="flex items-center justify-between h-[76px]">
             {/* Left Navigation */}
-            <nav className="hidden lg:flex items-center gap-10" ref={dropdownRef}>
+            <nav className="hidden lg:flex items-center gap-8" ref={dropdownRef}>
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
                 <div
                   key={index}
@@ -274,8 +216,20 @@ export default function ModernHeader({
               ))}
             </nav>
 
+            {/* Center Logo */}
+            <Link href="/" className="flex-shrink-0 relative z-10">
+              <Image
+                src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
+                alt={logoAlt}
+                width={200}
+                height={63}
+                className="h-[56px] w-auto object-contain transition-all duration-500 brightness-0 invert"
+                priority
+              />
+            </Link>
+
             {/* Right Navigation */}
-            <nav className="hidden lg:flex items-center gap-10">
+            <nav className="hidden lg:flex items-center gap-8">
               {navItems.slice(Math.ceil(navItems.length / 2)).map((item, index) => {
                 const actualIndex = index + Math.ceil(navItems.length / 2);
                 return (
@@ -338,6 +292,50 @@ export default function ModernHeader({
                 );
               })}
             </nav>
+
+            {/* Contact Icons */}
+            <div className="hidden lg:flex items-center gap-4 ml-6">
+              <button
+                onClick={() => setContactModalOpen(true)}
+                className="modern-nav transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
+              >
+                Contact
+              </button>
+              {phoneNumber && (
+                <a
+                  href={`tel:${phoneNumber}`}
+                  className="transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
+                  aria-label="Call us"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                  </svg>
+                </a>
+              )}
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
+                  aria-label="Email us"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  </svg>
+                </a>
+              )}
+            </div>
+
+            {/* Mobile Logo */}
+            <Link href="/" className="lg:hidden flex-shrink-0">
+              <Image
+                src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
+                alt={logoAlt}
+                width={200}
+                height={63}
+                className="h-10 w-auto object-contain brightness-0 invert"
+                priority
+              />
+            </Link>
 
             {/* Mobile Menu Button */}
             <button
