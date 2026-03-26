@@ -124,14 +124,6 @@ export default function ModernHero({
           </div>
         </form>
 
-        {/* Scroll indicator */}
-        <div
-          className={`absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-1000 delay-700 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <div className="w-[1px] h-12 bg-gradient-to-b from-white/50 to-transparent animate-pulse" />
-        </div>
       </div>
     </section>
   );
