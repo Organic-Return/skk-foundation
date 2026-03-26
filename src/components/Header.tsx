@@ -431,7 +431,7 @@ export default function Header({
                     href={item.url}
                     target={item.openInNewTab ? '_blank' : undefined}
                     rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
-                    className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg uppercase tracking-wider"
+                    className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg uppercase tracking-wider"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.label}

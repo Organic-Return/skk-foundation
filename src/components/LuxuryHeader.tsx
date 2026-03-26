@@ -239,7 +239,7 @@ export default function LuxuryHeader({
                       href={item.url}
                       target={item.openInNewTab ? '_blank' : undefined}
                       rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
-                      className={`relative block px-5 py-4 text-[11px] uppercase tracking-[0.18em] font-light transition-colors font-luxury-body group ${
+                      className={`relative block px-5 py-4 text-[16px] tracking-[0.15em] font-light transition-colors font-luxury group ${
                         showScrolledState ? 'text-[var(--color-charcoal)]' : 'text-white'
                       }`}
                     >
@@ -251,13 +251,13 @@ export default function LuxuryHeader({
                   ) : (
                     <button
                       onClick={() => toggleDropdown(index)}
-                      className={`relative flex items-center gap-1 px-5 py-4 text-[11px] uppercase tracking-[0.18em] font-light transition-colors font-luxury-body group ${
+                      className={`relative flex items-center gap-1 px-5 py-4 text-[16px] tracking-[0.15em] font-light transition-colors font-luxury group ${
                         activeDropdown === index
                           ? showScrolledState ? 'text-[var(--color-charcoal)]' : 'text-white'
                           : showScrolledState
                             ? 'text-[var(--color-charcoal)]'
                             : 'text-white'
-                      }`}
+                      }`
                     >
                       <span>{item.label}</span>
                       <span className={`absolute bottom-3 left-5 right-5 h-px transition-all duration-300 origin-left ${

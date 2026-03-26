@@ -602,7 +602,7 @@ address {
   letter-spacing: 0.18em;
   font-weight: 300;
   text-transform: uppercase;
-  font-size: 0.6875rem;
+  font-size: 16px;
 }
 
 /* Luxury hero text */
@@ -701,7 +701,7 @@ address {
   font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
   letter-spacing: 0.2em;
   font-weight: 500;
-  font-size: 0.65rem;
+  font-size: 16px;
   text-transform: uppercase;
 }
 
