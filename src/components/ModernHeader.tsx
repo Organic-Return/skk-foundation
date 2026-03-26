@@ -115,10 +115,12 @@ export default function ModernHeader({
             : 'bg-transparent'
         }`}
       >
-        {/* Top Bar - Logo centered with contact icons */}
-        <div className="hidden lg:block">
+        {/* Top Bar */}
+        <div
+          className="hidden lg:block transition-colors duration-500"
+        >
           <div className="max-w-[1800px] mx-auto px-8">
-            <div className="flex items-center justify-between h-16">
+            <div className="flex items-center justify-between h-10">
               {/* Left - Contact */}
               <div className="flex items-center gap-6">
                 <button
@@ -151,36 +153,19 @@ export default function ModernHeader({
                 )}
               </div>
 
-              {/* Center Logo */}
-              <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-                <Image
-                  src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
-                  alt={logoAlt}
-                  width={200}
-                  height={63}
-                  className="h-[66px] w-auto object-contain transition-all duration-500 brightness-0 invert"
-                  priority
-                />
-              </Link>
-
-              {/* Right - empty for balance */}
+              {/* Right - Secondary links */}
               <div className="flex items-center gap-6">
               </div>
             </div>
           </div>
         </div>
 
-        {/* Divider line */}
-        <div className={`hidden lg:block border-b transition-colors duration-500 ${
-          showScrolledState ? 'border-white/10' : 'border-white/10'
-        }`} />
-
-        {/* Centered Navigation */}
+        {/* Main Navigation */}
         <div className="max-w-[1800px] mx-auto px-8">
-          <div className="flex items-center justify-between lg:justify-center h-12">
-            {/* All Navigation - centered */}
+          <div className="flex items-center justify-between h-12">
+            {/* Left Navigation */}
             <nav className="hidden lg:flex items-center gap-10" ref={dropdownRef}>
-              {navItems.map((item, index) => (
+              {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
                 <div
                   key={index}
                   className="relative"
@@ -276,17 +261,82 @@ export default function ModernHeader({
               ))}
             </nav>
 
-            {/* Mobile Logo */}
-            <Link href="/" className="lg:hidden flex-shrink-0">
+            {/* Center Logo */}
+            <Link href="/" className="flex-shrink-0 relative z-10">
               <Image
                 src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
                 alt={logoAlt}
                 width={200}
                 height={63}
-                className="h-10 w-auto object-contain brightness-0 invert"
+                className="h-[66px] w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[40px]"
                 priority
               />
             </Link>
+
+            {/* Right Navigation */}
+            <nav className="hidden lg:flex items-center gap-10">
+              {navItems.slice(Math.ceil(navItems.length / 2)).map((item, index) => {
+                const actualIndex = index + Math.ceil(navItems.length / 2);
+                return (
+                  <div
+                    key={actualIndex}
+                    className="relative"
+                    onMouseEnter={() => (item.hasMegaMenu || item.simpleDropdown) && handleDropdownEnter(actualIndex)}
+                    onMouseLeave={handleDropdownLeave}
+                  >
+                    {item.url && !item.hasMegaMenu && !item.simpleDropdown ? (
+                      <Link
+                        href={item.url}
+                        target={item.openInNewTab ? '_blank' : undefined}
+                        rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
+                        className="modern-nav py-2 transition-colors duration-300 text-white hover:text-[var(--modern-gold)]"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <button
+                        className="modern-nav py-2 flex items-center gap-1.5 transition-colors duration-300 text-white hover:text-[var(--modern-gold)]"
+                      >
+                        {item.label}
+                        <svg
+                          className={`w-3 h-3 transition-transform duration-300 ${
+                            activeDropdown === actualIndex ? 'rotate-180' : ''
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    )}
+
+                    {/* Dropdown Menu */}
+                    {(item.hasMegaMenu || item.simpleDropdown) && activeDropdown === actualIndex && (
+                      <div className="absolute top-full right-0 pt-2">
+                        <div className="bg-white shadow-2xl min-w-[280px]">
+                          {item.simpleDropdown && (
+                            <div className="py-4">
+                              {item.simpleDropdown.map((link, linkIndex) => (
+                                <Link
+                                  key={linkIndex}
+                                  href={link.url}
+                                  target={link.openInNewTab ? '_blank' : undefined}
+                                  rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
+                                  className="block px-6 py-3 text-[var(--modern-gray)] hover:text-[var(--modern-black)] hover:bg-[var(--modern-gray-bg)] modern-nav transition-colors duration-200"
+                                >
+                                  {link.label}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
 
             {/* Mobile Menu Button */}
             <button
