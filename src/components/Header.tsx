@@ -204,7 +204,7 @@ export default function Header({
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {logo?.asset?.url ? (
-              <div className="relative h-24 sm:h-32 md:h-40 min-[1150px]:h-[13.5rem] w-[20rem] sm:w-[28rem] md:w-[36rem] min-[1150px]:w-[28rem] min-[1350px]:w-[34rem] 2xl:w-[45rem]">
+              <div className="relative h-48 sm:h-64 md:h-80 min-[1150px]:h-[27rem] w-[40rem] sm:w-[56rem] md:w-[72rem] min-[1150px]:w-[56rem] min-[1350px]:w-[68rem] 2xl:w-[90rem]">
                 <Image
                   src={urlFor(logo).width(675).url()}
                   alt={logoAlt}
@@ -240,7 +240,7 @@ export default function Header({
                     target={item.openInNewTab ? '_blank' : undefined}
                     rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
                     className="relative py-2 font-medium uppercase text-white whitespace-nowrap group flex-shrink-0"
-                    style={{ fontSize: 'clamp(9px, calc(0.45vw + 4px), 14px)', padding: '8px clamp(3px, calc(1vw - 8px), 14px)', letterSpacing: 'clamp(0.02em, calc(0.1vw - 0.02em), 0.12em)' }}
+                    style={{ fontSize: '16px', padding: '8px clamp(3px, calc(1vw - 8px), 14px)', letterSpacing: 'clamp(0.02em, calc(0.1vw - 0.02em), 0.12em)' }}
                   >
                     {item.label}
                     <span className="absolute bottom-0 left-1 right-1 h-[2px] bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
@@ -249,7 +249,7 @@ export default function Header({
                   <button
                     onClick={() => toggleDropdown(index)}
                     className="relative py-2 font-medium uppercase text-white whitespace-nowrap group flex-shrink-0"
-                    style={{ fontSize: 'clamp(9px, calc(0.45vw + 4px), 14px)', padding: '8px clamp(3px, calc(1vw - 8px), 14px)', letterSpacing: 'clamp(0.02em, calc(0.1vw - 0.02em), 0.12em)' }}
+                    style={{ fontSize: '16px', padding: '8px clamp(3px, calc(1vw - 8px), 14px)', letterSpacing: 'clamp(0.02em, calc(0.1vw - 0.02em), 0.12em)' }}
                   >
                     {item.label}
                     <span className="absolute bottom-0 left-1 right-1 h-[2px] bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
