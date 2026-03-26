@@ -268,9 +268,9 @@ export default function ModernHeader({
               <Image
                 src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
                 alt={logoAlt}
-                width={160}
-                height={50}
-                className="h-12 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
+                width={200}
+                height={63}
+                className="h-[60px] w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
                 priority
               />
             </Link>
