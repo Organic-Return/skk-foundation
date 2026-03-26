@@ -122,7 +122,7 @@ export default function ModernHeader({
           }`}
         >
           <div className="max-w-[1800px] mx-auto px-8">
-            <div className="flex items-center justify-between h-7">
+            <div className="flex items-center justify-between h-5">
               {/* Left - Contact */}
               <div className="flex items-center gap-6">
                 <button
@@ -164,7 +164,7 @@ export default function ModernHeader({
 
         {/* Main Navigation */}
         <div className="max-w-[1800px] mx-auto px-8">
-          <div className="flex items-center justify-between h-14">
+          <div className="flex items-center justify-between h-10">
             {/* Left Navigation */}
             <nav className="hidden lg:flex items-center gap-10" ref={dropdownRef}>
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
