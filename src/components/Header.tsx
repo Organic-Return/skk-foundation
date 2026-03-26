@@ -204,7 +204,7 @@ export default function Header({
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {logo?.asset?.url ? (
-              <div className="relative h-12 sm:h-16 md:h-20 min-[1150px]:h-27 w-[10rem] sm:w-[14rem] md:w-[18rem] min-[1150px]:w-[14rem] min-[1350px]:w-[17rem] 2xl:w-[22.5rem]">
+              <div className="relative h-24 sm:h-32 md:h-40 min-[1150px]:h-[13.5rem] w-[20rem] sm:w-[28rem] md:w-[36rem] min-[1150px]:w-[28rem] min-[1350px]:w-[34rem] 2xl:w-[45rem]">
                 <Image
                   src={urlFor(logo).width(675).url()}
                   alt={logoAlt}
