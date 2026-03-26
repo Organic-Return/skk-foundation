@@ -120,7 +120,7 @@ export default function ModernHeader({
           <div className="max-w-[1800px] mx-auto px-8">
             <div className="flex items-center justify-between h-[calc(66px+20px)]">
               {/* Left - Contact */}
-              <div className="flex items-center gap-6">
+              <div className="flex items-end gap-6 pb-[10px] h-full">
                 <button
                   onClick={() => setContactModalOpen(true)}
                   className="modern-nav transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
