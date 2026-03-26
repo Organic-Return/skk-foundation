@@ -267,11 +267,11 @@ export default function ModernHeader({
             <Link href="/" className="flex-shrink-0">
               {logo?.asset ? (
                 <Image
-                  src={urlFor(logo).width(600).url()}
+                  src={urlFor(logo).width(200).url()}
                   alt={logoAlt}
-                  width={480}
-                  height={150}
-                  className="h-36 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
+                  width={160}
+                  height={50}
+                  className="h-12 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
                   priority
                 />
               ) : (
