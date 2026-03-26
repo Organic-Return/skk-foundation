@@ -265,7 +265,7 @@ export default function ModernHeader({
                   alt={logoAlt}
                   width={480}
                   height={150}
-                  className="h-36 w-auto object-contain transition-all duration-500 brightness-0 invert"
+                  className="h-36 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
                   priority
                 />
               ) : (
