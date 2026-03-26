@@ -122,7 +122,7 @@ export default function ModernHeader({
           }`}
         >
           <div className="max-w-[1800px] mx-auto px-8">
-            <div className="flex items-center justify-between h-5">
+            <div className="flex items-center justify-between h-10">
               {/* Left - Contact */}
               <div className="flex items-center gap-6">
                 <button
@@ -164,7 +164,7 @@ export default function ModernHeader({
 
         {/* Main Navigation */}
         <div className="max-w-[1800px] mx-auto px-8">
-          <div className="flex items-center justify-between h-10">
+          <div className="flex items-center justify-between h-20">
             {/* Left Navigation */}
             <nav className="hidden lg:flex items-center gap-10" ref={dropdownRef}>
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
@@ -267,11 +267,11 @@ export default function ModernHeader({
             <Link href="/" className="flex-shrink-0 relative z-10">
               {logo?.asset ? (
                 <Image
-                  src={urlFor(logo).width(800).url()}
+                  src={urlFor(logo).width(200).url()}
                   alt={logoAlt}
-                  width={640}
-                  height={200}
-                  className="h-48 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[30px]"
+                  width={160}
+                  height={50}
+                  className="h-12 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
                   priority
                 />
               ) : (
