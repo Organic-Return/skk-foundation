@@ -113,9 +113,6 @@ export default function ModernAgentListingsGallery({
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <span className="inline-block text-[var(--modern-gold)] text-xs uppercase tracking-[0.3em] mb-4">
-            Portfolio
-          </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)]">
             {title}
           </h2>

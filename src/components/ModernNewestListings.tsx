@@ -147,9 +147,6 @@ export default function ModernNewestListings({
           }`}
         >
           <div>
-            <span className="inline-block text-[var(--modern-gold)] text-xs uppercase tracking-[0.3em] mb-4">
-              Just Listed
-            </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)]">
               {title}
             </h2>

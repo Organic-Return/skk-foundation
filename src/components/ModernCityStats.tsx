@@ -152,9 +152,6 @@ export default function ModernCityStats({
           }`}
         >
           {isDark && <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mb-8" />}
-          <span className={`inline-block text-[var(--modern-gold)] text-xs uppercase tracking-[0.3em] mb-4 ${isDark ? 'hidden' : ''}`}>
-            Analytics
-          </span>
           <h2
             className={`font-light tracking-wide ${isDark ? 'text-white' : 'text-[var(--modern-dark)]'}`}
             style={{ fontSize: 'clamp(1.5rem, 3vw, 2.0rem)' }}

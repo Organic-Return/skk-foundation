@@ -84,11 +84,6 @@ export default function ModernAbout({
               isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
             }`}
           >
-            {/* Section label */}
-            <span className="inline-block text-[var(--modern-gold)] text-xs uppercase tracking-[0.3em] mb-6">
-              About
-            </span>
-
             {/* Title */}
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] mb-8 leading-tight">
               {title}
