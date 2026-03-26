@@ -115,12 +115,10 @@ export default function ModernHeader({
             : 'bg-transparent'
         }`}
       >
-        {/* Top Bar */}
-        <div
-          className="hidden lg:block transition-colors duration-500"
-        >
+        {/* Top Bar - Logo + Contact */}
+        <div className="hidden lg:block">
           <div className="max-w-[1800px] mx-auto px-8">
-            <div className="flex items-center justify-between h-10">
+            <div className="flex items-center justify-between h-16">
               {/* Left - Contact */}
               <div className="flex items-center gap-6">
                 <button
@@ -153,12 +151,27 @@ export default function ModernHeader({
                 )}
               </div>
 
-              {/* Right - Secondary links */}
+              {/* Center Logo */}
+              <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+                <Image
+                  src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
+                  alt={logoAlt}
+                  width={200}
+                  height={63}
+                  className="h-[66px] w-auto object-contain transition-all duration-500 brightness-0 invert"
+                  priority
+                />
+              </Link>
+
+              {/* Right - empty for balance */}
               <div className="flex items-center gap-6">
               </div>
             </div>
           </div>
         </div>
+
+        {/* Horizontal line */}
+        <div className="hidden lg:block border-b border-white/10" />
 
         {/* Main Navigation */}
         <div className="max-w-[1800px] mx-auto px-8">
@@ -260,18 +273,6 @@ export default function ModernHeader({
                 </div>
               ))}
             </nav>
-
-            {/* Center Logo */}
-            <Link href="/" className="flex-shrink-0 relative z-10">
-              <Image
-                src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
-                alt={logoAlt}
-                width={200}
-                height={63}
-                className="h-[66px] w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[40px]"
-                priority
-              />
-            </Link>
 
             {/* Right Navigation */}
             <nav className="hidden lg:flex items-center gap-10">
