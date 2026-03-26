@@ -67,13 +67,6 @@ export default function ModernHero({
 
       {/* Content - Omega/Rolex inspired centered layout */}
       <div className="relative z-10 h-full flex flex-col justify-end items-center text-center px-6 pb-24 md:pb-32">
-        {/* Thin gold accent line */}
-        <div
-          className={`w-16 h-[1px] bg-[var(--modern-gold)] mb-8 transition-all duration-1000 delay-300 ${
-            isLoaded ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
-          }`}
-        />
-
         {/* Title - Patek Philippe inspired typography */}
         <h1
           className={`modern-hero-title text-white mb-6 max-w-4xl transition-all duration-1000 delay-400 ${
