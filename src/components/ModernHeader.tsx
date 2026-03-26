@@ -263,24 +263,16 @@ export default function ModernHeader({
               ))}
             </nav>
 
-            {/* Center Logo - spans both nav rows */}
+            {/* Center Logo */}
             <Link href="/" className="flex-shrink-0 relative z-10">
-              {logo?.asset ? (
-                <Image
-                  src={urlFor(logo).width(200).url()}
-                  alt={logoAlt}
-                  width={160}
-                  height={50}
-                  className="h-12 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
-                  priority
-                />
-              ) : (
-                <span
-                  className="text-2xl font-light tracking-[0.15em] uppercase transition-colors duration-500 text-white"
-                >
-                  {siteTitle}
-                </span>
-              )}
+              <Image
+                src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
+                alt={logoAlt}
+                width={160}
+                height={50}
+                className="h-12 w-auto object-contain transition-all duration-500 brightness-0 invert -mt-[10px]"
+                priority
+              />
             </Link>
 
             {/* Right Navigation */}
