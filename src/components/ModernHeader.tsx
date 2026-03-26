@@ -118,7 +118,7 @@ export default function ModernHeader({
         {/* Top Bar - Logo + Contact */}
         <div className="hidden lg:block">
           <div className="max-w-[1800px] mx-auto px-8">
-            <div className="flex items-center justify-between h-16">
+            <div className="flex items-center justify-between h-[calc(66px+20px)]">
               {/* Left - Contact */}
               <div className="flex items-center gap-6">
                 <button
