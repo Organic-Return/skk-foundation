@@ -100,30 +100,38 @@ export default function ContactModal({ isOpen, onClose, agent }: ContactModalPro
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div
+      className={`fixed inset-0 z-[100] transition-visibility ${
+        isOpen ? 'visible' : 'invisible delay-500'
+      }`}
+    >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${
+          isOpen ? 'opacity-100' : 'opacity-0'
+        }`}
         onClick={onClose}
       />
 
-      {/* Modal */}
-      <div className="relative bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4 shadow-2xl">
+      {/* Slide-in Panel from Right */}
+      <div
+        className={`absolute top-0 right-0 h-full w-full max-w-4xl bg-white shadow-2xl overflow-y-auto transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-          aria-label="Close modal"
+          className="absolute top-6 right-6 z-10 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close panel"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 min-h-full">
           {/* Agent Info Section */}
           <div className="bg-[var(--color-sothebys-blue)] text-white p-8 md:p-12">
             <h2 className="text-2xl font-serif font-light mb-6 tracking-wide">Get In Touch</h2>
