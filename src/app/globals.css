@@ -892,6 +892,10 @@ address {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.custom-one-template p {
+  font-size: 14px;
+}
+
 .custom-one-template h1,
 .custom-one-template h2,
 .custom-one-template h3,
