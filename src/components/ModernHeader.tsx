@@ -112,7 +112,7 @@ export default function ModernHeader({
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           showScrolledState
             ? 'bg-[var(--modern-black)] shadow-lg'
-            : 'bg-transparent'
+            : 'bg-gradient-to-b from-black/50 to-transparent'
         }`}
       >
         {/* Single Row Navigation: Left Nav | Logo | Right Nav */}
