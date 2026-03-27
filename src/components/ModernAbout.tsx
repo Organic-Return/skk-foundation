@@ -86,7 +86,9 @@ export default function ModernAbout({
           >
             {/* Title */}
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] mb-8 leading-tight">
-              {title}
+              {title?.includes('Village') ? (
+                <>{title.split(/(?<=Village)\s*/)[0]}<br />{title.split(/(?<=Village)\s*/)[1]}</>
+              ) : title}
             </h2>
 
             {/* Divider */}

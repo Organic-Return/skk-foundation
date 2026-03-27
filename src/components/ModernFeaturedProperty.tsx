@@ -27,7 +27,7 @@ interface PropertyData {
 export default function ModernFeaturedProperty({
   mlsId,
   agentMlsId,
-  headline = 'Featured Residence',
+  headline = 'Featured Properties',
   buttonText = 'View Property',
 }: ModernFeaturedPropertyProps) {
   const [properties, setProperties] = useState<PropertyData[]>([]);

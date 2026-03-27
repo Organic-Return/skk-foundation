@@ -111,37 +111,10 @@ export default function ModernQuoteBlock({
           </h2>
         </div>
 
-        {/* Stats Grid - 4 items */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-          {displayItems.map((item, index) => (
-            <div
-              key={index}
-              className={`text-center transition-all duration-1000 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${200 + index * 100}ms` }}
-            >
-              <div className="text-4xl md:text-5xl lg:text-6xl font-light text-[var(--modern-gold)] mb-4 tracking-wide">
-                {item.value}
-              </div>
-              <div className="text-xs md:text-sm text-white/60 uppercase tracking-[0.2em]">
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Gold line separator */}
-        <div
-          className={`w-24 h-[1px] bg-[var(--modern-gold)] mx-auto my-16 md:my-20 transition-all duration-1000 delay-500 ${
-            isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
-          }`}
-        />
-
-        {/* Testimonial */}
+        {/* Testimonial - above stats */}
         {testimonial ? (
           <div
-            className={`max-w-3xl mx-auto text-center transition-all duration-1000 delay-700 ${
+            className={`max-w-3xl mx-auto text-center mb-16 md:mb-20 transition-all duration-1000 delay-200 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
@@ -162,13 +135,34 @@ export default function ModernQuoteBlock({
               </p>
             )}
           </div>
-        ) : (
-          <div
-            className={`w-16 h-[1px] bg-[var(--modern-gold)] mx-auto transition-all duration-1000 delay-500 ${
-              isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
-            }`}
-          />
-        )}
+        ) : null}
+
+        {/* Gold line separator */}
+        <div
+          className={`w-24 h-[1px] bg-[var(--modern-gold)] mx-auto mb-16 md:mb-20 transition-all duration-1000 delay-500 ${
+            isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
+          }`}
+        />
+
+        {/* Stats Grid - 4 items */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+          {displayItems.map((item, index) => (
+            <div
+              key={index}
+              className={`text-center transition-all duration-1000 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: `${200 + index * 100}ms` }}
+            >
+              <div className="text-4xl md:text-5xl lg:text-6xl font-light text-[var(--modern-gold)] mb-4 tracking-wide">
+                {item.value}
+              </div>
+              <div className="text-xs md:text-sm text-white/60 uppercase tracking-[0.2em]">
+                {item.label}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
