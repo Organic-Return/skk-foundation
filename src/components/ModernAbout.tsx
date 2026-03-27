@@ -74,8 +74,6 @@ export default function ModernAbout({
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
             </div>
-            {/* Gold accent */}
-            <div className="absolute -bottom-4 -right-4 w-32 h-32 border border-[var(--modern-gold)] opacity-50" />
           </div>
 
           {/* Content Column */}
