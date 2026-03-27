@@ -86,9 +86,7 @@ export default function ModernCommunities({
               style={{ transitionDelay: `${200 + index * 100}ms` }}
             >
               {/* Image */}
-              <div className="relative aspect-[3/4] bg-white/5 overflow-visible">
-                {/* Gold accent */}
-                <div className="absolute -bottom-4 -right-4 w-32 h-32 border border-[var(--modern-gold)] opacity-50 z-10" />
+              <div className="relative aspect-[3/4] bg-white/5">
                 {community.imageUrl ? (
                   <Image
                     src={community.imageUrl}
