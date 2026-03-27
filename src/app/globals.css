@@ -885,6 +885,7 @@ address {
   --modern-gold-light: #c4956b;
   --modern-green: #2d5a3f;
   --modern-green-light: #3d7a56;
+  --color-sothebys-blue: #000000;
 
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
