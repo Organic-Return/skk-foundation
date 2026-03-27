@@ -117,7 +117,7 @@ export default function ModernHeader({
       >
         {/* Single Row Navigation: Left Nav | Logo | Right Nav */}
         <div className="max-w-[1800px] mx-auto px-8">
-          <div className="flex items-center justify-between h-[76px]">
+          <div className="flex items-center justify-between h-[87px]">
             {/* Left Navigation */}
             <nav className="hidden lg:flex items-center gap-8" ref={dropdownRef}>
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
