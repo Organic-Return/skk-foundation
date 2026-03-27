@@ -120,38 +120,6 @@ export default function ModernHeader({
           <div className="flex items-center justify-between h-[76px]">
             {/* Left Navigation */}
             <nav className="hidden lg:flex items-center gap-8" ref={dropdownRef}>
-              {/* Contact + Icons */}
-              <button
-                onClick={() => setContactModalOpen(true)}
-                className="modern-nav transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
-              >
-                Contact
-              </button>
-              {phoneNumber && (
-                <a
-                  href={`tel:${phoneNumber}`}
-                  className="transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
-                  aria-label="Call us"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                  </svg>
-                </a>
-              )}
-              {email && (
-                <a
-                  href={`mailto:${email}`}
-                  className="transition-colors duration-300 text-white/70 hover:text-[var(--modern-gold)]"
-                  aria-label="Email us"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                  </svg>
-                </a>
-              )}
-              {/* Separator */}
-              <div className="w-px h-4 bg-white/20" />
-              {/* Nav items */}
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
                 <div
                   key={index}
@@ -248,8 +216,8 @@ export default function ModernHeader({
               ))}
             </nav>
 
-            {/* Center Logo */}
-            <Link href="/" className="flex-shrink-0 relative z-10">
+            {/* Center Logo - absolutely centered */}
+            <Link href="/" className="absolute left-1/2 -translate-x-1/2 z-10">
               <Image
                 src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
                 alt={logoAlt}
@@ -323,6 +291,13 @@ export default function ModernHeader({
                   </div>
                 );
               })}
+              {/* Contact - after About */}
+              <button
+                onClick={() => setContactModalOpen(true)}
+                className="modern-nav py-2 transition-colors duration-300 text-white hover:text-[var(--modern-gold)]"
+              >
+                Contact
+              </button>
             </nav>
 
             {/* Mobile Logo */}
