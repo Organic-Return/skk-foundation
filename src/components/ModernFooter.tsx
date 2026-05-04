@@ -294,7 +294,7 @@ export default function ModernFooter({
 
       {/* Bottom Bar */}
       <div className="border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
+        <div className="max-w-[980px] mx-auto px-6 lg:px-8 py-6">
           {/* Legal Disclaimer */}
           <p className="text-white/20 text-[9px] leading-relaxed mb-3">
             &copy; 1999 &ndash; 2025 Christie&apos;s International Real Estate all rights reserved. Each office is independently owned and operated.
