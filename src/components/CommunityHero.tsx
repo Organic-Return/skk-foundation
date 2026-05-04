@@ -54,16 +54,6 @@ export default function CommunityHero({
         <div className="absolute inset-0 flex items-center justify-center text-center pt-16">
           <div className="w-full max-w-[1440px] mx-auto px-6 md:px-12">
             <div className="max-w-3xl mx-auto">
-              {/* Pretitle */}
-              <p
-                className={`font-luxury-body text-[var(--color-gold)] text-[11px] uppercase tracking-[0.3em] font-light mb-5 transition-all duration-1000 ${
-                  isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-                style={{ transitionDelay: '300ms' }}
-              >
-                Community
-              </p>
-
               {/* Title */}
               <h1
                 className={`font-luxury text-white text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light tracking-[0.04em] leading-[1.1] mb-6 md:mb-8 transition-all duration-1000 ${
