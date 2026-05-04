@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Lora, Cormorant_Garamond, Montserrat, Playfair_Display, Figtree } from "next/font/google";
+import { Inter, Bodoni_Moda, Cormorant_Garamond, Montserrat, Playfair_Display, Figtree } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -25,9 +25,9 @@ const inter = Inter({
   display: "swap",
 });
 
-// Lora - Elegant serif for headings
-const lora = Lora({
-  variable: "--font-lora",
+// Bodoni Moda - Elegant serif for headings
+const bodoni = Bodoni_Moda({
+  variable: "--font-bodoni",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
@@ -158,7 +158,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${lora.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} antialiased ${templateClass}`}>
+      <body className={`${inter.variable} ${bodoni.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} antialiased ${templateClass}`}>
         <AuthProvider>
         <UTMCapture />
         <LayoutWrapper
