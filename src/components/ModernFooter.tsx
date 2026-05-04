@@ -296,13 +296,13 @@ export default function ModernFooter({
       <div className="border-t border-white/5">
         <div className="max-w-[980px] mx-auto px-6 lg:px-8 py-6">
           {/* Legal Disclaimer */}
-          <p className="text-white/20 text-[9px] leading-relaxed mb-3">
+          <p className="text-white/20 leading-relaxed mb-3" style={{ maxWidth: 'none', fontSize: '10px' }}>
             &copy; 1999 &ndash; 2025 Christie&apos;s International Real Estate all rights reserved. Each office is independently owned and operated.
           </p>
-          <p className="text-white/20 text-[9px] leading-relaxed mb-3">
+          <p className="text-white/20 leading-relaxed mb-3" style={{ maxWidth: 'none', fontSize: '10px' }}>
             All information provided herein has been obtained from sources believed reliable, but may be subject to errors, omissions, change of price, prior sale, or withdrawal without notice. Christie&apos;s International Real Estate and its affiliates make no representation, warranty or guaranty as to accuracy of any information contained herein. You should consult your advisors for an independent verification of any properties.
           </p>
-          <p className="text-white/20 text-[9px] leading-relaxed mb-4">
+          <p className="text-white/20 leading-relaxed mb-4" style={{ maxWidth: 'none', fontSize: '10px' }}>
             At World Properties, LLC and its subsidiaries do not discriminate against the use of Housing Choice Vouchers. Se Aceptan Vales de Elecci&oacute;n de Vivienda.
           </p>
           <div className="flex justify-end">
