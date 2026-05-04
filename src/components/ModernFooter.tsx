@@ -296,13 +296,16 @@ export default function ModernFooter({
       <div className="border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
           {/* Legal Disclaimer */}
-          <p className="text-white/20 text-[9px] leading-relaxed mb-4">
-            &copy; {currentYear} Sotheby&apos;s International Realty Affiliates LLC. All rights reserved. Sotheby&apos;s International Realty&reg; and the Sotheby&apos;s International Realty Logo are service marks licensed to Sotheby&apos;s International Realty Affiliates LLC and used with permission. Each office is independently owned and operated.
+          <p className="text-white/20 text-[9px] leading-relaxed mb-3">
+            &copy; 1999 &ndash; 2025 Christie&apos;s International Real Estate all rights reserved. Each office is independently owned and operated.
           </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <p className="text-white/20 text-[10px]">
-              &copy; {currentYear} {siteTitle}. All rights reserved.
-            </p>
+          <p className="text-white/20 text-[9px] leading-relaxed mb-3">
+            All information provided herein has been obtained from sources believed reliable, but may be subject to errors, omissions, change of price, prior sale, or withdrawal without notice. Christie&apos;s International Real Estate and its affiliates make no representation, warranty or guaranty as to accuracy of any information contained herein. You should consult your advisors for an independent verification of any properties.
+          </p>
+          <p className="text-white/20 text-[9px] leading-relaxed mb-4">
+            At World Properties, LLC and its subsidiaries do not discriminate against the use of Housing Choice Vouchers. Se Aceptan Vales de Elecci&oacute;n de Vivienda.
+          </p>
+          <div className="flex justify-end">
             <p className="text-white/20 text-[10px]">
               Design by{' '}
               <a
