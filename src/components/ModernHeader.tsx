@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import ContactModal from './ContactModal';
+import SiteSearchModal from './SiteSearchModal';
 
 const builder = createImageUrlBuilder(client);
 
@@ -68,6 +69,7 @@ export default function ModernHeader({
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [activeMobileDropdown, setActiveMobileDropdown] = useState<number | null>(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isHomepage = pathname === '/';
   const isCommunityPage = pathname?.startsWith('/communities/');
@@ -298,6 +300,16 @@ export default function ModernHeader({
               >
                 Contact
               </button>
+              {/* Search */}
+              <button
+                onClick={() => setSearchModalOpen(true)}
+                aria-label="Search"
+                className="py-2 text-white hover:text-[var(--modern-gold)] transition-colors duration-300"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+                </svg>
+              </button>
             </nav>
 
             {/* Mobile Logo */}
@@ -311,6 +323,17 @@ export default function ModernHeader({
                 priority
               />
             </Link>
+
+            {/* Mobile Search Button */}
+            <button
+              onClick={() => setSearchModalOpen(true)}
+              className="lg:hidden p-2 transition-colors duration-300 text-white"
+              aria-label="Search"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+              </svg>
+            </button>
 
             {/* Mobile Menu Button */}
             <button
@@ -441,6 +464,12 @@ export default function ModernHeader({
           phone: phoneNumber,
           email: email,
         }}
+      />
+
+      {/* Site Search Modal */}
+      <SiteSearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
       />
     </>
   );
