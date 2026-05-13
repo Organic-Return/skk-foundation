@@ -218,8 +218,8 @@ export default function ModernHeader({
               ))}
             </nav>
 
-            {/* Center Logo - absolutely centered */}
-            <Link href="/" className="absolute left-1/2 -translate-x-1/2 z-10">
+            {/* Center Logo - absolutely centered (desktop only) */}
+            <Link href="/" className="hidden lg:block absolute left-1/2 -translate-x-1/2 z-10">
               <Image
                 src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
                 alt={logoAlt}
