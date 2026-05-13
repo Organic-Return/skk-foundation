@@ -324,17 +324,6 @@ export default function ModernHeader({
               />
             </Link>
 
-            {/* Mobile Search Button */}
-            <button
-              onClick={() => setSearchModalOpen(true)}
-              className="lg:hidden p-2 transition-colors duration-300 text-white"
-              aria-label="Search"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
-              </svg>
-            </button>
-
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -419,8 +408,20 @@ export default function ModernHeader({
               ))}
             </nav>
 
-            {/* Mobile Contact */}
+            {/* Mobile Contact + Search */}
             <div className="mt-12 pt-8 border-t border-white/10">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setSearchModalOpen(true);
+                }}
+                className="flex items-center gap-3 w-full text-left py-4 text-white text-lg font-light tracking-[0.1em] uppercase border-b border-white/10"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+                </svg>
+                Search
+              </button>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
