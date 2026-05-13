@@ -47,21 +47,8 @@ export default function ModernCommunities({
   }
 
   return (
-    <section ref={sectionRef} className="pt-24 md:pt-32 pb-16 md:pb-24 bg-[var(--modern-black)] relative overflow-hidden">
-      {/* Background pattern - matching ModernQuoteBlock */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 40px,
-            var(--modern-gold) 40px,
-            var(--modern-gold) 41px
-          )`
-        }} />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+    <section ref={sectionRef} className="pt-0 pb-16 md:pb-24 bg-white relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 pt-16 md:pt-20">
         {/* Header */}
         <div
           className={`text-center mb-16 md:mb-20 transition-all duration-1000 ${
@@ -69,7 +56,7 @@ export default function ModernCommunities({
           }`}
         >
           <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mb-8" />
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white tracking-wide">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] tracking-wide">
             {title}
           </h2>
         </div>
@@ -140,7 +127,7 @@ export default function ModernCommunities({
         >
           <Link
             href="/communities"
-            className="inline-flex items-center gap-2 group text-white/60 hover:text-[var(--modern-gold)] transition-colors duration-300 text-sm uppercase tracking-[0.2em]"
+            className="inline-flex items-center gap-2 group text-[var(--modern-gray)] hover:text-[var(--modern-gold)] transition-colors duration-300 text-sm uppercase tracking-[0.2em]"
           >
             <span>Explore All Communities</span>
             <svg
