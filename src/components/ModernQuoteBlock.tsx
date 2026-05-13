@@ -85,18 +85,17 @@ export default function ModernQuoteBlock({
 
   return (
     <section ref={sectionRef} className="py-24 md:py-32 bg-[var(--modern-black)] relative overflow-hidden">
-      {/* Background: Snowmass Village USGS topographic map, tinted gold */}
+      {/* Background: Snowmass Village topographic art (gold on black) */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: 'url(/snowmass-topo.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'invert(1) brightness(1.6) sepia(1) saturate(4) hue-rotate(-5deg)',
-          opacity: 0.18,
+          opacity: 0.85,
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         {/* Title */}
