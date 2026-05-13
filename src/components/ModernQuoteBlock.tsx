@@ -85,17 +85,18 @@ export default function ModernQuoteBlock({
 
   return (
     <section ref={sectionRef} className="py-24 md:py-32 bg-[var(--modern-black)] relative overflow-hidden">
-      {/* Background: Snowmass Village topographic art (gold on black) */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: 'url(/snowmass-topo.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.85,
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 pointer-events-none" />
+      {/* Background pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 40px,
+            var(--modern-gold) 40px,
+            var(--modern-gold) 41px
+          )`
+        }} />
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         {/* Title */}
