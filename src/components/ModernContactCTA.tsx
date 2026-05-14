@@ -5,6 +5,7 @@ import { getUTMData } from './UTMCapture';
 
 export default function ModernContactCTA() {
   const [isVisible, setIsVisible] = useState(false);
+  const [parallaxY, setParallaxY] = useState(0);
   const [formState, setFormState] = useState({
     firstName: '',
     lastName: '',
@@ -33,6 +34,31 @@ export default function ModernContactCTA() {
     }
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let rafId = 0;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (!sectionRef.current) return;
+        const rect = sectionRef.current.getBoundingClientRect();
+        const viewportH = window.innerHeight;
+        // Only run when the section is anywhere near the viewport.
+        if (rect.bottom < -200 || rect.top > viewportH + 200) return;
+        // Map section position to a slow vertical translation.
+        // When section top sits at viewport bottom, offset ≈ -viewportH * 0.15.
+        // When section top sits above viewport, offset ≈ +rect distance * 0.15.
+        setParallaxY((viewportH - rect.top) * 0.15);
+      });
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,8 +92,24 @@ export default function ModernContactCTA() {
   };
 
   return (
-    <section ref={sectionRef} className="py-24 md:py-32 bg-white">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <section ref={sectionRef} className="py-24 md:py-32 relative overflow-hidden">
+      {/* Parallax background — drop an image at /public/cta-bg.jpg to replace the gradient */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 -top-[20%] -bottom-[20%] pointer-events-none"
+        style={{
+          backgroundColor: '#1f1f1f',
+          backgroundImage: 'url(/cta-bg.jpg), linear-gradient(180deg, #2a2a2a 0%, #141414 100%)',
+          backgroundSize: 'cover, cover',
+          backgroundPosition: 'center, center',
+          transform: `translate3d(0, ${parallaxY}px, 0)`,
+          willChange: 'transform',
+        }}
+      />
+      {/* White wash keeps the existing dark text + form legible over any image */}
+      <div aria-hidden className="absolute inset-0 bg-white/85 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           {/* Left Column - Text */}
           <div
