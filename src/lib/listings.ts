@@ -974,7 +974,7 @@ export async function getNewestHighPricedByCity(
     .select('*')
     .ilike('city', city)
     .eq('property_type', 'Residential')
-    .eq('property_sub_type', 'Site Built-Owned Lot')
+    .eq('property_sub_type', 'Single Family Residence')
     .in('status', ['Active', 'Active Under Contract', 'Active U/C W/ Bump', 'Pending'])
     .not('list_price', 'is', null);
 
@@ -1083,7 +1083,7 @@ export async function getNewestHighPricedByCities(
     .select('*')
     .or(cityFilters)
     .eq('property_type', 'Residential')
-    .eq('property_sub_type', 'Site Built-Owned Lot')
+    .eq('property_sub_type', 'Single Family Residence')
     .in('status', ['Active', 'Active Under Contract', 'Active U/C W/ Bump', 'Pending'])
     .not('list_price', 'is', null);
 
