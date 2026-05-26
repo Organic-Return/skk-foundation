@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
   // 1. City ILIKE only — no other filters
   const { data: cityOnly, error: cityOnlyError } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('id, listing_id, status, property_type, city', { count: 'exact' })
     .ilike('city', `%${city}%`)
     .limit(3);
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
   // 2. City exact match (eq)
   const { data: cityExact, error: cityExactError, count: cityExactCount } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('id, listing_id, status, property_type, city', { count: 'exact' })
     .eq('city', city)
     .limit(3);
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
 
   // 3. City ILIKE + allowed statuses
   const { data: cityStatus, error: cityStatusError, count: cityStatusCount } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('id, listing_id, status, property_type, city', { count: 'exact' })
     .ilike('city', `%${city}%`)
     .in('status', allowedStatuses)
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
   // 4. City ILIKE + allowed statuses + property type exclusion (same as page)
   const { data: cityAll, error: cityAllError, count: cityAllCount } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('id, listing_id, status, property_type, city', { count: 'exact' })
     .ilike('city', `%${city}%`)
     .or('property_type.not.in.(Commercial Sale),property_type.is.null')
@@ -158,7 +158,7 @@ export async function GET(request: Request) {
 
   // 6. Check distinct city values that contain the search term
   const { data: cityValues, error: cityValuesError } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('city')
     .ilike('city', `%${city}%`)
     .limit(10);

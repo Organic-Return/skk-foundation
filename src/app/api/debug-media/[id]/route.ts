@@ -16,7 +16,7 @@ export async function GET(
 
   // 1. Check the view (graphql_listings) - works even with RLS
   const { data: viewData, error: viewError } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('*')
     .or(`id.eq.${id},listing_id.eq.${id}`)
     .limit(1);

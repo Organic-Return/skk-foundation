@@ -240,9 +240,10 @@ function transformListing(row: GraphQLListing): MLSProperty {
     daysOnMarket = Math.floor((endDate.getTime() - listDate.getTime()) / (1000 * 60 * 60 * 24));
   }
 
-  // Extract MLS number: prefer listing_id, fall back to description ("MLS# 285075 ...")
+  // Extract MLS number: prefer mls_number (mls_properties native column),
+  // fall back to legacy listing_id, then description ("MLS# 285075 ...")
   // or photo URL path ("/PACMLS/285075/")
-  let mlsNumber: string = row.listing_id || '';
+  let mlsNumber: string = (row as any).mls_number || row.listing_id || '';
   if (!mlsNumber && row.description) {
     const match = row.description.match(/MLS#\s*(\d+)/i);
     if (match) mlsNumber = match[1];
@@ -377,11 +378,12 @@ export async function getListings(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // Use active_listings materialized view (~3K indexed rows) instead of
-  // graphql_listings view (~100K+ rows with COALESCE preventing index usage)
+  // Query the mls_properties table, scoped to active rows (matches the old
+  // active_listings view behavior).
   let query = supabase
-    .from('active_listings')
-    .select('*', { count: 'estimated' });
+    .from('mls_properties')
+    .select('*', { count: 'estimated' })
+    .eq('is_active', true);
 
   // Apply filters
   if (filters.status) {
@@ -436,9 +438,9 @@ export async function getListings(
     const kw = filters.keyword.trim();
     const isNumeric = /^\d+$/.test(kw);
     if (isNumeric) {
-      // Search listing_id (primary) and also description (fallback for rows
-      // where ListingId is empty but MLS# appears in PublicRemarks)
-      query = query.or(`listing_id.eq.${kw},description.ilike.%MLS# ${kw}%`);
+      // Search mls_number (primary) and also description (fallback for rows
+      // where mls_number is empty but MLS# appears in PublicRemarks)
+      query = query.or(`mls_number.eq.${kw},description.ilike.%MLS# ${kw}%`);
     } else {
       // Search UnparsedAddress and street_name (fallback for rows where
       // UnparsedAddress is NULL but street components exist)
@@ -595,7 +597,7 @@ export async function getListingById(id: string): Promise<MLSProperty | null> {
   if (!isSupabaseConfigured()) return null;
 
   const { data, error } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('*')
     .eq('id', id)
     .single();
@@ -617,12 +619,12 @@ export async function getListingByMlsNumber(mlsNumber: string): Promise<MLSPrope
   if (!isSupabaseConfigured()) return null;
 
   // Fetch MLS listing and SIR media in parallel (we already have the MLS number)
-  // Use limit(1) instead of single() to handle duplicate listing_id rows gracefully
+  // Use limit(1) instead of single() to handle duplicate mls_number rows gracefully
   const [mlsResult, sirMedia] = await Promise.all([
     supabase
-      .from('graphql_listings')
+      .from('mls_properties')
       .select('*')
-      .eq('listing_id', mlsNumber)
+      .eq('mls_number', mlsNumber)
       .not('status', 'is', null)
       .order('updated_at', { ascending: false })
       .limit(1)
@@ -682,7 +684,7 @@ export async function getOpenHouseListings(): Promise<MLSProperty[]> {
 
   // Step 1: Get upcoming open house records
   const { data: ohData, error: ohError } = await supabase
-    .from('open_houses')
+    .from('mls_open_houses')
     .select('"ListingId", "OpenHouseDate", "OpenHouseStartTime", "OpenHouseEndTime", "OpenHouseRemarks"')
     .gte('OpenHouseDate', today)
     .order('OpenHouseDate', { ascending: true })
@@ -698,9 +700,9 @@ export async function getOpenHouseListings(): Promise<MLSProperty[]> {
   if (listingIds.length === 0) return [];
 
   const { data: listings, error: listError } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('*')
-    .in('listing_id', listingIds)
+    .in('mls_number', listingIds)
     .not('status', 'is', null);
 
   if (listError || !listings) {
@@ -711,9 +713,9 @@ export async function getOpenHouseListings(): Promise<MLSProperty[]> {
   // Step 3: Merge open house data onto listings (prefer rows with address data)
   const listingMap = new Map<string, any>();
   for (const l of listings) {
-    const existing = listingMap.get(l.listing_id);
+    const existing = listingMap.get(l.mls_number);
     if (!existing || (l.address && !existing.address)) {
-      listingMap.set(l.listing_id, l);
+      listingMap.set(l.mls_number, l);
     }
   }
 
@@ -745,13 +747,14 @@ export function getDistinctCities(): Promise<string[]> {
       return (rpcData as { city: string }[]).map((d) => d.city).filter(Boolean);
     }
 
-    // Fallback: query active_listings materialized view (much smaller, ~3K rows)
+    // Fallback: query mls_properties scoped to active rows
     const batchSize = 1000;
     const numBatches = 5;
     const batchPromises = Array.from({ length: numBatches }, (_, i) =>
       supabase
-        .from('active_listings')
+        .from('mls_properties')
         .select('city')
+        .eq('is_active', true)
         .not('city', 'is', null)
         .order('city')
         .range(i * batchSize, (i + 1) * batchSize - 1)
@@ -837,8 +840,9 @@ export function getDistinctNeighborhoods(): Promise<string[]> {
 
     for (let batch = 0; batch < maxBatches; batch++) {
       const { data, error } = await supabase
-        .from('active_listings')
+        .from('mls_properties')
         .select('subdivision_name')
+        .eq('is_active', true)
         .not('subdivision_name', 'is', null)
         .order('subdivision_name')
         .range(offset, offset + batchSize - 1);
@@ -870,8 +874,9 @@ export function getNeighborhoodsByCity(city: string): Promise<string[]> {
 
     for (let batch = 0; batch < maxBatches; batch++) {
       const { data, error } = await supabase
-        .from('active_listings')
+        .from('mls_properties')
         .select('subdivision_name')
+        .eq('is_active', true)
         .ilike('city', city)
         .not('subdivision_name', 'is', null)
         .order('subdivision_name')
@@ -904,8 +909,9 @@ export function getNeighborhoodsByCities(cities: string[]): Promise<string[]> {
 
     for (let batch = 0; batch < maxBatches; batch++) {
       const { data, error } = await supabase
-        .from('active_listings')
+        .from('mls_properties')
         .select('subdivision_name')
+        .eq('is_active', true)
         .in('city', cities)
         .not('subdivision_name', 'is', null)
         .order('subdivision_name')
@@ -964,7 +970,7 @@ export async function getNewestHighPricedByCity(
   const overfetchMultiplier = options?.officeName ? 5 : 1;
 
   let query = supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('*')
     .ilike('city', city)
     .eq('property_type', 'Residential')
@@ -1019,7 +1025,7 @@ export async function getCommunityPriceRange(
 
   // Get lowest priced active listing (prefer condos, fall back to any type)
   const { data: condoData, error: condoError } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('list_price')
     .ilike('city', city)
     .or('property_sub_type.eq.Condominium,property_sub_type.is.null')
@@ -1034,7 +1040,7 @@ export async function getCommunityPriceRange(
 
   // Get highest priced active listing (prefer SFR, fall back to any type)
   const { data: sfhData, error: sfhError } = await supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('list_price')
     .ilike('city', city)
     .or('property_sub_type.eq.Single Family Residence,property_sub_type.is.null')
@@ -1073,7 +1079,7 @@ export async function getNewestHighPricedByCities(
   const overfetchMultiplier = options?.officeName ? 5 : 1;
 
   let query = supabase
-    .from('graphql_listings')
+    .from('mls_properties')
     .select('*')
     .or(cityFilters)
     .eq('property_type', 'Residential')
@@ -1378,8 +1384,9 @@ export async function getListingsByAgentId(
             const seenByListingId = new Set<string>();
             const seenByAddress = new Set<string>();
             return listings.filter((row) => {
-              if (row.listing_id) {
-                const lid = String(row.listing_id);
+              const mlsId = row.mls_number || row.listing_id;
+              if (mlsId) {
+                const lid = String(mlsId);
                 if (seenByListingId.has(lid)) return false;
                 seenByListingId.add(lid);
               }
@@ -1409,17 +1416,17 @@ export async function getListingsByAgentId(
 
             const [activeRes, soldRes] = await Promise.all([
               supabase
-                .from('graphql_listings')
+                .from('mls_properties')
                 .select('*')
-                .not('listing_id', 'is', null)
+                .not('mls_number', 'is', null)
                 .or(activeFilter)
                 .in('status', activeStatuses)
                 .order('list_price', { ascending: false })
                 .limit(200),
               supabase
-                .from('graphql_listings')
+                .from('mls_properties')
                 .select('*')
-                .not('listing_id', 'is', null)
+                .not('mls_number', 'is', null)
                 .or(soldFilter)
                 .in('status', ['Closed', 'Sold'])
                 .order('sold_price', { ascending: false, nullsFirst: false })
@@ -1440,17 +1447,17 @@ export async function getListingsByAgentId(
               const nameFilter = `list_agent_full_name.eq.${agentName}`;
               const [activeByName, soldByName] = await Promise.all([
                 supabase
-                  .from('graphql_listings')
+                  .from('mls_properties')
                   .select('*')
-                  .not('listing_id', 'is', null)
+                  .not('mls_number', 'is', null)
                   .or(nameFilter)
                   .in('status', activeStatuses)
                   .order('list_price', { ascending: false })
                   .limit(200),
                 supabase
-                  .from('graphql_listings')
+                  .from('mls_properties')
                   .select('*')
-                  .not('listing_id', 'is', null)
+                  .not('mls_number', 'is', null)
                   .or(nameFilter)
                   .in('status', ['Closed', 'Sold'])
                   .order('sold_price', { ascending: false, nullsFirst: false })
@@ -1474,17 +1481,17 @@ export async function getListingsByAgentId(
 
             const [activeRes, soldRes] = await Promise.all([
               supabase
-                .from('graphql_listings')
+                .from('mls_properties')
                 .select('*')
-                .not('listing_id', 'is', null)
+                .not('mls_number', 'is', null)
                 .or(nameFilter)
                 .in('status', activeStatusesName)
                 .order('list_price', { ascending: false })
                 .limit(200),
               supabase
-                .from('graphql_listings')
+                .from('mls_properties')
                 .select('*')
-                .not('listing_id', 'is', null)
+                .not('mls_number', 'is', null)
                 .or(nameFilter)
                 .in('status', ['Closed', 'Sold'])
                 .order('sold_price', { ascending: false, nullsFirst: false })
