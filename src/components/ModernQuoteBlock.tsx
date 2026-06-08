@@ -1,18 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { client } from '@/sanity/client';
+import TestimonialVideoGallery from '@/components/TestimonialVideoGallery';
 
 interface AccoladeItem {
   value?: string;
   label?: string;
-}
-
-interface Testimonial {
-  quote: string;
-  author: string;
-  role?: string;
-  location?: string;
 }
 
 interface ModernQuoteBlockProps {
@@ -20,27 +13,16 @@ interface ModernQuoteBlockProps {
   items?: AccoladeItem[];
 }
 
-const TESTIMONIAL_QUERY = `*[_type == "testimonialsPage"][0]{
-  featuredTestimonial{
-    quote,
-    author,
-    role,
-    location
-  },
-  "fallback": testimonials[featured == true][0]{
-    quote,
-    author,
-    role,
-    location
-  }
-}`;
+const CLIENT_VIDEOS = [
+  { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo' },
+  { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk' },
+];
 
 export default function ModernQuoteBlock({
   title = 'The Standard of Excellence',
   items = [],
 }: ModernQuoteBlockProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [testimonial, setTestimonial] = useState<Testimonial | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -59,22 +41,6 @@ export default function ModernQuoteBlock({
     }
 
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    async function fetchTestimonial() {
-      try {
-        const data = await client.fetch(TESTIMONIAL_QUERY);
-        const t = data?.featuredTestimonial || data?.fallback;
-        if (t?.quote && t?.author) {
-          setTestimonial(t);
-        }
-      } catch (error) {
-        console.error('Error fetching testimonial:', error);
-      }
-    }
-
-    fetchTestimonial();
   }, []);
 
   if (!items || items.length === 0) {
@@ -111,31 +77,14 @@ export default function ModernQuoteBlock({
           </h2>
         </div>
 
-        {/* Testimonial - above stats */}
-        {testimonial ? (
-          <div
-            className={`max-w-3xl mx-auto text-center mb-16 md:mb-20 transition-all duration-1000 delay-200 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-          >
-            <svg className="w-10 h-10 text-[var(--modern-gold)] opacity-30 mx-auto mb-8" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z" />
-            </svg>
-
-            <blockquote className="text-lg md:text-xl lg:text-2xl font-light text-white/80 leading-relaxed italic mb-8">
-              &ldquo;{testimonial.quote}&rdquo;
-            </blockquote>
-
-            <p className="text-white text-sm uppercase tracking-[0.2em] mb-1">
-              {testimonial.author}
-            </p>
-            {(testimonial.role || testimonial.location) && (
-              <p className="text-white/40 text-xs uppercase tracking-[0.15em]">
-                {[testimonial.role, testimonial.location].filter(Boolean).join(' — ')}
-              </p>
-            )}
-          </div>
-        ) : null}
+        {/* Client Video Gallery - above stats */}
+        <div
+          className={`mb-16 md:mb-20 transition-all duration-1000 delay-200 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
+          <TestimonialVideoGallery videos={CLIENT_VIDEOS} />
+        </div>
 
         {/* Gold line separator */}
         <div

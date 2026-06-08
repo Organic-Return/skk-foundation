@@ -37,9 +37,6 @@ const ModernNewestListings = dynamic(() => import('@/components/ModernNewestList
 const ModernCommunities = dynamic(() => import('@/components/ModernCommunities'), { ssr: false });
 const ModernContactCTA = dynamic(() => import('@/components/ModernContactCTA'), { ssr: false });
 
-// Shared
-import TestimonialVideoGallery from '@/components/TestimonialVideoGallery';
-
 interface HomepageContentProps {
   // Template selection from Sanity
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
@@ -201,23 +198,6 @@ export default function HomepageContent({
             headline={featuredProperty.headline}
             buttonText={featuredProperty.buttonText}
           />
-        )}
-
-        {/* Client Video Gallery - above the market stats on custom-one */}
-        {template === 'custom-one' && (
-          <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a]">
-            <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
-              <h2 className="text-3xl md:text-4xl font-serif font-light text-[#1a1a1a] dark:text-white text-center mb-12 md:mb-16 tracking-wide">
-                Hear From Our Clients
-              </h2>
-              <TestimonialVideoGallery
-                videos={[
-                  { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo' },
-                  { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk' },
-                ]}
-              />
-            </div>
-          </section>
         )}
 
         {/* City Stats Section - after featured property on custom-one */}
