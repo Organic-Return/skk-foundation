@@ -6,6 +6,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
+import TestimonialVideoGallery from "@/components/TestimonialVideoGallery";
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
   heroTitle,
@@ -259,6 +260,18 @@ export default async function TestimonialsPage() {
               {data.heroSubtitle}
             </p>
           )}
+        </div>
+      </section>
+
+      {/* Video Gallery */}
+      <section className="py-16 md:py-20 bg-white dark:bg-[#1a1a1a]">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+          <TestimonialVideoGallery
+            videos={[
+              { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo' },
+              { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk' },
+            ]}
+          />
         </div>
       </section>
 
