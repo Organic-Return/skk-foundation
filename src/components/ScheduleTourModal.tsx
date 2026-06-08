@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getUTMData } from './UTMCapture';
+import { trackLeadSubmitted } from '@/lib/tracking';
 
 interface ScheduleTourModalProps {
   isOpen: boolean;
@@ -108,6 +109,10 @@ export default function ScheduleTourModal({
           utmCampaign: utm.utm_campaign,
           utmContent: utm.utm_content,
           utmTerm: utm.utm_term,
+          gclid: utm.gclid,
+          fbclid: utm.fbclid,
+          msclkid: utm.msclkid,
+          landingPage: utm.landing_page,
         }),
       });
 
@@ -116,6 +121,15 @@ export default function ScheduleTourModal({
         throw new Error(data.error || 'Failed to send request');
       }
 
+      trackLeadSubmitted({
+        leadType: 'schedule_tour',
+        inquiryType: tourType,
+        propertyMlsId,
+        propertyAddress,
+        propertyPrice,
+        email,
+        phone: phone || undefined,
+      });
       setSubmitted(true);
       setName(''); setEmail(''); setPhone(''); setMessage('');
       setSelectedDate(''); setSelectedTime('');

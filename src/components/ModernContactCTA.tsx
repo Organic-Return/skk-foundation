@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getUTMData } from './UTMCapture';
+import { trackLeadSubmitted } from '@/lib/tracking';
 
 export default function ModernContactCTA() {
   const [isVisible, setIsVisible] = useState(false);
@@ -67,13 +68,25 @@ export default function ModernContactCTA() {
     setError('');
 
     try {
+      const utm = getUTMData();
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formState,
           source: 'Homepage Contact Form',
-          ...getUTMData(),
+          leadType: 'contact',
+          sourceUrl: utm.source_url,
+          referrer: utm.referrer,
+          utmSource: utm.utm_source,
+          utmMedium: utm.utm_medium,
+          utmCampaign: utm.utm_campaign,
+          utmContent: utm.utm_content,
+          utmTerm: utm.utm_term,
+          gclid: utm.gclid,
+          fbclid: utm.fbclid,
+          msclkid: utm.msclkid,
+          landingPage: utm.landing_page,
         }),
       });
 
@@ -82,6 +95,11 @@ export default function ModernContactCTA() {
         throw new Error(data.error || 'Something went wrong');
       }
 
+      trackLeadSubmitted({
+        leadType: 'contact',
+        email: formState.email,
+        phone: formState.phone || undefined,
+      });
       setSubmitted(true);
       setFormState({ firstName: '', lastName: '', email: '', phone: '', message: '' });
     } catch (err) {

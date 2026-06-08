@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { getUTMData } from './UTMCapture';
+import { trackLeadSubmitted } from '@/lib/tracking';
 
 interface RCSothebysInquirySectionProps {
   title?: string;
@@ -40,6 +41,7 @@ export default function RCSothebysInquirySection({
     setSubmitStatus('idle');
 
     try {
+      const utm = getUTMData();
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,11 +51,26 @@ export default function RCSothebysInquirySection({
           phone: formData.phone,
           message: formData.message,
           interest: 'General inquiry from homepage',
-          ...getUTMData(),
+          sourceUrl: utm.source_url,
+          referrer: utm.referrer,
+          utmSource: utm.utm_source,
+          utmMedium: utm.utm_medium,
+          utmCampaign: utm.utm_campaign,
+          utmContent: utm.utm_content,
+          utmTerm: utm.utm_term,
+          gclid: utm.gclid,
+          fbclid: utm.fbclid,
+          msclkid: utm.msclkid,
+          landingPage: utm.landing_page,
         }),
       });
 
       if (response.ok) {
+        trackLeadSubmitted({
+          leadType: 'contact',
+          email: formData.email,
+          phone: formData.phone || undefined,
+        });
         setSubmitStatus('success');
         setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '' });
       } else {
