@@ -37,6 +37,9 @@ const ModernNewestListings = dynamic(() => import('@/components/ModernNewestList
 const ModernCommunities = dynamic(() => import('@/components/ModernCommunities'), { ssr: false });
 const ModernContactCTA = dynamic(() => import('@/components/ModernContactCTA'), { ssr: false });
 
+// Shared
+import VideoFeatureCarousel from '@/components/VideoFeatureCarousel';
+
 interface HomepageContentProps {
   // Template selection from Sanity
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
@@ -180,6 +183,24 @@ export default function HomepageContent({
           teamMember={teamSection?.featuredTeamMember}
           primaryButtonText={teamSection?.primaryButtonText}
           primaryButtonLink={teamSection?.primaryButtonLink}
+        />
+
+        {/* Client Video Feature Carousel - above the stats */}
+        <VideoFeatureCarousel
+          eyebrow="CLIENT STORIES"
+          title="In their words"
+          videos={[
+            {
+              playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo',
+              eyebrow: 'CLIENT TESTIMONIAL',
+              title: 'A seller’s story',
+            },
+            {
+              playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk',
+              eyebrow: 'CLIENT TESTIMONIAL',
+              title: 'A buyer’s story',
+            },
+          ]}
         />
 
         {/* Stats/Quote Block - Dark section with gold accents */}

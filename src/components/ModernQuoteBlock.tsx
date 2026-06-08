@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import TestimonialVideoGallery from '@/components/TestimonialVideoGallery';
 
 interface AccoladeItem {
   value?: string;
@@ -12,11 +11,6 @@ interface ModernQuoteBlockProps {
   title?: string;
   items?: AccoladeItem[];
 }
-
-const CLIENT_VIDEOS = [
-  { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo' },
-  { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk' },
-];
 
 export default function ModernQuoteBlock({
   title = 'The Standard of Excellence',
@@ -75,15 +69,6 @@ export default function ModernQuoteBlock({
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white tracking-wide">
             {title}
           </h2>
-        </div>
-
-        {/* Client Video Gallery - above stats */}
-        <div
-          className={`mb-16 md:mb-20 transition-all duration-1000 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
-          <TestimonialVideoGallery videos={CLIENT_VIDEOS} />
         </div>
 
         {/* Gold line separator */}
