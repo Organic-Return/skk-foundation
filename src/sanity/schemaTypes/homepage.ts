@@ -40,16 +40,22 @@ export const homepage = defineType({
           initialValue: 'Discover the perfect property for you and your family',
         },
         {
+          name: 'muxVideo',
+          title: 'Background Video (Mux) — preferred',
+          type: 'mux.video',
+          description: 'Upload via Mux for streaming + bandwidth savings. When set this is used instead of the URL/file below. To migrate an existing video, use the upload dialog "From URL" tab and paste the Sanity CDN URL of the legacy file.',
+        },
+        {
           name: 'videoUrl',
-          title: 'Background Video URL',
+          title: 'Background Video URL (legacy fallback)',
           type: 'url',
-          description: 'URL to video file (MP4 recommended). Leave empty to use image only.',
+          description: 'Used only when Mux Video above is empty. URL to video file (MP4 recommended).',
         },
         {
           name: 'videoFile',
-          title: 'Background Video File',
+          title: 'Background Video File (legacy fallback)',
           type: 'file',
-          description: 'Or upload a video file directly',
+          description: 'Used only when Mux Video above is empty. Uploads here count against Sanity bandwidth — prefer Mux.',
           options: {
             accept: 'video/*',
           },

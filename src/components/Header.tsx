@@ -465,9 +465,24 @@ export default function Header({
                         {item.hasMegaMenu && item.megaMenuColumns?.map((column, colIndex) => (
                           <div key={colIndex} className="mb-4">
                             {column.title && (
-                              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                {column.title}
-                              </div>
+                              column.titleUrl ? (
+                                // Mirror the desktop branch: a column with
+                                // a titleUrl is itself a clickable link
+                                // (e.g. "Sold Properties" with no children).
+                                // Without this branch, mobile renders just
+                                // the label text and the tap does nothing.
+                                <Link
+                                  href={column.titleUrl}
+                                  className="block px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg"
+                                  onClick={() => setMobileMenuOpen(false)}
+                                >
+                                  {column.title}
+                                </Link>
+                              ) : (
+                                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                  {column.title}
+                                </div>
+                              )
                             )}
                             {column.links?.map((link, linkIndex) => (
                               <Link

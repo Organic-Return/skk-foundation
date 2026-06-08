@@ -7,6 +7,7 @@ interface HomepageData {
     subtitle?: string;
     videoUrl?: string;
     videoFile?: any;
+    muxVideo?: { asset?: { playbackId?: string } };
     fallbackImage?: any;
     showSearch?: boolean;
     showTitleSubtitle?: boolean;
@@ -106,6 +107,9 @@ const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
       asset-> {
         url
       }
+    },
+    muxVideo {
+      asset-> { playbackId }
     },
     fallbackImage {
       asset-> {

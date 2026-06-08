@@ -42,6 +42,7 @@ interface HomepageContentProps {
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
   // Hero data
   videoUrl?: string;
+  heroMuxPlaybackId?: string;
   fallbackImageUrl?: string;
   heroTitle?: string;
   heroSubtitle?: string;
@@ -136,6 +137,7 @@ interface HomepageContentProps {
 export default function HomepageContent({
   template = 'classic',
   videoUrl,
+  heroMuxPlaybackId,
   fallbackImageUrl,
   heroTitle,
   heroSubtitle,
@@ -337,6 +339,7 @@ export default function HomepageContent({
         {/* Hero Section with Search */}
         <HeroWithSearch
           videoUrl={videoUrl}
+          muxPlaybackId={heroMuxPlaybackId}
           fallbackImageUrl={fallbackImageUrl}
           title={heroTitle}
           subtitle={heroSubtitle}

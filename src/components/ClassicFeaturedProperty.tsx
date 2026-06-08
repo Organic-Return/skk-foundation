@@ -66,7 +66,7 @@ export default function ClassicFeaturedProperty({
   const mainPhoto = property.photos?.[0];
 
   return (
-    <section className="relative w-full aspect-video">
+    <section className="relative w-full aspect-[4/5] sm:aspect-video">
       {/* Full-width background image */}
       <div className="absolute inset-0">
         {mainPhoto ? (

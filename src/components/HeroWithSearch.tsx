@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import MuxPlayer from '@mux/mux-player-react';
 
 interface HeroWithSearchProps {
   videoUrl?: string;
+  muxPlaybackId?: string;
   fallbackImageUrl?: string;
   title?: string;
   subtitle?: string;
@@ -59,12 +61,21 @@ const PRICE_OPTIONS = [
 
 export default function HeroWithSearch({
   videoUrl = '/hero-video.mp4',
+  muxPlaybackId,
   fallbackImageUrl = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=80',
   title = 'Find Your Dream Home',
   subtitle = 'Discover the perfect property for you and your family',
   showSearch = true,
   showTitleSubtitle = true,
 }: HeroWithSearchProps) {
+  // Skip video playback in local dev — saves Mux/Sanity bandwidth on
+  // developer refreshes. Set NEXT_PUBLIC_HERO_VIDEOS_IN_DEV=1 in
+  // .env.local when QAing video locally.
+  const skipVideosInDev =
+    process.env.NODE_ENV !== 'production' &&
+    process.env.NEXT_PUBLIC_HERO_VIDEOS_IN_DEV !== '1';
+  const effectiveMuxPlaybackId = skipVideosInDev ? undefined : muxPlaybackId;
+  const effectiveVideoUrl = skipVideosInDev ? undefined : videoUrl;
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [priceMin, setPriceMin] = useState('');
@@ -89,7 +100,29 @@ export default function HeroWithSearch({
     <div className="relative w-full -mt-20 overflow-hidden" style={{ minHeight: 'calc(100vh + 5rem)' }}>
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full">
-        {videoUrl ? (
+        {effectiveMuxPlaybackId ? (
+          // Mux-backed video. MuxPlayer forwards standard HTMLMediaElement
+          // controls and the autoplay='muted' value makes the muted+loop
+          // background-video pattern work the same as <video>. maxResolution
+          // caps streaming bitrate to keep the Mux bill bounded.
+          <MuxPlayer
+            playbackId={effectiveMuxPlaybackId}
+            streamType="on-demand"
+            autoPlay="muted"
+            loop
+            muted
+            playsInline
+            maxResolution="1080p"
+            poster={fallbackImageUrl}
+            className="w-full h-full"
+            style={{
+              ['--controls' as any]: 'none',
+              ['--media-object-fit' as any]: 'cover',
+              width: '100%',
+              height: '100%',
+            }}
+          />
+        ) : effectiveVideoUrl ? (
           <video
             autoPlay
             loop
@@ -98,7 +131,7 @@ export default function HeroWithSearch({
             className="w-full h-full object-cover"
             poster={fallbackImageUrl}
           >
-            <source src={videoUrl} type="video/mp4" />
+            <source src={effectiveVideoUrl} type="video/mp4" />
           </video>
         ) : (
           <div

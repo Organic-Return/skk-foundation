@@ -54,7 +54,12 @@ export default async function Home() {
   const featuredProperty = homepage?.featuredProperty;
   const featuredCommunitiesConfig = homepage?.featuredCommunities;
 
-  // Get video URL (either from Mux/uploaded file or external URL)
+  // Resolve hero video source. Mux is preferred — it offloads streaming
+  // from Sanity (where bandwidth is metered) to Mux's CDN. Legacy
+  // videoFile/videoUrl fields are still honored when Mux isn't set so
+  // editors don't see a broken hero between deploy and the migration
+  // upload step.
+  const heroMuxPlaybackId = hero?.muxVideo?.asset?.playbackId;
   const videoUrl = hero?.videoFile?.asset?.url || hero?.videoUrl;
   const fallbackImageUrl = hero?.fallbackImage?.asset?.url
     ? urlFor(hero.fallbackImage).width(1920).url()
@@ -167,6 +172,7 @@ export default async function Home() {
       <HomepageContent
         template={settings?.template}
         videoUrl={videoUrl}
+        heroMuxPlaybackId={heroMuxPlaybackId}
         fallbackImageUrl={fallbackImageUrl}
         heroTitle={hero?.title}
         heroSubtitle={hero?.subtitle}
