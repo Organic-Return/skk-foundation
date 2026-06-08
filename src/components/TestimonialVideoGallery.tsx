@@ -26,7 +26,7 @@ export default function TestimonialVideoGallery({ videos }: { videos: VideoItem[
   const hasMultiple = videos.length > 1
 
   return (
-    <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
+    <div className="relative left-1/2 -translate-x-1/2 w-[80vw]">
       <div className="relative overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-out"
