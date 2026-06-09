@@ -13,12 +13,17 @@ interface VideoFeatureCarouselProps {
   eyebrow?: string
   title: string
   videos: FeatureVideo[]
+  /** Playback ID shown as the large centered video under the heading. Defaults to the first video. */
+  featuredPlaybackId?: string
 }
 
-export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFeatureCarouselProps) {
+export default function VideoFeatureCarousel({ eyebrow, title, videos, featuredPlaybackId }: VideoFeatureCarouselProps) {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [canLeft, setCanLeft] = useState(false)
   const [canRight, setCanRight] = useState(false)
+
+  const featuredId = featuredPlaybackId || videos[0]?.playbackId
+  const carouselVideos = videos.filter((v) => v.playbackId !== featuredId)
 
   useEffect(() => {
     const el = scrollerRef.current
@@ -36,7 +41,7 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
       el.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
-  }, [videos.length])
+  }, [carouselVideos.length])
 
   if (!videos || videos.length === 0) return null
 
@@ -60,13 +65,26 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
         </h2>
       </div>
 
+      {/* Featured main video - centered under the heading */}
+      {featuredId && (
+        <div className="max-w-5xl mx-auto px-4 md:px-6 mb-14 md:mb-20">
+          <div className="relative aspect-video overflow-hidden bg-black">
+            <MuxPlayer
+              playbackId={featuredId}
+              streamType="on-demand"
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Carousel */}
       <div className="relative">
         <div
           ref={scrollerRef}
           className="flex gap-4 md:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 md:px-6 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {videos.map((video, i) => (
+          {carouselVideos.map((video, i) => (
             <div key={i} className="snap-start shrink-0 w-[90vw] sm:w-[640px] lg:w-[760px]">
               <div className="relative aspect-video overflow-hidden bg-black">
                 <MuxPlayer
