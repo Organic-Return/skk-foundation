@@ -193,12 +193,27 @@ export default function HomepageContent({
             {
               playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo',
               eyebrow: 'CLIENT TESTIMONIAL',
-              title: 'A seller’s story',
+              title: 'Client story',
             },
             {
               playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk',
               eyebrow: 'CLIENT TESTIMONIAL',
-              title: 'A buyer’s story',
+              title: 'Client story',
+            },
+            {
+              playbackId: '9XsyyxEs6R4MBVAxffhQ4uJqGe8zBFb00NrpANTi0214s',
+              eyebrow: 'CLIENT TESTIMONIAL',
+              title: 'Client story',
+            },
+            {
+              playbackId: 'VXGLYAMwFcrv5L6XqOn5H3gpdI4cJ2eJrYllpeUQjM4',
+              eyebrow: 'CLIENT TESTIMONIAL',
+              title: 'Client story',
+            },
+            {
+              playbackId: 'x9mZ0101LIHgpqkq2LLqTkki2U02nLDvCglG1xXUT015EK4',
+              eyebrow: 'CLIENT TESTIMONIAL',
+              title: 'Client story',
             },
           ]}
         />
