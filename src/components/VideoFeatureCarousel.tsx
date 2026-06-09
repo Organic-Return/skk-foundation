@@ -51,7 +51,7 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center mb-12 md:mb-16">
         {eyebrow && (
-          <p className="text-white/70 text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
+          <p className="text-center text-white/70 text-xs md:text-sm uppercase tracking-[0.25em] [text-indent:0.25em] mb-5">
             {eyebrow}
           </p>
         )}
