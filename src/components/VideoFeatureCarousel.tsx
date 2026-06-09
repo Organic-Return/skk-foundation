@@ -64,7 +64,7 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
       <div className="relative">
         <div
           ref={scrollerRef}
-          className="flex gap-4 md:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pl-6 pr-4 lg:pr-6 lg:pl-[max(2rem,calc((100vw_-_80rem)/2_+_2rem))] scroll-pl-6 lg:scroll-pl-[max(2rem,calc((100vw_-_80rem)/2_+_2rem))] pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-4 md:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pl-6 pr-4 lg:pr-6 lg:pl-[max(2rem,calc(((100vw_-_80rem)/2_+_2rem)_*_0.7))] scroll-pl-6 lg:scroll-pl-[max(2rem,calc(((100vw_-_80rem)/2_+_2rem)_*_0.7))] pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {videos.map((video, i) => (
             <div key={i} className="snap-start shrink-0 w-[90vw] sm:w-[640px] lg:w-[760px]">
