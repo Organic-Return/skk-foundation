@@ -61,13 +61,13 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
       </div>
 
       {/* Carousel */}
-      <div className="relative max-w-7xl mx-auto">
+      <div className="relative">
         <div
           ref={scrollerRef}
-          className="flex gap-4 md:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory px-6 lg:px-8 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-4 md:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 md:px-6 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {videos.map((video, i) => (
-            <div key={i} className="snap-start shrink-0 w-[85vw] sm:w-[60vw] lg:w-[46%]">
+            <div key={i} className="snap-start shrink-0 w-[90vw] sm:w-[640px] lg:w-[760px]">
               <div className="relative aspect-video overflow-hidden bg-black">
                 <MuxPlayer
                   playbackId={video.playbackId}
