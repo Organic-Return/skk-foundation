@@ -89,6 +89,16 @@ interface HomepageData {
       enabled: boolean;
     }>;
   };
+  clientVideosSection?: {
+    enabled?: boolean;
+    eyebrow?: string;
+    title?: string;
+    videos?: Array<{
+      muxVideo?: { asset?: { playbackId?: string } };
+      eyebrow?: string;
+      title?: string;
+    }>;
+  };
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -215,6 +225,18 @@ const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
     cities[] {
       city,
       enabled
+    }
+  },
+  clientVideosSection {
+    enabled,
+    eyebrow,
+    title,
+    videos[] {
+      muxVideo {
+        asset-> { playbackId }
+      },
+      eyebrow,
+      title
     }
   },
   seo {

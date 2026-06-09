@@ -40,6 +40,15 @@ const ModernContactCTA = dynamic(() => import('@/components/ModernContactCTA'), 
 // Shared
 import VideoFeatureCarousel from '@/components/VideoFeatureCarousel';
 
+// Fallback client videos used until the section is populated in Sanity.
+const DEFAULT_CLIENT_VIDEOS = [
+  { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo', eyebrow: 'CLIENT TESTIMONIAL', title: 'Client story' },
+  { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk', eyebrow: 'CLIENT TESTIMONIAL', title: 'Client story' },
+  { playbackId: '9XsyyxEs6R4MBVAxffhQ4uJqGe8zBFb00NrpANTi0214s', eyebrow: 'CLIENT TESTIMONIAL', title: 'Client story' },
+  { playbackId: 'VXGLYAMwFcrv5L6XqOn5H3gpdI4cJ2eJrYllpeUQjM4', eyebrow: 'CLIENT TESTIMONIAL', title: 'Client story' },
+  { playbackId: 'x9mZ0101LIHgpqkq2LLqTkki2U02nLDvCglG1xXUT015EK4', eyebrow: 'CLIENT TESTIMONIAL', title: 'Client story' },
+];
+
 interface HomepageContentProps {
   // Template selection from Sanity
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
@@ -132,6 +141,14 @@ interface HomepageContentProps {
     }>;
   };
 
+  // Client video testimonials carousel ("In their words")
+  clientVideosSection?: {
+    enabled?: boolean;
+    eyebrow?: string;
+    title?: string;
+    videos?: Array<{ playbackId: string; eyebrow?: string; title?: string }>;
+  };
+
   // Branding logo for sections that need it
   logoUrl?: string;
   logoAlt?: string;
@@ -158,6 +175,7 @@ export default function HomepageContent({
   featuredPropertiesCarousel,
   featuredCommunities,
   marketStatsSection,
+  clientVideosSection,
   logoUrl,
   logoAlt,
 }: HomepageContentProps) {
@@ -185,54 +203,38 @@ export default function HomepageContent({
           primaryButtonLink={teamSection?.primaryButtonLink}
         />
 
-        {/* Client Video Feature Carousel - above the stats */}
-        <VideoFeatureCarousel
-          eyebrow="CLIENT STORIES"
-          title="In their words"
-          videos={[
-            {
-              playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo',
-              eyebrow: 'CLIENT TESTIMONIAL',
-              title: 'Client story',
-            },
-            {
-              playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk',
-              eyebrow: 'CLIENT TESTIMONIAL',
-              title: 'Client story',
-            },
-            {
-              playbackId: '9XsyyxEs6R4MBVAxffhQ4uJqGe8zBFb00NrpANTi0214s',
-              eyebrow: 'CLIENT TESTIMONIAL',
-              title: 'Client story',
-            },
-            {
-              playbackId: 'VXGLYAMwFcrv5L6XqOn5H3gpdI4cJ2eJrYllpeUQjM4',
-              eyebrow: 'CLIENT TESTIMONIAL',
-              title: 'Client story',
-            },
-            {
-              playbackId: 'x9mZ0101LIHgpqkq2LLqTkki2U02nLDvCglG1xXUT015EK4',
-              eyebrow: 'CLIENT TESTIMONIAL',
-              title: 'Client story',
-            },
-          ]}
-        />
-
-        {/* Stats/Quote Block - Dark section with gold accents */}
-        {accolades?.items && accolades.items.length > 0 && (
-          <ModernQuoteBlock
-            title={accolades.title || 'The Standard of Excellence'}
-            items={accolades.items}
+        {/* Client Video Feature Carousel - above the stats. Content editable in Sanity; falls back to defaults until populated. */}
+        {clientVideosSection?.enabled !== false && (
+          <VideoFeatureCarousel
+            eyebrow={clientVideosSection?.eyebrow || 'CLIENT STORIES'}
+            title={clientVideosSection?.title || 'In their words'}
+            videos={
+              clientVideosSection?.videos && clientVideosSection.videos.length > 0
+                ? clientVideosSection.videos.map((v) => ({
+                    playbackId: v.playbackId,
+                    eyebrow: v.eyebrow,
+                    title: v.title || '',
+                  }))
+                : DEFAULT_CLIENT_VIDEOS
+            }
           />
         )}
 
-        {/* Featured Property Section */}
+        {/* Featured Property Section - above the "what sets apart" accolades block */}
         {featuredProperty?.enabled && (featuredProperty?.mlsId || agentMlsId) && (
           <ModernFeaturedProperty
             mlsId={featuredProperty.mlsId}
             agentMlsId={agentMlsId}
             headline={featuredProperty.headline}
             buttonText={featuredProperty.buttonText}
+          />
+        )}
+
+        {/* Stats/Quote Block - Dark section with gold accents */}
+        {accolades?.items && accolades.items.length > 0 && (
+          <ModernQuoteBlock
+            title={accolades.title || 'The Standard of Excellence'}
+            items={accolades.items}
           />
         )}
 

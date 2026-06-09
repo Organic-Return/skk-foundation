@@ -209,6 +209,75 @@ export const homepage = defineType({
       ],
     }),
     defineField({
+      name: 'clientVideosSection',
+      title: 'Client Video Testimonials Section',
+      type: 'object',
+      description: 'The "In their words" client video carousel on the homepage',
+      options: {
+        collapsible: true,
+        collapsed: true,
+      },
+      fields: [
+        {
+          name: 'enabled',
+          title: 'Show Client Videos Section',
+          type: 'boolean',
+          description: 'Toggle the client video testimonials section on/off',
+          initialValue: true,
+        },
+        {
+          name: 'eyebrow',
+          title: 'Eyebrow (small label above the title)',
+          type: 'string',
+          initialValue: 'CLIENT STORIES',
+        },
+        {
+          name: 'title',
+          title: 'Section Title',
+          type: 'string',
+          initialValue: 'In their words',
+        },
+        {
+          name: 'videos',
+          title: 'Videos',
+          type: 'array',
+          description: 'Each item is a video card in the carousel.',
+          of: [
+            {
+              type: 'object',
+              name: 'clientVideo',
+              title: 'Client Video',
+              fields: [
+                {
+                  name: 'muxVideo',
+                  title: 'Video (Mux)',
+                  type: 'mux.video',
+                  description: 'Upload or select the testimonial video.',
+                },
+                {
+                  name: 'eyebrow',
+                  title: 'Card Eyebrow (small label under the video)',
+                  type: 'string',
+                  initialValue: 'CLIENT TESTIMONIAL',
+                },
+                {
+                  name: 'title',
+                  title: 'Card Title',
+                  type: 'string',
+                },
+              ],
+              preview: {
+                select: { title: 'title', subtitle: 'eyebrow' },
+                prepare({ title, subtitle }: { title?: string; subtitle?: string }) {
+                  return { title: title || 'Client video', subtitle };
+                },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    defineField({
       name: 'featuredProperty',
       title: 'Featured Property',
       type: 'object',
