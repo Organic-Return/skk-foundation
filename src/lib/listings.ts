@@ -48,6 +48,8 @@ interface GraphQLListing {
   mls_area_major: string | null;
   mls_area_minor: string | null;
   preferred_photo: string | null;
+  // mls_properties exposes a clean, ordered array of image URLs in `photos`.
+  photos: string[] | null;
   media: string[] | null;
   latitude: number | null;
   longitude: number | null;
@@ -148,15 +150,28 @@ export async function getListingBySlug(slug: string): Promise<MLSProperty | null
 
 // Transform graphql_listings row to MLSProperty format
 function transformListing(row: GraphQLListing): MLSProperty {
-  // Extract photos from media — handles JSON arrays, JSON strings, and string arrays
+  // Extract photos. mls_properties provides a clean, ordered `photos` array of
+  // image URLs — prefer it. The `media` column mixes photos with virtual-tour
+  // and video entries (e.g. a Matterport URL), so deriving photos from it can
+  // yield a tour/video URL that renders as a broken image. Only fall back to
+  // preferred_photo/media when the dedicated photos array is empty.
   const photos: string[] = [];
+  if (Array.isArray(row.photos)) {
+    for (let p of row.photos) {
+      if (typeof p === 'string' && p) {
+        if (p.startsWith('//')) p = `https:${p}`;
+        if (!photos.includes(p)) photos.push(p);
+      }
+    }
+  }
+  const usedPhotosColumn = photos.length > 0;
   if (row.preferred_photo) {
     let pp = row.preferred_photo;
     if (pp.startsWith('//')) pp = `https:${pp}`;
-    photos.push(pp);
+    if (!photos.includes(pp)) photos.unshift(pp);
   }
   let mediaItems: any[] = [];
-  if (row.media) {
+  if (!usedPhotosColumn && row.media) {
     let mediaToParse: any = row.media;
 
     // If it's a string, try to parse it as JSON
