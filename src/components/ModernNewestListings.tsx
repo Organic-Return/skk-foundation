@@ -67,10 +67,16 @@ export default function ModernNewestListings({
             : `city=${encodeURIComponent(cities[0])}`
           : `city=${encodeURIComponent('Aspen')}`;
 
-        const response = await fetch(`/api/featured-properties?${cityParam}&limit=${limit}`);
+        // Fetch a larger pool so we can drop any listings without photos and
+        // still fill the row — every card shown should have an image.
+        const fetchLimit = Math.max(limit * 3, limit + 8);
+        const response = await fetch(`/api/featured-properties?${cityParam}&limit=${fetchLimit}`);
         if (response.ok) {
           const data = await response.json();
-          setProperties(data.properties || []);
+          const withPhotos = ((data.properties || []) as Property[]).filter(
+            (p) => Array.isArray(p.photos) && Boolean(p.photos[0])
+          );
+          setProperties(withPhotos.slice(0, limit));
         }
       } catch (error) {
         console.error('Error fetching newest listings:', error);
