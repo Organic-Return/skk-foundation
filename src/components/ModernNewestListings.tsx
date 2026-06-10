@@ -121,7 +121,7 @@ export default function ModernNewestListings({
 
   if (loading) {
     return (
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-[var(--modern-black)]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="animate-pulse flex gap-6 overflow-hidden">
             {[1, 2, 3, 4].map((i) => (
@@ -138,7 +138,7 @@ export default function ModernNewestListings({
   }
 
   return (
-    <section ref={sectionRef} className="py-24 md:py-32 bg-white overflow-hidden">
+    <section ref={sectionRef} className="py-24 md:py-32 bg-[var(--modern-black)] overflow-hidden">
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-16">
         <div
@@ -147,11 +147,11 @@ export default function ModernNewestListings({
           }`}
         >
           <div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)]">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-[var(--modern-gray-light)] mt-4 text-base md:text-lg font-light">
+              <p className="text-white/60 mt-4 text-base md:text-lg font-light">
                 {subtitle}
               </p>
             )}
@@ -161,7 +161,7 @@ export default function ModernNewestListings({
           <div className="flex gap-3">
             <button
               onClick={() => scroll('left')}
-              className="w-12 h-12 border border-[var(--modern-black)]/20 text-[var(--modern-black)] flex items-center justify-center hover:bg-[var(--modern-black)] hover:text-white transition-all duration-300"
+              className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
               aria-label="Previous"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +170,7 @@ export default function ModernNewestListings({
             </button>
             <button
               onClick={() => scroll('right')}
-              className="w-12 h-12 border border-[var(--modern-black)]/20 text-[var(--modern-black)] flex items-center justify-center hover:bg-[var(--modern-black)] hover:text-white transition-all duration-300"
+              className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
               aria-label="Next"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,7 +268,7 @@ export default function ModernNewestListings({
       >
         <Link
           href="/listings"
-          className="inline-flex items-center gap-2 group text-[var(--modern-gray)] hover:text-[var(--modern-gold)] transition-colors duration-300 text-sm uppercase tracking-[0.2em]"
+          className="inline-flex items-center gap-2 group text-white/70 hover:text-[var(--modern-gold)] transition-colors duration-300 text-sm uppercase tracking-[0.2em]"
         >
           <span>View All Properties</span>
           <svg

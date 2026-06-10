@@ -27,6 +27,8 @@ interface ModernCityStatsProps {
   subtitle?: string;
   configuredCities?: string[];
   variant?: 'light' | 'dark';
+  /** Overrides the section background in the light variant (e.g. 'bg-white'). */
+  sectionBgClass?: string;
 }
 
 export default function ModernCityStats({
@@ -34,8 +36,10 @@ export default function ModernCityStats({
   subtitle = 'Real-time data from leading markets',
   configuredCities,
   variant = 'light',
+  sectionBgClass,
 }: ModernCityStatsProps) {
   const isDark = variant === 'dark';
+  const lightBgClass = sectionBgClass || 'bg-[var(--modern-gray-bg)]';
   const [cityData, setCityData] = useState<CityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
@@ -111,7 +115,7 @@ export default function ModernCityStats({
 
   if (loading) {
     return (
-      <section className={`py-24 ${isDark ? 'bg-[var(--modern-black)]' : 'bg-[var(--modern-gray-bg)]'}`}>
+      <section className={`py-24 ${isDark ? 'bg-[var(--modern-black)]' : lightBgClass}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="animate-pulse grid grid-cols-1 md:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
@@ -128,7 +132,7 @@ export default function ModernCityStats({
   }
 
   return (
-    <section ref={sectionRef} className={`py-24 md:py-32 relative overflow-hidden ${isDark ? 'bg-[var(--modern-black)]' : 'bg-[var(--modern-gray-bg)]'}`}>
+    <section ref={sectionRef} className={`py-24 md:py-32 relative overflow-hidden ${isDark ? 'bg-[var(--modern-black)]' : lightBgClass}`}>
       {/* Background pattern (dark variant only) */}
       {isDark && (
         <div className="absolute inset-0 opacity-5">

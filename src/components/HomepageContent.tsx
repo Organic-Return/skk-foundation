@@ -244,7 +244,8 @@ export default function HomepageContent({
             title={marketStatsSection?.title}
             subtitle={marketStatsSection?.subtitle}
             configuredCities={marketStatsCities.length > 0 ? marketStatsCities : undefined}
-            variant="dark"
+            variant="light"
+            sectionBgClass="bg-white"
           />
         )}
 
