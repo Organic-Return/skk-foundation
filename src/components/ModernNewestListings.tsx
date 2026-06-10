@@ -138,9 +138,22 @@ export default function ModernNewestListings({
   }
 
   return (
-    <section ref={sectionRef} className="py-24 md:py-32 bg-[var(--modern-black)] overflow-hidden">
+    <section ref={sectionRef} className="py-24 md:py-32 bg-[var(--modern-black)] relative overflow-hidden">
+      {/* Background pattern - diagonal gold lines (matches the accolades section) */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 40px,
+            var(--modern-gold) 40px,
+            var(--modern-gold) 41px
+          )`
+        }} />
+      </div>
+
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-16">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-16 relative z-10">
         <div
           className={`flex flex-col md:flex-row md:items-end md:justify-between gap-8 transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
@@ -184,7 +197,7 @@ export default function ModernNewestListings({
       {/* Carousel */}
       <div
         ref={scrollContainerRef}
-        className={`flex gap-6 overflow-x-auto px-6 lg:px-8 pb-4 transition-all duration-1000 delay-200 ${
+        className={`relative z-10 flex gap-6 overflow-x-auto px-6 lg:px-8 pb-4 transition-all duration-1000 delay-200 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -262,7 +275,7 @@ export default function ModernNewestListings({
 
       {/* View All Link */}
       <div
-        className={`max-w-7xl mx-auto px-6 lg:px-8 mt-12 transition-all duration-1000 delay-400 ${
+        className={`max-w-7xl mx-auto px-6 lg:px-8 mt-12 relative z-10 transition-all duration-1000 delay-400 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}
       >
