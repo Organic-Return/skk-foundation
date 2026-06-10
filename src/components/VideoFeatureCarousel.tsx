@@ -47,9 +47,22 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
   }
 
   return (
-    <section className="bg-[var(--modern-black)] py-20 md:py-28 overflow-hidden">
+    <section className="bg-[var(--modern-black)] py-20 md:py-28 relative overflow-hidden">
+      {/* Background pattern - diagonal gold lines (matches the accolades section) */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 40px,
+            var(--modern-gold) 40px,
+            var(--modern-gold) 41px
+          )`
+        }} />
+      </div>
+
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center mb-12 md:mb-16">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center mb-12 md:mb-16 relative z-10">
         {eyebrow && (
           <p className="text-center text-white/70 text-xs md:text-sm uppercase tracking-[0.25em] [text-indent:0.25em] mb-5">
             {eyebrow}
@@ -61,7 +74,7 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
       </div>
 
       {/* Carousel */}
-      <div className="relative">
+      <div className="relative z-10">
         <div
           ref={scrollerRef}
           className="flex gap-4 md:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pl-6 pr-4 lg:pr-6 lg:pl-[max(2rem,calc(((100vw_-_80rem)/2_+_2rem)_*_0.7))] scroll-pl-6 lg:scroll-pl-[max(2rem,calc(((100vw_-_80rem)/2_+_2rem)_*_0.7))] pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
