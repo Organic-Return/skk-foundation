@@ -70,7 +70,7 @@ export default function ModernHeader({
   const [activeMobileDropdown, setActiveMobileDropdown] = useState<number | null>(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLElement>(null);
   const isHomepage = pathname === '/';
   const isCommunityPage = pathname?.startsWith('/communities/');
 
@@ -111,6 +111,7 @@ export default function ModernHeader({
   return (
     <>
       <header
+        ref={dropdownRef}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           showScrolledState
             ? 'bg-[var(--modern-black)] shadow-lg'
@@ -121,7 +122,7 @@ export default function ModernHeader({
         <div className="max-w-[1800px] mx-auto px-8">
           <div className="flex items-center justify-between h-[127px]">
             {/* Left Navigation */}
-            <nav className="hidden lg:flex items-center gap-8" ref={dropdownRef}>
+            <nav className="hidden lg:flex items-center gap-8">
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
                 <div
                   key={index}
