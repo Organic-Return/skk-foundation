@@ -50,7 +50,7 @@ export async function getNavigation(identifier: string): Promise<Navigation | nu
     const navigation = await client.fetch<Navigation>(
       NAVIGATION_QUERY,
       { identifier },
-      { next: { revalidate: 300 } } // Cache for 5 minutes
+      { next: { revalidate: 60 } } // Cache for 1 minute (nav edits should surface quickly)
     );
     return navigation || null;
   } catch (error) {
