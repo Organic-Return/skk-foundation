@@ -125,7 +125,7 @@ export default function ModernHeader({
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
                 <div
                   key={index}
-                  className="relative"
+                  className={`relative ${activeDropdown === index ? 'z-50' : ''}`}
                   onMouseEnter={() => (item.hasMegaMenu || item.simpleDropdown) && handleDropdownEnter(index)}
                   onMouseLeave={handleDropdownLeave}
                 >
@@ -237,7 +237,7 @@ export default function ModernHeader({
                 return (
                   <div
                     key={actualIndex}
-                    className="relative"
+                    className={`relative ${activeDropdown === actualIndex ? 'z-50' : ''}`}
                     onMouseEnter={() => (item.hasMegaMenu || item.simpleDropdown) && handleDropdownEnter(actualIndex)}
                     onMouseLeave={handleDropdownLeave}
                   >
