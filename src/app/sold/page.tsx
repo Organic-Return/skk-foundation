@@ -122,28 +122,24 @@ export default async function SoldPage() {
           <p className="text-lg md:text-xl text-white/75 font-light max-w-2xl mx-auto leading-relaxed">
             A record of recently closed transactions across Aspen, Snowmass, and the Roaring Fork Valley.
           </p>
-        </div>
-      </section>
 
-      {/* Stats */}
-      {stats.length > 0 && (totalSold > 0 || managedStats.length > 0) && (
-        <section className="py-12 md:py-16 bg-[#f8f7f5] dark:bg-[#141414] border-b border-[#e8e6e3] dark:border-gray-800">
-          <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
-            <div className={`grid ${stats.length >= 4 ? "grid-cols-2 md:grid-cols-4" : stats.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-8 text-center`}>
+          {/* Stats — third line in the hero */}
+          {stats.length > 0 && (totalSold > 0 || managedStats.length > 0) && (
+            <div className={`mt-12 md:mt-16 grid ${stats.length >= 4 ? "grid-cols-2 md:grid-cols-4" : stats.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-8 max-w-3xl mx-auto`}>
               {stats.map((stat, i) => (
                 <div key={i}>
-                  <p className="text-4xl md:text-5xl font-light mb-2 font-serif text-[#1a1a1a] dark:text-white">
+                  <div className="font-serif text-white text-5xl md:text-7xl font-light mb-2 tracking-tight leading-none">
                     {stat.value}
-                  </p>
-                  <p className="text-sm uppercase tracking-[0.15em] font-light text-[#6a6a6a] dark:text-gray-400">
+                  </div>
+                  <div className="text-xs md:text-sm uppercase tracking-[0.15em] font-light text-white/70">
                     {stat.label}
-                  </p>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
 
       {/* Sold listings grid */}
       <section className="py-16 md:py-24">
