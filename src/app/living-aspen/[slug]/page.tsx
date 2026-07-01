@@ -175,7 +175,7 @@ export default async function MagazinePage({
 
   if (!magazine) {
     return (
-      <main className="min-h-screen pt-32">
+      <main className="min-h-screen pt-16">
         <div className="max-w-3xl mx-auto px-6 md:px-12">
           <Link href="/living-aspen" className="inline-flex items-center gap-2 text-[var(--color-gold)] hover:gap-4 transition-all duration-300 mb-8">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

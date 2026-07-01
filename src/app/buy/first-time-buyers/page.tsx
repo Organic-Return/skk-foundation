@@ -216,7 +216,7 @@ export default async function FirstTimeBuyersPage() {
 
   if (!data) {
     return (
-      <main className="min-h-screen pt-32">
+      <main className="min-h-screen pt-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h1 className={isRC ? 'text-white mb-4' : 'font-serif text-[#1a1a1a] dark:text-white mb-4'}>
             Page Not Found

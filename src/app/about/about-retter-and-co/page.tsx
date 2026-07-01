@@ -41,7 +41,7 @@ export default async function AboutRetterPage() {
 
   if (!isRC) {
     return (
-      <main className="min-h-screen pt-32">
+      <main className="min-h-screen pt-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-[#6a6a6a] dark:text-gray-400 font-light mb-8">
             Visit our <Link href="/about" className="text-[var(--color-gold)] hover:underline">about page</Link>.

@@ -41,7 +41,7 @@ export default async function TheatrePage() {
 
   if (!isRC) {
     return (
-      <main className="min-h-screen pt-32">
+      <main className="min-h-screen pt-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-[#6a6a6a] dark:text-gray-400 font-light mb-8">
             <Link href="/" className="text-[var(--color-gold)] hover:underline">Return Home</Link>
