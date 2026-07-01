@@ -32,6 +32,11 @@ export default function LayoutWrapper({ header, footer, children, template }: La
   // RC Sotheby's header is static (not fixed), so no forceBackground needed
   const isRCSothebys = template === 'rcsothebys-custom';
 
+  // Modern and custom-one templates use ModernHeader, which renders its own
+  // header spacer to offset its fixed header. Adding pt-20 here too would
+  // double the offset and leave a blank gap below the nav.
+  const usesSpacerHeader = template === 'modern' || template === 'custom-one';
+
   // Force blue header on ALL pages except homepage and community pages (which have transparent hero overlays)
   // Skip for rcsothebys-custom since its header is always cream/static
   const needsForceBackground = !isRCSothebys && !isHomepage && !isCommunityPage;
@@ -51,7 +56,7 @@ export default function LayoutWrapper({ header, footer, children, template }: La
     return (
       <div className="h-screen flex flex-col overflow-hidden">
         {headerWithProps}
-        <div className={`flex-1 overflow-hidden ${isRCSothebys ? '' : 'pt-20'}`}>
+        <div className={`flex-1 overflow-hidden ${isRCSothebys || usesSpacerHeader ? '' : 'pt-20'}`}>
           {children}
         </div>
       </div>
@@ -64,7 +69,7 @@ export default function LayoutWrapper({ header, footer, children, template }: La
 
   // Regular pages: include header/footer with padding (except homepage, community pages, custom-one property pages, and rcsothebys-custom)
   // RC Sotheby's header is static so no padding offset needed
-  const needsPadding = !isRCSothebys && !isHomepage && !isCommunityPage && !isCustomOnePropertyPage;
+  const needsPadding = !isRCSothebys && !usesSpacerHeader && !isHomepage && !isCommunityPage && !isCustomOnePropertyPage;
 
   return (
     <>
