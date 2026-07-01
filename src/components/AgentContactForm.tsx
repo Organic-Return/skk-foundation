@@ -8,9 +8,13 @@ interface AgentContactFormProps {
   agentName: string;
   agentEmail?: string;
   inverted?: boolean;
+  /** Overrides the lead's interest label (defaults to a general agent inquiry). */
+  interest?: string;
+  /** Overrides the message field placeholder. */
+  messagePlaceholder?: string;
 }
 
-export default function AgentContactForm({ agentName, agentEmail, inverted = false }: AgentContactFormProps) {
+export default function AgentContactForm({ agentName, agentEmail, inverted = false, interest, messagePlaceholder }: AgentContactFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -37,7 +41,7 @@ export default function AgentContactForm({ agentName, agentEmail, inverted = fal
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          interest: `Agent inquiry for ${agentName}`,
+          interest: interest || `Agent inquiry for ${agentName}`,
           sourceUrl: utm.source_url,
           referrer: utm.referrer,
           utmSource: utm.utm_source,
@@ -153,7 +157,7 @@ export default function AgentContactForm({ agentName, agentEmail, inverted = fal
           required
           rows={4}
           className={`${inputClass} resize-none`}
-          placeholder={`I'd like to connect with ${agentName.split(' ')[0]}...`}
+          placeholder={messagePlaceholder || `I'd like to connect with ${agentName.split(' ')[0]}...`}
         />
       </div>
 

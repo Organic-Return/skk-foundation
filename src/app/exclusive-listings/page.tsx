@@ -4,19 +4,18 @@ import { client } from "@/sanity/client";
 import { getListingsByAgentId, getMlsNumbersWithSIRMedia, type MLSProperty } from "@/lib/listings";
 import { getSettings } from "@/lib/settings";
 import AgentListingsGrid from "@/components/AgentListingsGrid";
+import AgentContactForm from "@/components/AgentContactForm";
 
 const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
-  name, mlsAgentId, mlsAgentIdSold
+  name, email, featured, mlsAgentId, mlsAgentIdSold
 }`;
 
 const options = { next: { revalidate: 300 } };
 
 async function getExclusiveData() {
-  const team = await client.fetch<Array<{ name?: string; mlsAgentId?: string; mlsAgentIdSold?: string }>>(
-    TEAM_QUERY,
-    {},
-    options
-  );
+  const team = await client.fetch<
+    Array<{ name?: string; email?: string; featured?: boolean; mlsAgentId?: string; mlsAgentIdSold?: string }>
+  >(TEAM_QUERY, {}, options);
 
   const results = await Promise.all(
     (team || []).map((m) => getListingsByAgentId(m.mlsAgentId || null, m.mlsAgentIdSold, m.name))
@@ -37,7 +36,13 @@ async function getExclusiveData() {
 
   const firstName = team && team.length === 1 && team[0].name ? team[0].name.split(" ")[0] : null;
 
-  return { activeListings, firstName };
+  // Primary agent for the "list your home" contact form (featured member, else first).
+  const primaryMember = (team || []).find((m) => m.featured && m.name) || (team || []).find((m) => m.name) || null;
+  const primaryAgent = primaryMember?.name
+    ? { name: primaryMember.name, email: primaryMember.email }
+    : null;
+
+  return { activeListings, firstName, primaryAgent };
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -55,8 +60,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ExclusiveListingsPage() {
-  const { activeListings, firstName } = await getExclusiveData();
+  const { activeListings, firstName, primaryAgent } = await getExclusiveData();
   const who = firstName ? `${firstName}'s` : "Our";
+  const agentFirstName = primaryAgent?.name?.split(" ")[0] || firstName || "our team";
   const total = activeListings.length;
 
   // Video / Matterport badges (no-op when SIR/Realogy isn't configured).
@@ -112,6 +118,30 @@ export default async function ExclusiveListingsPage() {
               Exclusive listings will appear here as new properties come to market.
             </p>
           )}
+        </div>
+      </section>
+
+      {/* List your home — contact form */}
+      <section className="bg-[var(--color-navy)] py-16 md:py-24">
+        <div className="max-w-2xl mx-auto px-6 md:px-12 lg:px-16">
+          <div className="text-center mb-10">
+            <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
+              Sell With Confidence
+            </p>
+            <h2 className="font-serif text-white text-3xl md:text-4xl font-light tracking-wide mb-4">
+              List Your Home with {agentFirstName}
+            </h2>
+            <p className="text-white/75 font-light leading-relaxed">
+              Thinking about selling? Reach out for a private consultation and a tailored strategy to bring your property to market.
+            </p>
+          </div>
+          <AgentContactForm
+            agentName={primaryAgent?.name || "our team"}
+            agentEmail={primaryAgent?.email}
+            inverted
+            interest={`Listing inquiry — sell my home${primaryAgent?.name ? ` (${primaryAgent.name})` : ""}`}
+            messagePlaceholder="Tell us about the home you'd like to sell..."
+          />
         </div>
       </section>
     </main>
