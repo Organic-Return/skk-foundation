@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { client } from "@/sanity/client";
 import { getListingsByAgentId, getMlsNumbersWithSIRMedia, type MLSProperty } from "@/lib/listings";
 import { getSettings } from "@/lib/settings";
@@ -71,11 +72,27 @@ export default async function ExclusiveListingsPage() {
   const mlsNumbers = activeListings.map((l) => l.mls_number).filter(Boolean) as string[];
   const { videos, matterports } = await getMlsNumbersWithSIRMedia(mlsNumbers);
 
+  // Background image from the most expensive listing (activeListings is sorted by price desc).
+  const heroImage = activeListings[0]?.photos?.[0] || null;
+
   return (
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
       {/* Hero */}
-      <section className="relative bg-[var(--color-navy)] py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
+      <section className="relative bg-[var(--color-navy)] py-[6.5rem] md:py-[9.1rem] overflow-hidden">
+        {heroImage && (
+          <>
+            <Image
+              src={heroImage}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-[var(--color-navy)]/70" />
+          </>
+        )}
+        <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
           <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
             For Sale
           </p>
