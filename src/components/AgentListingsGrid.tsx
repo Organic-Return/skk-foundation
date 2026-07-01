@@ -137,11 +137,19 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
               Sold
             </span>
           )}
-          {!isSold && listing.status?.toLowerCase().startsWith('pending') && (
-            <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-amber-500 text-white">
-              Pending
-            </span>
-          )}
+          {!isSold && (() => {
+            const s = listing.status?.toLowerCase() || '';
+            const label = s.startsWith('pending')
+              ? 'Pending'
+              : s.includes('under contract')
+              ? 'Under Contract'
+              : null;
+            return label ? (
+              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-amber-500 text-white">
+                {label}
+              </span>
+            ) : null;
+          })()}
           {!isSold && listing.listing_date && (() => {
             const daysDiff = Math.floor((Date.now() - new Date(listing.listing_date).getTime()) / (1000 * 60 * 60 * 24));
             return daysDiff <= 14;

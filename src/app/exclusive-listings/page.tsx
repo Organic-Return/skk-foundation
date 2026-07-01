@@ -11,14 +11,6 @@ const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAg
 
 const options = { next: { revalidate: 300 } };
 
-const formatUSD = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(n);
-
 async function getExclusiveData() {
   const team = await client.fetch<Array<{ name?: string; mlsAgentId?: string; mlsAgentIdSold?: string }>>(
     TEAM_QUERY,
@@ -66,7 +58,6 @@ export default async function ExclusiveListingsPage() {
   const { activeListings, firstName } = await getExclusiveData();
   const who = firstName ? `${firstName}'s` : "Our";
   const total = activeListings.length;
-  const totalValue = activeListings.reduce((sum, l) => sum + (l.list_price || 0), 0);
 
   // Video / Matterport badges (no-op when SIR/Realogy isn't configured).
   const mlsNumbers = activeListings.map((l) => l.mls_number).filter(Boolean) as string[];
@@ -104,32 +95,6 @@ export default async function ExclusiveListingsPage() {
           </p>
         </div>
       </section>
-
-      {/* Stats */}
-      {total > 0 && (
-        <section className="py-12 md:py-16 bg-[#f8f7f5] dark:bg-[#141414] border-b border-[#e8e6e3] dark:border-gray-800">
-          <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
-            <div className="grid grid-cols-2 gap-8 text-center">
-              <div>
-                <p className="text-4xl md:text-5xl font-light mb-2 font-serif text-[#1a1a1a] dark:text-white">
-                  {total}
-                </p>
-                <p className="text-sm uppercase tracking-[0.15em] font-light text-[#6a6a6a] dark:text-gray-400">
-                  Active Listings
-                </p>
-              </div>
-              <div>
-                <p className="text-4xl md:text-5xl font-light mb-2 font-serif text-[#1a1a1a] dark:text-white">
-                  {formatUSD(totalValue)}
-                </p>
-                <p className="text-sm uppercase tracking-[0.15em] font-light text-[#6a6a6a] dark:text-gray-400">
-                  Total List Value
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Listings grid */}
       <section className="py-16 md:py-24">
