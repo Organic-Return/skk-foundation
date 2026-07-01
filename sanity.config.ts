@@ -72,10 +72,19 @@ export default defineConfig({
                   .schemaType('buildersPage')
                   .documentId('buildersPage')
               ),
+            // Sold Page singleton
+            S.listItem()
+              .title('Sold Page')
+              .icon(() => '🏷️')
+              .child(
+                S.document()
+                  .schemaType('soldPage')
+                  .documentId('soldPage')
+              ),
             S.divider(),
             // All other document types
             ...S.documentTypeListItems().filter(
-              (listItem) => !['settings', 'homepage', 'buyPage', 'relocationPage', 'firstTimeBuyersPage', 'buildersPage'].includes(listItem.getId() || '')
+              (listItem) => !['settings', 'homepage', 'buyPage', 'relocationPage', 'firstTimeBuyersPage', 'buildersPage', 'soldPage'].includes(listItem.getId() || '')
             ),
           ]),
     }),
