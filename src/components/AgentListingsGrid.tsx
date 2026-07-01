@@ -10,6 +10,8 @@ interface AgentListingsGridProps {
   soldListings: MLSProperty[];
   mlsWithVideos?: string[];
   mlsWithMatterport?: string[];
+  /** Cap the grid at two columns so each card renders roughly twice as large. */
+  twoColumn?: boolean;
 }
 
 function formatPrice(price: number | null): string {
@@ -200,7 +202,7 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
   );
 }
 
-export default function AgentListingsGrid({ activeListings, soldListings, mlsWithVideos = [], mlsWithMatterport = [] }: AgentListingsGridProps) {
+export default function AgentListingsGrid({ activeListings, soldListings, mlsWithVideos = [], mlsWithMatterport = [], twoColumn = false }: AgentListingsGridProps) {
   const [activeTab, setActiveTab] = useState<'active' | 'sold'>(
     activeListings.length > 0 ? 'active' : 'sold'
   );
@@ -244,7 +246,7 @@ export default function AgentListingsGrid({ activeListings, soldListings, mlsWit
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-12">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${twoColumn ? '' : 'lg:grid-cols-3'} gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-12`}>
         {listings.map((listing) => (
           <PropertyCard
             key={listing.id}

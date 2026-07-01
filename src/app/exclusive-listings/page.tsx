@@ -123,6 +123,7 @@ export default async function ExclusiveListingsPage() {
               soldListings={[]}
               mlsWithVideos={Array.from(videos)}
               mlsWithMatterport={Array.from(matterports)}
+              twoColumn
             />
           ) : (
             <p className="text-center text-[#6a6a6a] dark:text-gray-400 font-light">
