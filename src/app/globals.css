@@ -72,6 +72,14 @@ p {
   max-width: 75ch; /* Optimal reading width: 45-75 characters per line */
 }
 
+/* Content sections that opt into a wider column (overrides the default
+   readable paragraph cap so text fills the container). */
+.content-wide p,
+.content-wide ul,
+.content-wide ol {
+  max-width: none;
+}
+
 /* Headings - elegant serif typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-bodoni), "Bodoni MT", Didot, Georgia, serif;
