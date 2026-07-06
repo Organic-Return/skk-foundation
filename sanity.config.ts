@@ -81,10 +81,19 @@ export default defineConfig({
                   .schemaType('soldPage')
                   .documentId('soldPage')
               ),
+            // Exclusive Listings Page singleton
+            S.listItem()
+              .title('Exclusive Listings Page')
+              .icon(() => '✨')
+              .child(
+                S.document()
+                  .schemaType('exclusiveListingsPage')
+                  .documentId('exclusiveListingsPage')
+              ),
             S.divider(),
             // All other document types
             ...S.documentTypeListItems().filter(
-              (listItem) => !['settings', 'homepage', 'buyPage', 'relocationPage', 'firstTimeBuyersPage', 'buildersPage', 'soldPage'].includes(listItem.getId() || '')
+              (listItem) => !['settings', 'homepage', 'buyPage', 'relocationPage', 'firstTimeBuyersPage', 'buildersPage', 'soldPage', 'exclusiveListingsPage'].includes(listItem.getId() || '')
             ),
           ]),
     }),
