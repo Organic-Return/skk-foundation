@@ -279,8 +279,14 @@ export default async function ExclusiveListingsPage() {
       </section>
 
       {/* List your home — contact form */}
-      <section className="bg-[var(--color-navy)] py-16 md:py-24">
-        <div className="max-w-2xl mx-auto px-6 md:px-12 lg:px-16">
+      <section className="relative bg-[var(--color-navy)] py-16 md:py-24 overflow-hidden">
+        {heroImage && (
+          <>
+            <Image src={heroImage} alt="" fill sizes="100vw" className="object-cover" />
+            <div className="absolute inset-0 bg-[var(--color-navy)]/80" />
+          </>
+        )}
+        <div className="relative max-w-2xl mx-auto px-6 md:px-12 lg:px-16">
           <div className="text-center mb-10">
             <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
               Sell With Confidence

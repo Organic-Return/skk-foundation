@@ -5,10 +5,11 @@ import { client } from "@/sanity/client";
 import { getListingsByAgentId, type MLSProperty } from "@/lib/listings";
 import { getSettings } from "@/lib/settings";
 import AgentListingsGrid from "@/components/AgentListingsGrid";
+import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
 
 const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
-  name, featured, mlsAgentId, mlsAgentIdSold
+  name, email, featured, mlsAgentId, mlsAgentIdSold
 }`;
 
 const SOLD_PAGE_QUERY = `*[_type == "soldPage"][0]{
@@ -67,7 +68,7 @@ const formatUSD = (n: number) =>
 
 async function getSoldData() {
   const [team, soldPage] = await Promise.all([
-    client.fetch<Array<{ name?: string; featured?: boolean; mlsAgentId?: string; mlsAgentIdSold?: string }>>(
+    client.fetch<Array<{ name?: string; email?: string; featured?: boolean; mlsAgentId?: string; mlsAgentIdSold?: string }>>(
       TEAM_QUERY,
       {},
       options
@@ -102,6 +103,7 @@ async function getSoldData() {
   // Primary agent (featured member, else first) for SEO copy / structured data.
   const primaryMember = (team || []).find((m) => m.featured && m.name) || (team || []).find((m) => m.name) || null;
   const agentName = primaryMember?.name || null;
+  const agentEmail = primaryMember?.email || null;
 
   // Sanity-managed stats override the auto-calculated totals when present.
   const managedStats = (soldPage?.stats || []).filter((s) => s.value || s.label) as SoldPageStat[];
@@ -110,6 +112,7 @@ async function getSoldData() {
     soldListings,
     firstName,
     agentName,
+    agentEmail,
     heroImage,
     managedStats,
     contentHeading: soldPage?.contentHeading || null,
@@ -154,7 +157,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SoldPage() {
-  const { soldListings, firstName, agentName, heroImage, managedStats, contentHeading, contentBody } =
+  const { soldListings, firstName, agentName, agentEmail, heroImage, managedStats, contentHeading, contentBody } =
     await getSoldData();
   const settings = await getSettings();
   const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
@@ -314,6 +317,36 @@ export default async function SoldPage() {
               Sold properties will appear here as transactions close.
             </p>
           )}
+        </div>
+      </section>
+
+      {/* List your home — contact form */}
+      <section className="relative bg-[var(--color-navy)] py-16 md:py-24 overflow-hidden">
+        {heroImage && (
+          <>
+            <Image src={heroImage} alt="" fill sizes="100vw" className="object-cover" />
+            <div className="absolute inset-0 bg-[var(--color-navy)]/80" />
+          </>
+        )}
+        <div className="relative max-w-2xl mx-auto px-6 md:px-12 lg:px-16">
+          <div className="text-center mb-10">
+            <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
+              Sell With Confidence
+            </p>
+            <h2 className="font-serif text-white text-3xl md:text-4xl font-light tracking-wide mb-4">
+              List Your Home with {first}
+            </h2>
+            <p className="text-white/75 font-light leading-relaxed">
+              Thinking about selling? Reach out for a private consultation and a tailored strategy to bring your property to market.
+            </p>
+          </div>
+          <AgentContactForm
+            agentName={agentName || "our team"}
+            agentEmail={agentEmail || undefined}
+            inverted
+            interest={`Listing inquiry — sell my home${agentName ? ` (${agentName})` : ""}`}
+            messagePlaceholder="Tell us about the home you'd like to sell..."
+          />
         </div>
       </section>
     </main>
