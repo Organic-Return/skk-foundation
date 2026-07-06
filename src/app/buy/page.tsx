@@ -8,8 +8,10 @@ import type { Metadata } from "next";
 import { getSettings } from "@/lib/settings";
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
-import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema } from "@/lib/seo";
-import { DEFAULT_BUY_FAQS, DEFAULT_BUY_PROCESS, type Faq } from "@/lib/pageDefaults";
+import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema, reviewSchemas } from "@/lib/seo";
+import { DEFAULT_BUY_FAQS, DEFAULT_BUY_PROCESS, DEFAULT_BUY_STATS, DEFAULT_TESTIMONIALS, type Faq } from "@/lib/pageDefaults";
+import StatsBand from "@/components/StatsBand";
+import TestimonialsSection from "@/components/TestimonialsSection";
 
 const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
   name, email, featured
@@ -45,6 +47,9 @@ const BUY_PAGE_QUERY = `*[_type == "buyPage"][0]{
     question,
     answer
   },
+  stats[]{ value, label },
+  testimonialsTitle,
+  testimonials[]{ quote, author, location },
   ctaTitle,
   ctaSubtitle,
   ctaButtonText,
@@ -169,10 +174,17 @@ export default async function BuyPage() {
   const processSteps =
     data.processSteps && data.processSteps.length > 0 ? data.processSteps : DEFAULT_BUY_PROCESS.steps;
 
-  // SEO structured data (FAQ rich results, agent, breadcrumb).
+  // Stats + testimonials fall back to placeholders; only REAL CMS testimonials get Review schema.
+  const hasRealTestimonials = Array.isArray(data.testimonials) && data.testimonials.length > 0;
+  const stats = data.stats && data.stats.length > 0 ? data.stats : DEFAULT_BUY_STATS;
+  const testimonials = hasRealTestimonials ? data.testimonials : DEFAULT_TESTIMONIALS;
+  const testimonialsTitle: string = data.testimonialsTitle || "What Clients Say";
+
+  // SEO structured data (FAQ rich results, agent, breadcrumb, real reviews only).
   const agentFirstName = agent?.name?.split(" ")[0] || "our team";
   const schemas = [
     faqPageSchema(faqs),
+    ...(hasRealTestimonials ? reviewSchemas(data.testimonials, agent?.name) || [] : []),
     realEstateAgentSchema({
       name: agent?.name,
       url: `${baseUrl}/buy`,
@@ -275,6 +287,9 @@ export default async function BuyPage() {
         </div>
       )}
 
+      {/* Trust stats band */}
+      <StatsBand stats={stats} />
+
       {/* Process Steps — how buying works */}
       {processSteps.length > 0 && (
         <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a]">
@@ -349,6 +364,9 @@ export default async function BuyPage() {
           </div>
         </section>
       )}
+
+      {/* Testimonials */}
+      <TestimonialsSection title={testimonialsTitle} testimonials={testimonials} />
 
       {/* Buyer lead form */}
       <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a] border-t border-[#e8e6e3] dark:border-gray-800">

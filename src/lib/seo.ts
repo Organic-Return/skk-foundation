@@ -52,6 +52,28 @@ export function realEstateAgentSchema(opts: {
   };
 }
 
+/**
+ * Review schema objects for real, attributed testimonials.
+ * Call this ONLY with genuine CMS testimonials — never placeholder copy.
+ * Returns null if there are none.
+ */
+export function reviewSchemas(
+  testimonials: Array<{ quote?: string; author?: string }> | undefined,
+  agentName?: string | null
+) {
+  const valid = (testimonials || []).filter((t) => t?.quote && t?.author);
+  if (valid.length === 0) return null;
+  return valid.map((t) => ({
+    "@context": "https://schema.org",
+    "@type": "Review",
+    reviewBody: t.quote,
+    author: { "@type": "Person", name: t.author },
+    ...(agentName
+      ? { itemReviewed: { "@type": "RealEstateAgent", name: agentName } }
+      : {}),
+  }));
+}
+
 /** BreadcrumbList schema for a simple Home > Page trail. */
 export function breadcrumbSchema(items: Array<{ name: string; url: string }>) {
   return {

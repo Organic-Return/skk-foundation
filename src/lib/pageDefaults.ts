@@ -8,6 +8,45 @@
 export type Faq = { question: string; answer: string };
 export type ProcessStep = { title: string; description: string };
 export type ProcessDefault = { title: string; intro: string; steps: ProcessStep[] };
+export type Stat = { value: string; label: string };
+export type Testimonial = { quote: string; author: string; location?: string };
+
+// PLACEHOLDER stats — replace with real figures in the Studio before relying on them.
+export const DEFAULT_BUY_STATS: Stat[] = [
+  { value: "00+", label: "Years of Experience" },
+  { value: "$000M+", label: "In Sales Volume" },
+  { value: "000+", label: "Homes Closed" },
+  { value: "5.0", label: "Client Rating" },
+];
+
+export const DEFAULT_SELL_STATS: Stat[] = [
+  { value: "00+", label: "Years of Experience" },
+  { value: "$000M+", label: "In Sales Volume" },
+  { value: "00%", label: "List-to-Sale Price" },
+  { value: "5.0", label: "Client Rating" },
+];
+
+// PLACEHOLDER testimonials (lorem ipsum) — replace with real, attributed client quotes.
+export const DEFAULT_TESTIMONIALS: Testimonial[] = [
+  {
+    quote:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.",
+    author: "Client Name",
+    location: "Aspen, CO",
+  },
+  {
+    quote:
+      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident sunt in culpa.",
+    author: "Client Name",
+    location: "Snowmass Village, CO",
+  },
+  {
+    quote:
+      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.",
+    author: "Client Name",
+    location: "Roaring Fork Valley, CO",
+  },
+];
 
 export const DEFAULT_BUY_PROCESS: ProcessDefault = {
   title: "How Buying a Home in Aspen Works",

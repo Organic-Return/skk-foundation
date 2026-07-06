@@ -180,6 +180,49 @@ export const buyPage = defineType({
       ],
     }),
 
+    // Trust stats band
+    defineField({
+      name: 'stats',
+      title: 'Stats Band',
+      type: 'array',
+      description: 'Trust stats (e.g. years, sales volume). Leave empty to show placeholder examples — replace before relying on them.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'value', title: 'Value', type: 'string', description: 'e.g. "17+" or "$500M+"' },
+            { name: 'label', title: 'Label', type: 'string', description: 'e.g. "Years of Experience"' },
+          ],
+          preview: { select: { title: 'value', subtitle: 'label' } },
+        },
+      ],
+      validation: (Rule) => Rule.max(4),
+    }),
+
+    // Testimonials
+    defineField({
+      name: 'testimonialsTitle',
+      title: 'Testimonials Section Title',
+      type: 'string',
+    }),
+    defineField({
+      name: 'testimonials',
+      title: 'Testimonials',
+      type: 'array',
+      description: 'Real, attributed client quotes. Leave empty to show placeholder examples (placeholders are NOT added to search structured data).',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'quote', title: 'Quote', type: 'text', rows: 4, validation: (Rule) => Rule.required() },
+            { name: 'author', title: 'Author', type: 'string' },
+            { name: 'location', title: 'Location', type: 'string' },
+          ],
+          preview: { select: { title: 'author', subtitle: 'quote' } },
+        },
+      ],
+    }),
+
     // Call to Action
     defineField({
       name: 'ctaTitle',
