@@ -5,6 +5,24 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { getSettings } from "@/lib/settings";
+import AgentContactForm from "@/components/AgentContactForm";
+import StructuredData from "@/components/StructuredData";
+import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema } from "@/lib/seo";
+
+const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
+  name, email, featured
+}`;
+
+async function getPrimaryAgent() {
+  const team = await client.fetch<Array<{ name?: string; email?: string; featured?: boolean }>>(
+    TEAM_QUERY,
+    {},
+    options
+  );
+  const member = (team || []).find((m) => m.featured && m.name) || (team || []).find((m) => m.name) || null;
+  return member?.name ? { name: member.name, email: member.email || null } : null;
+}
 
 const BUY_PAGE_QUERY = `*[_type == "buyPage"][0]{
   heroTitle,
@@ -40,30 +58,43 @@ const urlFor = (source: any) =>
 const options = { next: { revalidate: 60 } };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const data = await client.fetch<SanityDocument>(BUY_PAGE_QUERY, {}, options);
+  const [data, settings, agent] = await Promise.all([
+    client.fetch<SanityDocument>(BUY_PAGE_QUERY, {}, options),
+    getSettings(),
+    getPrimaryAgent(),
+  ]);
+  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
 
   if (!data) {
-    return {
-      title: 'Buy',
-    };
+    return { title: 'Buy', alternates: { canonical: `${baseUrl}/buy` } };
   }
 
-  const metaTitle = data.seo?.metaTitle || data.heroTitle || 'Buy';
-  const metaDescription = data.seo?.metaDescription || data.heroSubtitle || '';
+  const who = agent?.name || 'Our Team';
+  const metaTitle = data.seo?.metaTitle || data.heroTitle || `Buy a Home in Aspen & Snowmass | ${who}`;
+  const metaDescription =
+    data.seo?.metaDescription ||
+    data.heroSubtitle ||
+    `Buy your Aspen or Snowmass dream home with ${who}. Get local buyer representation, off-market listings, market insight, and a smooth path to closing across the Roaring Fork Valley.`;
   const ogImageUrl = data.seo?.ogImage
     ? urlFor(data.seo.ogImage)?.width(1200).height(630).url()
     : data.heroImage
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-
   return {
     title: metaTitle,
     description: metaDescription,
-    alternates: {
-      canonical: `${baseUrl}/buy`,
-    },
+    keywords: [
+      "Aspen real estate",
+      "buy a home in Aspen",
+      "Snowmass homes for sale",
+      "Aspen buyer's agent",
+      agent?.name || "Aspen luxury real estate",
+      "buying a home in Snowmass Village",
+      "off-market Aspen listings",
+      "Roaring Fork Valley homes for sale",
+    ],
+    alternates: { canonical: `${baseUrl}/buy` },
     openGraph: {
       title: metaTitle,
       description: metaDescription,
@@ -71,6 +102,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: `${baseUrl}/buy`,
       images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630 }] : [],
     },
+    twitter: { card: "summary_large_image", title: metaTitle, description: metaDescription },
   };
 }
 
@@ -96,7 +128,12 @@ const portableTextComponents: PortableTextComponents = {
 };
 
 export default async function BuyPage() {
-  const data = await client.fetch<SanityDocument>(BUY_PAGE_QUERY, {}, options);
+  const [data, settings, agent] = await Promise.all([
+    client.fetch<SanityDocument>(BUY_PAGE_QUERY, {}, options),
+    getSettings(),
+    getPrimaryAgent(),
+  ]);
+  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
 
   if (!data) {
     return (
@@ -120,8 +157,28 @@ export default async function BuyPage() {
     ? urlFor(data.heroImage)?.width(1920).height(800).url()
     : null;
 
+  // SEO structured data (FAQ rich results, agent, breadcrumb).
+  const agentFirstName = agent?.name?.split(" ")[0] || "our team";
+  const schemas = [
+    faqPageSchema(data.faqs),
+    realEstateAgentSchema({
+      name: agent?.name,
+      url: `${baseUrl}/buy`,
+      telephone: settings?.contactInfo?.phone || null,
+      description: `${agent?.name} is an Aspen real estate agent helping buyers purchase luxury homes across Aspen, Snowmass, and the Roaring Fork Valley.`,
+      knowsAbout: ["Aspen real estate", "Snowmass real estate", "Luxury home buyers", "Roaring Fork Valley properties"],
+    }),
+    breadcrumbSchema([
+      { name: "Home", url: baseUrl },
+      { name: "Buy", url: `${baseUrl}/buy` },
+    ]),
+  ].filter(Boolean);
+
   return (
     <main className="min-h-screen">
+      {schemas.map((s, i) => (
+        <StructuredData key={i} data={s as Record<string, unknown>} />
+      ))}
       {/* Hero Section */}
       <section className="relative h-[60vh] md:h-[70vh] min-h-[500px] flex items-end">
         {heroImageUrl ? (
@@ -243,6 +300,30 @@ export default async function BuyPage() {
           </div>
         </section>
       )}
+
+      {/* Buyer lead form */}
+      <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a] border-t border-[#e8e6e3] dark:border-gray-800">
+        <div className="max-w-2xl mx-auto px-6 md:px-12 lg:px-16">
+          <div className="text-center mb-10">
+            <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
+              Start Your Search
+            </p>
+            <h2 className="font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white tracking-wide mb-4">
+              Buy Your Aspen Home with {agentFirstName === "our team" ? "Us" : agentFirstName}
+            </h2>
+            <p className="text-[#4a4a4a] dark:text-gray-300 font-light leading-relaxed">
+              Tell us what you&apos;re looking for and receive a curated selection of Aspen and Snowmass
+              properties &mdash; including off-market opportunities &mdash; matched to your criteria.
+            </p>
+          </div>
+          <AgentContactForm
+            agentName={agent?.name || "our team"}
+            agentEmail={agent?.email || undefined}
+            interest={`Buyer inquiry — Aspen/Snowmass${agent?.name ? ` (${agent.name})` : ""}`}
+            messagePlaceholder="Tell us about the home you're looking for — location, budget, timeline..."
+          />
+        </div>
+      </section>
 
       {/* CTA Section */}
       {data.ctaTitle && (

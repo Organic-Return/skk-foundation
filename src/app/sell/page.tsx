@@ -5,6 +5,24 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { getSettings } from "@/lib/settings";
+import AgentContactForm from "@/components/AgentContactForm";
+import StructuredData from "@/components/StructuredData";
+import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema } from "@/lib/seo";
+
+const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
+  name, email, featured
+}`;
+
+async function getPrimaryAgent() {
+  const team = await client.fetch<Array<{ name?: string; email?: string; featured?: boolean }>>(
+    TEAM_QUERY,
+    {},
+    options
+  );
+  const member = (team || []).find((m) => m.featured && m.name) || (team || []).find((m) => m.name) || null;
+  return member?.name ? { name: member.name, email: member.email || null } : null;
+}
 
 const SELL_PAGE_QUERY = `*[_type == "sellPage"][0]{
   heroTitle,
@@ -40,30 +58,43 @@ const urlFor = (source: any) =>
 const options = { next: { revalidate: 60 } };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const data = await client.fetch<SanityDocument>(SELL_PAGE_QUERY, {}, options);
+  const [data, settings, agent] = await Promise.all([
+    client.fetch<SanityDocument>(SELL_PAGE_QUERY, {}, options),
+    getSettings(),
+    getPrimaryAgent(),
+  ]);
+  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
 
   if (!data) {
-    return {
-      title: 'Sell',
-    };
+    return { title: 'Sell', alternates: { canonical: `${baseUrl}/sell` } };
   }
 
-  const metaTitle = data.seo?.metaTitle || data.heroTitle || 'Sell';
-  const metaDescription = data.seo?.metaDescription || data.heroSubtitle || '';
+  const who = agent?.name || 'Our Team';
+  const metaTitle = data.seo?.metaTitle || data.heroTitle || `Sell Your Aspen & Snowmass Home | ${who}`;
+  const metaDescription =
+    data.seo?.metaDescription ||
+    data.heroSubtitle ||
+    `Sell your Aspen or Snowmass home with ${who}. Global marketing, local market expertise, and a free, no-obligation home valuation across the Roaring Fork Valley.`;
   const ogImageUrl = data.seo?.ogImage
     ? urlFor(data.seo.ogImage)?.width(1200).height(630).url()
     : data.heroImage
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-
   return {
     title: metaTitle,
     description: metaDescription,
-    alternates: {
-      canonical: `${baseUrl}/sell`,
-    },
+    keywords: [
+      "sell my home in Aspen",
+      "Aspen home value",
+      "sell luxury home Snowmass",
+      "Aspen listing agent",
+      agent?.name || "Aspen luxury real estate",
+      "what's my home worth Aspen",
+      "Snowmass Village real estate",
+      "Roaring Fork Valley real estate",
+    ],
+    alternates: { canonical: `${baseUrl}/sell` },
     openGraph: {
       title: metaTitle,
       description: metaDescription,
@@ -71,6 +102,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: `${baseUrl}/sell`,
       images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630 }] : [],
     },
+    twitter: { card: "summary_large_image", title: metaTitle, description: metaDescription },
   };
 }
 
@@ -96,7 +128,12 @@ const portableTextComponents: PortableTextComponents = {
 };
 
 export default async function SellPage() {
-  const data = await client.fetch<SanityDocument>(SELL_PAGE_QUERY, {}, options);
+  const [data, settings, agent] = await Promise.all([
+    client.fetch<SanityDocument>(SELL_PAGE_QUERY, {}, options),
+    getSettings(),
+    getPrimaryAgent(),
+  ]);
+  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
 
   if (!data) {
     return (
@@ -120,8 +157,28 @@ export default async function SellPage() {
     ? urlFor(data.heroImage)?.width(1920).height(800).url()
     : null;
 
+  // SEO structured data (FAQ rich results, agent, breadcrumb).
+  const agentFirstName = agent?.name?.split(" ")[0] || "our team";
+  const schemas = [
+    faqPageSchema(data.faqs),
+    realEstateAgentSchema({
+      name: agent?.name,
+      url: `${baseUrl}/sell`,
+      telephone: settings?.contactInfo?.phone || null,
+      description: `${agent?.name} is an Aspen real estate agent who markets and sells luxury homes across Aspen, Snowmass, and the Roaring Fork Valley.`,
+      knowsAbout: ["Aspen real estate", "Snowmass real estate", "Luxury home sales", "Home valuation"],
+    }),
+    breadcrumbSchema([
+      { name: "Home", url: baseUrl },
+      { name: "Sell", url: `${baseUrl}/sell` },
+    ]),
+  ].filter(Boolean);
+
   return (
     <main className="min-h-screen">
+      {schemas.map((s, i) => (
+        <StructuredData key={i} data={s as Record<string, unknown>} />
+      ))}
       {/* Hero Section */}
       <section className="relative h-[60vh] md:h-[70vh] min-h-[500px] flex items-end">
         {heroImageUrl ? (
@@ -243,6 +300,30 @@ export default async function SellPage() {
           </div>
         </section>
       )}
+
+      {/* Seller / home valuation lead form */}
+      <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a] border-t border-[#e8e6e3] dark:border-gray-800">
+        <div className="max-w-2xl mx-auto px-6 md:px-12 lg:px-16">
+          <div className="text-center mb-10">
+            <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
+              What&apos;s Your Home Worth?
+            </p>
+            <h2 className="font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white tracking-wide mb-4">
+              Request a Complimentary Home Valuation
+            </h2>
+            <p className="text-[#4a4a4a] dark:text-gray-300 font-light leading-relaxed">
+              Find out what your Aspen or Snowmass home could sell for in today&apos;s market. Share a few details
+              and {agentFirstName === "our team" ? "we" : agentFirstName} will prepare a discreet, no-obligation valuation and marketing plan.
+            </p>
+          </div>
+          <AgentContactForm
+            agentName={agent?.name || "our team"}
+            agentEmail={agent?.email || undefined}
+            interest={`Home valuation / seller inquiry${agent?.name ? ` (${agent.name})` : ""}`}
+            messagePlaceholder="Tell us about the home you'd like to sell — address, size, timeline..."
+          />
+        </div>
+      </section>
 
       {/* CTA Section */}
       {data.ctaTitle && (
