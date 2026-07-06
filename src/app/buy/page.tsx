@@ -9,6 +9,7 @@ import { getSettings } from "@/lib/settings";
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
 import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema } from "@/lib/seo";
+import { DEFAULT_BUY_FAQS, DEFAULT_BUY_PROCESS, type Faq } from "@/lib/pageDefaults";
 
 const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
   name, email, featured
@@ -36,6 +37,9 @@ const BUY_PAGE_QUERY = `*[_type == "buyPage"][0]{
     ctaText,
     ctaLink
   },
+  processTitle,
+  processIntro,
+  processSteps[]{ title, description },
   faqTitle,
   faqs[]{
     question,
@@ -157,10 +161,18 @@ export default async function BuyPage() {
     ? urlFor(data.heroImage)?.width(1920).height(800).url()
     : null;
 
+  // FAQs and process steps fall back to built-in default copy when the CMS is empty.
+  const faqs: Faq[] = data.faqs && data.faqs.length > 0 ? data.faqs : DEFAULT_BUY_FAQS;
+  const faqTitle: string = data.faqTitle || "Frequently Asked Questions About Buying in Aspen";
+  const processTitle: string = data.processTitle || DEFAULT_BUY_PROCESS.title;
+  const processIntro: string | null = data.processIntro || DEFAULT_BUY_PROCESS.intro;
+  const processSteps =
+    data.processSteps && data.processSteps.length > 0 ? data.processSteps : DEFAULT_BUY_PROCESS.steps;
+
   // SEO structured data (FAQ rich results, agent, breadcrumb).
   const agentFirstName = agent?.name?.split(" ")[0] || "our team";
   const schemas = [
-    faqPageSchema(data.faqs),
+    faqPageSchema(faqs),
     realEstateAgentSchema({
       name: agent?.name,
       url: `${baseUrl}/buy`,
@@ -263,17 +275,54 @@ export default async function BuyPage() {
         </div>
       )}
 
+      {/* Process Steps — how buying works */}
+      {processSteps.length > 0 && (
+        <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a]">
+          <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-16">
+            <div className="text-center mb-12 md:mb-16">
+              <h2 className="text-3xl md:text-4xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-4">
+                {processTitle}
+              </h2>
+              {processIntro && (
+                <p className="text-[#6a6a6a] dark:text-gray-400 font-light max-w-2xl mx-auto leading-relaxed">
+                  {processIntro}
+                </p>
+              )}
+            </div>
+            <ol className="grid gap-8 md:gap-10 md:grid-cols-2">
+              {processSteps.map((step: any, index: number) => (
+                <li key={index} className="flex gap-5">
+                  <span className="flex-shrink-0 font-serif text-2xl md:text-3xl font-light text-[var(--color-gold)] leading-none w-10">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-serif font-light text-[#1a1a1a] dark:text-white mb-2 tracking-wide">
+                      {step.title}
+                    </h3>
+                    {step.description && (
+                      <p className="text-[#4a4a4a] dark:text-gray-300 font-light leading-relaxed text-[15px]">
+                        {step.description}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      )}
+
       {/* FAQ Section */}
-      {data.faqs && data.faqs.length > 0 && (
+      {faqs.length > 0 && (
         <section className="py-16 md:py-24 bg-[#f8f7f5] dark:bg-[#141414]">
           <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
-            {data.faqTitle && (
+            {faqTitle && (
               <h2 className="text-3xl md:text-4xl font-serif font-light text-[#1a1a1a] dark:text-white text-center mb-12 md:mb-16 tracking-wide">
-                {data.faqTitle}
+                {faqTitle}
               </h2>
             )}
             <div className="space-y-6">
-              {data.faqs.map((faq: any, index: number) => (
+              {faqs.map((faq: Faq, index: number) => (
                 <details
                   key={index}
                   className="group bg-white dark:bg-[#1a1a1a] border border-[#e8e6e3] dark:border-gray-800"

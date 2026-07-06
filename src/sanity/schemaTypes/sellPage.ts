@@ -97,6 +97,36 @@ export const sellPage = defineType({
       ],
     }),
 
+    // Process Steps ("How selling works")
+    defineField({
+      name: 'processTitle',
+      title: 'Process Section Title',
+      type: 'string',
+      description: 'Heading for the numbered "how it works" section. Leave empty to use the built-in default.',
+    }),
+    defineField({
+      name: 'processIntro',
+      title: 'Process Section Intro',
+      type: 'text',
+      rows: 2,
+    }),
+    defineField({
+      name: 'processSteps',
+      title: 'Process Steps',
+      type: 'array',
+      description: 'Numbered steps. Leave empty to use the built-in default copy.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'title', title: 'Step Title', type: 'string', validation: (Rule) => Rule.required() },
+            { name: 'description', title: 'Step Description', type: 'text', rows: 3 },
+          ],
+          preview: { select: { title: 'title', subtitle: 'description' } },
+        },
+      ],
+    }),
+
     defineField({
       name: 'faqTitle',
       title: 'FAQ Section Title',
