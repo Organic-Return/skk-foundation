@@ -13,11 +13,12 @@ import NearbySchools from "@/components/NearbySchools";
 import NearbyAttractions from "@/components/NearbyAttractions";
 import CommunityHero from "@/components/CommunityHero";
 import CommunityNeighborhoods from "@/components/CommunityNeighborhoods";
+import CommunityFeaturedListings from "@/components/CommunityFeaturedListings";
 import ModernContactCTA from "@/components/ModernContactCTA";
 import CustomOneMarketStats from "@/components/CustomOneMarketStats";
 import CustomOneLocalHighlights from "@/components/CustomOneLocalHighlights";
 import { fetchDemographicData, formatCurrency, formatNumber } from "@/lib/census";
-import { getCommunityPriceRange } from "@/lib/listings";
+import { getCommunityPriceRange, getNewestHighPricedByCity, type MLSProperty } from "@/lib/listings";
 import { getSettings } from "@/lib/settings";
 
 const COMMUNITY_QUERY = `*[_type == "community" && slug.current == $slug][0]{
@@ -406,6 +407,12 @@ export default async function CommunityPage({
   const heroImageUrl = community.featuredImage
     ? urlFor(community.featuredImage)?.width(1920).height(800).url()
     : null;
+
+  // Fetch the highest-priced active listings in this community for the showcase.
+  let featuredListings: MLSProperty[] = [];
+  if (community.marketInsightsCity) {
+    featuredListings = await getNewestHighPricedByCity(community.marketInsightsCity, 6, { sortBy: "price" });
+  }
 
   // Fetch dynamic price range based on active listings
   let priceRange: string | null = null;
@@ -872,6 +879,16 @@ export default async function CommunityPage({
             )
           )}
 
+          {/* Highest-priced listings showcase */}
+          {featuredListings.length > 0 && (
+            <CommunityFeaturedListings
+              title={`Luxury Homes for Sale in ${community.title}`}
+              subtitle="Featured Listings"
+              listings={featuredListings}
+              city={community.marketInsightsCity}
+            />
+          )}
+
           {/* Recent Listings Section */}
           {community.marketInsightsCity && (
             <div className={isCustomOne ? 'bg-white' : isLuxury ? 'bg-white' : 'bg-white dark:bg-[#1a1a1a]'}>
@@ -986,7 +1003,7 @@ export default async function CommunityPage({
 
           {/* Contact CTA Section */}
           {isCustomOne ? (
-            <ModernContactCTA />
+            <ModernContactCTA backgroundImage={heroImageUrl || undefined} />
           ) : isLuxury ? (
             <section className="py-32 md:py-44 bg-[var(--color-charcoal)] relative overflow-hidden">
               {/* Background image with overlay */}
