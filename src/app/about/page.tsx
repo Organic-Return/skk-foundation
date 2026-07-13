@@ -6,6 +6,9 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { getBaseUrl, getSiteName } from '@/lib/settings';
+import StructuredData from '@/components/StructuredData';
+import { breadcrumbSchema } from '@/lib/seo';
 
 const ABOUT_PAGE_QUERY = `*[_type == "aboutPage"][0]{
   heroTitle,
@@ -52,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: metaTitle,
@@ -92,7 +95,11 @@ const portableTextComponents: PortableTextComponents = {
 };
 
 export default async function AboutPage() {
-  const data = await client.fetch<SanityDocument>(ABOUT_PAGE_QUERY, {}, options);
+  const [data, baseUrl, siteName] = await Promise.all([
+    client.fetch<SanityDocument>(ABOUT_PAGE_QUERY, {}, options),
+    getBaseUrl(),
+    getSiteName(),
+  ]);
 
   if (!data) {
     return (
@@ -116,8 +123,26 @@ export default async function AboutPage() {
     ? urlFor(data.heroImage)?.width(1920).height(800).url()
     : null;
 
+  const aboutSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: data.seo?.metaTitle || data.heroTitle || `About ${siteName}`,
+    url: `${baseUrl}/about`,
+    ...(data.seo?.metaDescription || data.heroSubtitle
+      ? { description: data.seo?.metaDescription || data.heroSubtitle }
+      : {}),
+    ...(heroImageUrl ? { primaryImageOfPage: heroImageUrl } : {}),
+    mainEntity: { '@type': 'RealEstateAgent', name: siteName, url: baseUrl },
+  };
+  const aboutCrumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: 'About', url: `${baseUrl}/about` },
+  ]);
+
   return (
     <main className="min-h-screen">
+      <StructuredData data={aboutSchema} />
+      <StructuredData data={aboutCrumbs} />
       {/* Hero Section */}
       <PageHero
         title={data.heroTitle || 'About'}

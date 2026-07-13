@@ -2,8 +2,11 @@ import { type SanityDocument } from "next-sanity";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
-import Image from "next/image";
+import PageHero from "@/components/PageHero";
 import type { Metadata } from "next";
+import { getBaseUrl } from '@/lib/settings';
+import StructuredData from '@/components/StructuredData';
+import { breadcrumbSchema } from '@/lib/seo';
 
 const QUERY = `*[_type == "christiesMastersCircle"][0]{
   heroEyebrow, heroTitle, heroSubtitle, heroImage,
@@ -103,7 +106,7 @@ function merge(data: SanityDocument | null) {
 export async function generateMetadata(): Promise<Metadata> {
   const data = await client.fetch<SanityDocument>(QUERY, {}, options);
   const c = merge(data);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const baseUrl = await getBaseUrl();
   const metaTitle = data?.seo?.metaTitle || "Christie's Masters Circle | Stacey K. Kelly";
   const metaDescription =
     data?.seo?.metaDescription ||
@@ -129,38 +132,39 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ChristiesMastersCirclePage() {
-  const data = await client.fetch<SanityDocument>(QUERY, {}, options);
+  const [data, baseUrl] = await Promise.all([
+    client.fetch<SanityDocument>(QUERY, {}, options),
+    getBaseUrl(),
+  ]);
   const c = merge(data);
   const heroImageUrl = c.heroImage ? urlFor(c.heroImage)?.width(1920).height(900).url() : null;
 
+  const pageUrl = `${baseUrl}/about/christies-masters-circle`;
+  const pageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: c.heroTitle,
+    url: pageUrl,
+    ...(c.heroSubtitle ? { description: c.heroSubtitle } : {}),
+    ...(heroImageUrl ? { primaryImageOfPage: heroImageUrl } : {}),
+  };
+  const crumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: 'About', url: `${baseUrl}/about` },
+    { name: c.heroTitle, url: pageUrl },
+  ]);
+
   return (
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
+      <StructuredData data={pageSchema} />
+      <StructuredData data={crumbs} />
       {/* Hero */}
-      <section className="relative h-[60vh] md:h-[70vh] min-h-[460px] flex items-end">
-        {heroImageUrl ? (
-          <>
-            <Image src={heroImageUrl} alt={c.heroTitle} fill className="object-cover" priority />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/15" />
-          </>
-        ) : (
-          <div className="absolute inset-0 bg-[var(--color-navy)]" />
-        )}
-        <div className="relative max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-16 md:pb-24">
-          {c.heroEyebrow && (
-            <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
-              {c.heroEyebrow}
-            </p>
-          )}
-          <h1 className="font-serif text-white text-4xl md:text-6xl font-light tracking-wide mb-5 max-w-4xl">
-            {c.heroTitle}
-          </h1>
-          {c.heroSubtitle && (
-            <p className="text-lg md:text-xl text-white/80 font-light max-w-3xl leading-relaxed">
-              {c.heroSubtitle}
-            </p>
-          )}
-        </div>
-      </section>
+      <PageHero
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
+        eyebrow={c.heroEyebrow}
+        image={heroImageUrl ?? undefined}
+      />
 
       {/* Intro */}
       <section className="py-16 md:py-24">
