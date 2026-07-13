@@ -3,7 +3,7 @@ import Image from "next/image";
 import { PortableText, type PortableTextComponents } from "next-sanity";
 import { client } from "@/sanity/client";
 import { getListingsByAgentId, type MLSProperty } from "@/lib/listings";
-import { getSettings } from "@/lib/settings";
+import { getBaseUrl } from '@/lib/settings';
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
@@ -122,8 +122,8 @@ async function getSoldData() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [{ agentName, seo, heroImage }, settings] = await Promise.all([getSoldData(), getSettings()]);
-  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const { agentName, seo, heroImage } = await getSoldData();
+  const baseUrl = await getBaseUrl();
   const who = agentName || "Our Team";
 
   const title = seo?.metaTitle || `${who} | Aspen Real Estate Agent — Sold Properties`;
@@ -159,8 +159,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SoldPage() {
   const { soldListings, firstName, agentName, agentEmail, heroImage, managedStats, contentHeading, contentBody } =
     await getSoldData();
-  const settings = await getSettings();
-  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const baseUrl = await getBaseUrl();
   const who = firstName ? `${firstName}'s` : "Our";
   const totalSold = soldListings.length;
   const totalVolume = soldListings.reduce((sum, l) => sum + (l.sold_price || l.list_price || 0), 0);

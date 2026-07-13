@@ -47,7 +47,7 @@ interface LuxuryStayConnectedProps {
 export default function LuxuryStayConnected({
   logo,
   logoAlt = 'Logo',
-  siteTitle = 'Chris Klug Properties',
+  siteTitle = 'Real Estate',
   columns = [],
   socialMedia,
   contactInfo,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { getBaseUrl } from '@/lib/settings';
 
 const MAGAZINE_QUERY = `*[_type == "publication" && publicationType == "magazine" && slug.current == $slug][0]{
   ...,
@@ -54,7 +55,7 @@ export async function generateMetadata({
   const metaTitle = magazine.seo?.metaTitle || `${magazine.title} | Living Aspen`;
   const metaDescription = magazine.seo?.metaDescription || magazine.excerpt || magazine.title;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const baseUrl = await getBaseUrl();
   const canonicalUrl = `${baseUrl}/living-aspen/${slug}`;
 
   const robotsConfig = magazine.seo?.noIndex

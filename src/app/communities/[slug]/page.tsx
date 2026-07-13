@@ -19,7 +19,7 @@ import CustomOneMarketStats from "@/components/CustomOneMarketStats";
 import CustomOneLocalHighlights from "@/components/CustomOneLocalHighlights";
 import { fetchDemographicData, formatCurrency, formatNumber } from "@/lib/census";
 import { getCommunityPriceRange, getNewestHighPricedByCity, type MLSProperty } from "@/lib/listings";
-import { getSettings } from "@/lib/settings";
+import { getSettings, getBaseUrl } from '@/lib/settings';
 
 const COMMUNITY_QUERY = `*[_type == "community" && slug.current == $slug][0]{
   ...,
@@ -97,7 +97,7 @@ export async function generateMetadata({
   }
 
   // Get the base URL from environment or use a default
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const baseUrl = await getBaseUrl();
   const canonicalUrl = `${baseUrl}/communities/${slug}`;
 
   // Handle noIndex robots meta tag
@@ -439,7 +439,7 @@ export default async function CommunityPage({
   }
 
   // Get the base URL
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
   const communityUrl = `${baseUrl}/communities/${community.slug.current}`;
 
   // Generate JSON-LD structured data for SEO - Place schema

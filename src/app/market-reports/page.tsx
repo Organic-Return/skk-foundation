@@ -5,6 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import { getBaseUrl } from '@/lib/settings';
+import StructuredData from "@/components/StructuredData";
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 
 const MARKET_REPORTS_QUERY = `*[_type == "publication" && publicationType == "market-report"] | order(publishedAt desc) {
   _id,
@@ -25,7 +28,7 @@ const urlFor = (source: any) =>
 const options = { next: { revalidate: 30 } };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: 'Market Reports | Real Estate Insights',
@@ -43,7 +46,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MarketReportsPage() {
-  const reports = await client.fetch<SanityDocument[]>(MARKET_REPORTS_QUERY, {}, options);
+  const [reports, baseUrl] = await Promise.all([
+    client.fetch<SanityDocument[]>(MARKET_REPORTS_QUERY, {}, options),
+    getBaseUrl(),
+  ]);
+
+  const reportsSchema = collectionPageSchema({
+    name: 'Market Reports',
+    url: `${baseUrl}/market-reports`,
+    items: (reports || []).map((r) => ({
+      name: r.title,
+      url: `${baseUrl}/market-reports/${r.slug?.current}`,
+    })),
+  });
+  const reportsCrumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: 'Market Reports', url: `${baseUrl}/market-reports` },
+  ]);
 
   // Separate featured and regular reports
   const featuredReport = reports.find((r) => r.featured);
@@ -51,6 +70,8 @@ export default async function MarketReportsPage() {
 
   return (
     <main className="min-h-screen">
+      {reportsSchema && <StructuredData data={reportsSchema} />}
+      <StructuredData data={reportsCrumbs} />
       {/* Hero Section */}
       <PageHero
         title="Market Reports"

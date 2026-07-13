@@ -3,19 +3,14 @@ import { notFound } from 'next/navigation';
 import { getOffMarketListingBySlug, getOffMarketListings, formatPrice, getTotalBathrooms, type OffMarketListing } from '@/lib/offMarketListings';
 import OffMarketListingDetail from '@/components/OffMarketListingDetail';
 import StructuredData from '@/components/StructuredData';
+import { getBaseUrl } from '@/lib/settings';
 
 interface OffMarketListingPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Helper to get the base URL
-function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-}
-
 // Generate Schema.org structured data for off-market listing
-function generateOffMarketSchema(listing: OffMarketListing) {
-  const baseUrl = getBaseUrl();
+function generateOffMarketSchema(listing: OffMarketListing, baseUrl: string) {
   const listingUrl = `${baseUrl}/off-market/${listing.slug}`;
   const totalBathrooms = getTotalBathrooms(listing);
 
@@ -182,7 +177,7 @@ export async function generateMetadata({ params }: OffMarketListingPageProps): P
     return { title: 'Listing Not Found' };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
   const canonicalUrl = `${baseUrl}/off-market/${slug}`;
   const title = `${listing.address || 'Off-Market Property'} | ${formatPrice(listing.listPrice)}`;
   const rawDescription = listing.description || `Exclusive off-market ${listing.propertyType || 'property'} in ${listing.city}, ${listing.state}`;
@@ -268,7 +263,7 @@ export default async function OffMarketListingPage({ params }: OffMarketListingP
     notFound();
   }
 
-  const schemas = generateOffMarketSchema(listing);
+  const schemas = generateOffMarketSchema(listing, await getBaseUrl());
 
   return (
     <>

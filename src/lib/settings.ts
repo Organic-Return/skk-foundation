@@ -106,6 +106,34 @@ export async function getSettings(): Promise<SiteSettings | null> {
 }
 
 /**
+ * Canonical origin for this deployment, with any trailing slash removed so
+ * callers can safely append a path.
+ *
+ * Priority: Sanity settings.siteUrl > NEXT_PUBLIC_SITE_URL > the Vercel
+ * production URL. Never falls back to a placeholder domain — emitting a
+ * canonical for a domain the tenant doesn't own tells Google the page is a
+ * duplicate of someone else's.
+ */
+export async function getBaseUrl(): Promise<string> {
+  const settings = await getSettings();
+  const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const raw =
+    settings?.siteUrl ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:3000');
+  return raw.replace(/\/+$/, '');
+}
+
+/**
+ * Display name for this tenant, used as the brand suffix in page titles.
+ * Set this in Sanity Studio under Settings → Title.
+ */
+export async function getSiteName(): Promise<string> {
+  const settings = await getSettings();
+  return settings?.title || 'Real Estate';
+}
+
+/**
  * Gets the site template from Sanity settings
  * Priority: Sanity setting > NEXT_PUBLIC_SITE_TEMPLATE env var > 'classic'
  */

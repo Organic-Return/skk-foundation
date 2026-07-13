@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getSiteTemplate } from "@/lib/settings";
+import { getSiteTemplate, getBaseUrl, getSiteName, getSettings } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
 
 const BUILDER_QUERY = `*[_type == "builder" && slug.current == $slug][0]{
@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Builder Not Found' };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
   // Strip HTML for description
   const plainDesc = builder.descriptionHtml
     ? builder.descriptionHtml.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim().slice(0, 160)
@@ -101,10 +101,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BuilderDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [builder, template] = await Promise.all([
+  const [builder, template, siteName, settings] = await Promise.all([
     client.fetch<Builder | null>(BUILDER_QUERY, { slug }, options),
     getSiteTemplate(),
+    getSiteName(),
+    getSettings(),
   ]);
+  const contactEmail = settings?.contactInfo?.email;
 
   if (!builder) {
     notFound();
@@ -323,8 +326,8 @@ export default async function BuilderDetailPage({ params }: Props) {
               </div>
               <div>
                 <AgentContactForm
-                  agentName="Retter & Company Sotheby's International Realty"
-                  agentEmail="info@rcsothebysrealty.com"
+                  agentName={siteName}
+                  agentEmail={contactEmail}
                 />
               </div>
             </div>

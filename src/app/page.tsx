@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import { getHomepageData, getAllCommunities } from '@/lib/homepage';
-import { getSettings, getBranding } from '@/lib/settings';
+import { getSettings, getBranding, getBaseUrl } from '@/lib/settings';
 import { getNewestHighPricedByCities, getNewestHighPricedByCity } from '@/lib/listings';
 import StructuredData from '@/components/StructuredData';
 import HomepageContent from '@/components/HomepageContent';
@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const seo = homepage?.seo;
   const siteTitle = settings?.title || 'Real Estate';
-  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: seo?.metaTitle || siteTitle,
@@ -95,7 +95,7 @@ export default async function Home() {
     }
   }
 
-  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   // RealEstateAgent / Organization structured data
   const organizationSchema = {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { getBaseUrl } from '@/lib/settings';
 
 const MARKET_REPORT_QUERY = `*[_type == "publication" && publicationType == "market-report" && slug.current == $slug][0]{
   ...,
@@ -54,7 +55,7 @@ export async function generateMetadata({
   const metaTitle = report.seo?.metaTitle || report.title;
   const metaDescription = report.seo?.metaDescription || report.excerpt || report.title;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const baseUrl = await getBaseUrl();
   const canonicalUrl = `${baseUrl}/market-reports/${slug}`;
 
   const robotsConfig = report.seo?.noIndex
@@ -196,7 +197,7 @@ export default async function MarketReportPage({
 
   const pdfUrl = report.pdfFile?.asset?.url;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
   const reportUrl = `${baseUrl}/market-reports/${slug}`;
 
   // Article/Report schema with enhanced details

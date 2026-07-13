@@ -1,11 +1,13 @@
 import { PortableText, type SanityDocument, type PortableTextComponents } from "next-sanity";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { getBaseUrl } from '@/lib/settings';
 
 const WHY_KLUG_QUERY = `*[_type == "whyKlugProperties"][0]{
   heroTitle,
@@ -69,10 +71,10 @@ const options = { next: { revalidate: 60 } };
 export async function generateMetadata(): Promise<Metadata> {
   const data = await client.fetch<SanityDocument>(WHY_KLUG_QUERY, {}, options);
 
+  // Tenant-only page: absent from this project's dataset means the route
+  // doesn't belong to this site. Keep it out of the index.
   if (!data) {
-    return {
-      title: 'Why Klug Properties',
-    };
+    return { title: 'Not Found', robots: { index: false, follow: false } };
   }
 
   const metaTitle = data.seo?.metaTitle || data.heroTitle || 'Why Klug Properties';
@@ -83,7 +85,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: metaTitle,
@@ -164,23 +166,7 @@ const ServiceIcon = ({ icon }: { icon?: string }) => {
 export default async function WhyKlugPropertiesPage() {
   const data = await client.fetch<SanityDocument>(WHY_KLUG_QUERY, {}, options);
 
-  if (!data) {
-    return (
-      <main className="min-h-screen pt-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h1 className="font-serif text-[#1a1a1a] dark:text-white mb-4">
-            Page Not Found
-          </h1>
-          <p className="text-[#6a6a6a] dark:text-gray-400 font-light mb-8">
-            Please add content in Sanity Studio under &quot;Why Klug Properties&quot;.
-          </p>
-          <Link href="/" className="text-[var(--color-gold)] hover:underline">
-            Return Home
-          </Link>
-        </div>
-      </main>
-    );
-  }
+  if (!data) notFound();
 
   const heroImageUrl = data.heroImage
     ? urlFor(data.heroImage)?.width(1920).height(800).url()

@@ -52,12 +52,11 @@ interface ModernFooterProps {
   footer?: FooterSettings;
 }
 
-const DEFAULT_BROKERAGE_LOGO = 'https://drupal-storage.s3.amazonaws.com/klug/public/2024-11/assir-logo%402x.png';
 
 export default function ModernFooter({
   logo,
   logoAlt = 'Logo',
-  siteTitle = 'Chris Klug Properties',
+  siteTitle = 'Real Estate',
   columns = [],
   socialMedia,
   contactInfo,
@@ -66,9 +65,10 @@ export default function ModernFooter({
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState('');
 
+  // Sanity-only: no default, or one tenant's brokerage logo renders on every site.
   const brokerageLogoUrl = footer?.brokerageLogo
     ? urlFor(footer.brokerageLogo).width(400).url()
-    : DEFAULT_BROKERAGE_LOGO;
+    : null;
 
   const logoUrl = logo ? urlFor(logo).width(300).url() : null;
 
@@ -280,15 +280,17 @@ export default function ModernFooter({
           </div>
 
           {/* Brokerage Logo */}
-          <div>
-            <Image
-              src={brokerageLogoUrl}
-              alt="Aspen Snowmass Sotheby's International Realty"
-              width={180}
-              height={50}
-              className="brightness-0 invert opacity-40"
-            />
-          </div>
+          {brokerageLogoUrl && (
+            <div>
+              <Image
+                src={brokerageLogoUrl}
+                alt={`${siteTitle} brokerage`}
+                width={180}
+                height={50}
+                className="brightness-0 invert opacity-40"
+              />
+            </div>
+          )}
         </div>
       </div>
 

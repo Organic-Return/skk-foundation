@@ -5,11 +5,13 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getListingsByAgentId, getMlsNumbersWithSIRMedia } from "@/lib/listings";
-import { getSiteTemplate } from "@/lib/settings";
+import { getSiteTemplate, getBaseUrl, getSiteName } from '@/lib/settings';
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentHeroGallery from "@/components/AgentHeroGallery";
 import AgentContactForm from "@/components/AgentContactForm";
 import AgentContactButton from "@/components/AgentContactButton";
+import StructuredData from "@/components/StructuredData";
+import { agentProfileSchema, breadcrumbSchema } from "@/lib/seo";
 
 const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
@@ -80,17 +82,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Team Member Not Found' };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
   const isRCTemplate = process.env.NEXT_PUBLIC_SITE_TEMPLATE === 'rcsothebys-custom';
   const canonicalUrl = `${baseUrl}/${isRCTemplate ? 'agents' : 'team'}/${slug}`;
 
   return {
-    title: `${member.name}${member.title ? ` | ${member.title}` : ''} | Klug Properties`,
-    description: member.bio ? member.bio.slice(0, 160) : `Meet ${member.name} at Klug Properties.`,
+    title: `${member.name}${member.title ? ` | ${member.title}` : ''} | ${siteName}`,
+    description: member.bio ? member.bio.slice(0, 160) : `Meet ${member.name} at ${siteName}.`,
     alternates: { canonical: canonicalUrl },
     openGraph: {
-      title: `${member.name} | Klug Properties`,
-      description: member.bio ? member.bio.slice(0, 160) : `Meet ${member.name} at Klug Properties.`,
+      title: `${member.name} | ${siteName}`,
+      description: member.bio ? member.bio.slice(0, 160) : `Meet ${member.name} at ${siteName}.`,
       url: canonicalUrl,
     },
   };
@@ -98,16 +100,48 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TeamMemberPage({ params }: Props) {
   const { slug } = await params;
-  const [member, template] = await Promise.all([
+  const [member, template, baseUrl, siteName] = await Promise.all([
     client.fetch<TeamMember | null>(TEAM_MEMBER_QUERY, { slug }, options),
     getSiteTemplate(),
+    getBaseUrl(),
+    getSiteName(),
   ]);
 
   if (!member) {
     notFound();
   }
 
+  // Agent entity markup. This is the page Google resolves for the agent's own
+  // name, so it carries the contact points and sameAs profiles a knowledge
+  // panel needs — not just a bare Person.
   const isRC = template === "rcsothebys-custom";
+  const profileUrl = `${baseUrl}/${isRC ? 'agents' : 'team'}/${slug}`;
+  const bioText = member.bio
+    ? sanitizeBioHtml(member.bio).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500)
+    : null;
+  const agentSchema = agentProfileSchema({
+    name: member.name,
+    url: profileUrl,
+    jobTitle: member.title,
+    image: member.image ? urlFor(member.image).width(800).url() : null,
+    description: bioText,
+    email: member.email,
+    telephone: member.phone || member.mobile,
+    address: member.address,
+    worksFor: member.office || siteName,
+    sameAs: [
+      member.socialMedia?.facebook,
+      member.socialMedia?.instagram,
+      member.socialMedia?.twitter,
+      member.socialMedia?.linkedin,
+    ],
+  });
+  const crumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: isRC ? 'Agents' : 'Team', url: `${baseUrl}/${isRC ? 'agents' : 'team'}` },
+    { name: member.name, url: profileUrl },
+  ]);
+
   const agentListings = await getListingsByAgentId(member.mlsAgentId || null, member.mlsAgentIdSold, member.name);
 
   const hasListings = agentListings && (agentListings.activeListings.length > 0 || agentListings.soldListings.length > 0);
@@ -145,6 +179,8 @@ export default async function TeamMemberPage({ params }: Props) {
 
   return (
     <main className="min-h-screen">
+      {agentSchema && <StructuredData data={agentSchema} />}
+      <StructuredData data={crumbs} />
       {/* Hero Gallery (RC with active listings) or Standard Hero */}
       {/* RC Hero Gallery (only when agent has active listings with photos) */}
       {showHeroGallery && <AgentHeroGallery listings={heroListings} />}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { getSiteTemplate } from "@/lib/settings";
+import { getSiteTemplate, getBaseUrl, getSiteName, getSettings } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
 
 const PAGE_QUERY = `*[_type == "firstTimeBuyersPage"][0]{
@@ -51,7 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: metaTitle,
@@ -70,10 +70,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function FirstTimeBuyersPage() {
-  const [data, template] = await Promise.all([
+  const [data, template, siteName, settings] = await Promise.all([
     client.fetch<SanityDocument>(PAGE_QUERY, {}, options),
     getSiteTemplate(),
+    getSiteName(),
+    getSettings(),
   ]);
+  const contactEmail = settings?.contactInfo?.email;
 
   const isRC = template === 'rcsothebys-custom';
 
@@ -422,8 +425,8 @@ export default async function FirstTimeBuyersPage() {
               {/* Right — Contact form */}
               <div>
                 <AgentContactForm
-                  agentName="Retter & Company Sotheby's International Realty"
-                  agentEmail="info@rcsothebysrealty.com"
+                  agentName={siteName}
+                  agentEmail={contactEmail}
                   inverted
                 />
               </div>

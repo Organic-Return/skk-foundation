@@ -2,9 +2,10 @@ import { Metadata } from 'next';
 import { getListings } from '@/lib/listings';
 import { getOffMarketListings } from '@/lib/offMarketListings';
 import SavedPropertiesContent from '@/components/SavedPropertiesContent';
+import { getBaseUrl } from '@/lib/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: 'Saved Properties | Your Favorites',

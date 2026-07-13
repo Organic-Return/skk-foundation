@@ -5,6 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import { getBaseUrl } from '@/lib/settings';
+import StructuredData from "@/components/StructuredData";
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 
 const MAGAZINES_QUERY = `*[_type == "publication" && publicationType == "magazine"] | order(publishedAt desc) {
   _id,
@@ -25,7 +28,7 @@ const urlFor = (source: any) =>
 const options = { next: { revalidate: 30 } };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: 'Living Aspen | Luxury Lifestyle Magazine',
@@ -43,7 +46,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LivingAspenPage() {
-  const magazines = await client.fetch<SanityDocument[]>(MAGAZINES_QUERY, {}, options);
+  const [magazines, baseUrl] = await Promise.all([
+    client.fetch<SanityDocument[]>(MAGAZINES_QUERY, {}, options),
+    getBaseUrl(),
+  ]);
+
+  const magazinesSchema = collectionPageSchema({
+    name: 'Living Aspen',
+    url: `${baseUrl}/living-aspen`,
+    items: (magazines || []).map((m) => ({
+      name: m.title,
+      url: `${baseUrl}/living-aspen/${m.slug?.current}`,
+    })),
+  });
+  const magazinesCrumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: 'Living Aspen', url: `${baseUrl}/living-aspen` },
+  ]);
 
   // Separate featured and regular magazines
   const featuredMagazine = magazines.find((m) => m.featured);
@@ -51,6 +70,8 @@ export default async function LivingAspenPage() {
 
   return (
     <main className="min-h-screen">
+      {magazinesSchema && <StructuredData data={magazinesSchema} />}
+      <StructuredData data={magazinesCrumbs} />
       {/* Hero Section */}
       <PageHero
         title="Living Aspen"

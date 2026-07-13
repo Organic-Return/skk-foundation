@@ -6,7 +6,7 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { getSettings } from "@/lib/settings";
+import { getSettings, getBaseUrl } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
 import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema, reviewSchemas } from "@/lib/seo";
@@ -68,12 +68,11 @@ const urlFor = (source: any) =>
 const options = { next: { revalidate: 60 } };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [data, settings, agent] = await Promise.all([
+  const [data, agent] = await Promise.all([
     client.fetch<SanityDocument>(BUY_PAGE_QUERY, {}, options),
-    getSettings(),
     getPrimaryAgent(),
   ]);
-  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   if (!data) {
     return { title: 'Buy', alternates: { canonical: `${baseUrl}/buy` } };
@@ -143,7 +142,7 @@ export default async function BuyPage() {
     getSettings(),
     getPrimaryAgent(),
   ]);
-  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const baseUrl = await getBaseUrl();
 
   if (!data) {
     return (

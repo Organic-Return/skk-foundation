@@ -20,7 +20,7 @@ import {
   getAllowedCities,
   getExcludedStatuses,
 } from '@/lib/mlsConfiguration';
-import { getSettings, getGoogleMapsApiKey } from '@/lib/settings';
+import { getSettings, getGoogleMapsApiKey, getBaseUrl } from '@/lib/settings';
 import { client } from '@/sanity/client';
 import ListingsSearchClient from '@/components/ListingsSearchClient';
 import StructuredData from '@/components/StructuredData';
@@ -102,8 +102,7 @@ function generateListingsSchema(listings: MLSProperty[], baseUrl: string, total:
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
-  const baseUrl = settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: 'Property Listings | MLS Listings',
@@ -240,7 +239,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     : { videos: new Set<string>(), matterports: new Set<string>() };
 
   // Generate structured data
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
   const schemas = generateListingsSchema(listings, baseUrl, total);
 
   // Build current search params for pagination

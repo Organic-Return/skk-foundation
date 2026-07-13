@@ -12,7 +12,7 @@ export const settings = defineType({
       description: 'Choose the visual style for the entire website. This applies globally to all pages.',
       options: {
         list: [
-          { title: 'Klug Custom', value: 'classic' },
+          { title: 'Classic', value: 'classic' },
           { title: 'Luxury', value: 'luxury' },
           { title: 'Modern', value: 'modern' },
           { title: 'Custom One', value: 'custom-one' },

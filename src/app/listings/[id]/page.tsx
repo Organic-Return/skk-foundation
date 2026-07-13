@@ -10,7 +10,7 @@ import {
   formatLotSize,
   type MLSProperty,
 } from '@/lib/listings';
-import { getSettings, getGoogleMapsApiKey } from '@/lib/settings';
+import { getSettings, getGoogleMapsApiKey, getBaseUrl } from '@/lib/settings';
 import { client } from '@/sanity/client';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import PropertyGallery from '@/components/PropertyGallery';
@@ -85,14 +85,8 @@ interface ListingPageProps {
   params: Promise<{ id: string }>;
 }
 
-// Helper to get the base URL
-function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-}
-
 // Generate Schema.org RealEstateListing structured data
-function generateRealEstateSchema(listing: MLSProperty) {
-  const baseUrl = getBaseUrl();
+function generateRealEstateSchema(listing: MLSProperty, baseUrl: string) {
   const listingUrl = `${baseUrl}${getListingHref(listing)}`;
 
   // Main RealEstateListing schema
@@ -289,7 +283,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
     return { title: 'Listing Not Found' };
   }
 
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const listingUrl = `${baseUrl}${getListingHref(listing)}`;
   const title = `${listing.address || 'Property'} | ${formatPrice(listing.list_price)} | ${listing.city}, ${listing.state}`;
   const rawDescription = listing.description
@@ -462,7 +456,8 @@ export default async function ListingPage({ params }: ListingPageProps) {
   const coListingAgent = listingAgents[1] || null;
 
   const hasPhotos = listing.photos && listing.photos.length > 0;
-  const schemas = generateRealEstateSchema(listing);
+  const baseUrl = await getBaseUrl();
+  const schemas = generateRealEstateSchema(listing, baseUrl);
 
   // Custom-one template: only for properties listed by team members with matching MLS IDs
   const isCustomOne = template === 'custom-one' && listingAgent !== null;
@@ -569,7 +564,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
         )}
 
         {/* Hidden microformat data */}
-        <meta itemProp="url" content={`${getBaseUrl()}${getListingHref(listing)}`} />
+        <meta itemProp="url" content={`${baseUrl}${getListingHref(listing)}`} />
         <meta itemProp="datePosted" content={listing.listing_date || ''} />
 
         {/* Back Link */}

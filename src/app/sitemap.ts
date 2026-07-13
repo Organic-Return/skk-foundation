@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { client } from '@/sanity/client';
 import { getListings, getListingHref } from '@/lib/listings';
 import { getOffMarketListings } from '@/lib/offMarketListings';
+import { getBaseUrl } from '@/lib/settings';
 
 // Sanity queries for dynamic content
 const COMMUNITIES_QUERY = `*[_type == "community"]{ "slug": slug.current, _updatedAt }`;
@@ -17,7 +18,7 @@ const PARTNERS_QUERY = `*[_type == "affiliatedPartner" && active == true]{
 }`;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
@@ -58,16 +59,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/why-klug-properties`,
+      url: `${baseUrl}/about/christies-masters-circle`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/about/christies-masters-circle`,
+      url: `${baseUrl}/exclusive-listings`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/sold`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/open-houses`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/team`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.7,
+      priority: 0.6,
     },
     {
       url: `${baseUrl}/affiliated-partners`,
@@ -96,7 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Fetch dynamic content from Sanity
-  const [communities, marketReports, magazines, posts, partners, buyPage, sellPage, aboutPage, resourcesPage] = await Promise.all([
+  const [communities, marketReports, magazines, posts, partners, buyPage, sellPage, aboutPage, resourcesPage, whyKlugPage] = await Promise.all([
     client.fetch<Array<{ slug: string; _updatedAt: string }>>(COMMUNITIES_QUERY),
     client.fetch<Array<{ slug: string; _updatedAt: string; publishedAt: string }>>(MARKET_REPORTS_QUERY),
     client.fetch<Array<{ slug: string; _updatedAt: string; publishedAt: string }>>(MAGAZINES_QUERY),
@@ -106,6 +125,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     client.fetch<{ _updatedAt: string } | null>(`*[_type == "sellPage"][0]{ _updatedAt }`),
     client.fetch<{ _updatedAt: string } | null>(`*[_type == "aboutPage"][0]{ _updatedAt }`),
     client.fetch<{ _updatedAt: string } | null>(`*[_type == "resourcesPage"][0]{ _updatedAt }`),
+    client.fetch<{ _updatedAt: string } | null>(`*[_type == "whyKlugProperties"][0]{ _updatedAt }`),
   ]);
 
   // Conditionally add singleton content pages (only if they exist in this project's Sanity dataset)
@@ -124,6 +144,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   if (posts && posts.length > 0) {
     singletonPages.push({ url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 });
+  }
+  // Tenant-only page: the route 404s when this singleton isn't in the dataset,
+  // so only advertise it where it exists.
+  if (whyKlugPage) {
+    singletonPages.push({ url: `${baseUrl}/why-klug-properties`, lastModified: new Date(whyKlugPage._updatedAt), changeFrequency: 'monthly', priority: 0.7 });
   }
 
   // Community pages

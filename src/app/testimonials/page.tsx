@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
 import TestimonialVideoGallery from "@/components/TestimonialVideoGallery";
+import { getBaseUrl } from '@/lib/settings';
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
   heroTitle,
@@ -80,7 +81,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: metaTitle,
@@ -142,7 +143,7 @@ const TransactionBadge = ({ type }: { type?: string }) => {
 
 export default async function TestimonialsPage() {
   const data = await client.fetch<SanityDocument>(TESTIMONIALS_QUERY, {}, options);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   if (!data) {
     return (

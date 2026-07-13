@@ -3,7 +3,7 @@ import { createImageUrlBuilder } from "@sanity/image-url";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getSiteTemplate } from "@/lib/settings";
+import { getSiteTemplate, getBaseUrl } from '@/lib/settings';
 import type { SanityDocument } from "next-sanity";
 import PageHero from "@/components/PageHero";
 
@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const metaTitle = data?.seo?.metaTitle || data?.heroTitle || 'Our Builders';
   const metaDescription = data?.seo?.metaDescription || data?.heroSubtitle || '';
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: metaTitle,

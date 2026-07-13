@@ -1,21 +1,46 @@
 import type { Metadata } from 'next';
-import { getOpenHouseListings } from '@/lib/listings';
+import { getOpenHouseListings, getListingHref } from '@/lib/listings';
 import OpenHouseGrid from '@/components/OpenHouseGrid';
 import PageHero from '@/components/PageHero';
+import { getBaseUrl, getSiteName } from '@/lib/settings';
+import StructuredData from '@/components/StructuredData';
+import { collectionPageSchema, breadcrumbSchema } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: 'Open Houses',
-  description:
-    'Browse upcoming open houses from Retter & Company Sotheby\'s International Realty.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
+  const title = `Open Houses | ${siteName}`;
+  const description = `Browse upcoming open houses with ${siteName}.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `${baseUrl}/open-houses` },
+    openGraph: { title, description, type: 'website', url: `${baseUrl}/open-houses` },
+  };
+}
 
 export default async function OpenHousesPage() {
-  const listings = await getOpenHouseListings();
+  const [listings, baseUrl] = await Promise.all([getOpenHouseListings(), getBaseUrl()]);
+
+  const openHousesSchema = collectionPageSchema({
+    name: 'Open Houses',
+    url: `${baseUrl}/open-houses`,
+    items: listings.map((l) => ({
+      name: l.address || l.mls_number,
+      url: `${baseUrl}${getListingHref(l)}`,
+    })),
+  });
+  const openHousesCrumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: 'Open Houses', url: `${baseUrl}/open-houses` },
+  ]);
 
   return (
     <main className="min-h-screen">
+      {openHousesSchema && <StructuredData data={openHousesSchema} />}
+      <StructuredData data={openHousesCrumbs} />
       {/* Hero */}
       <PageHero
         title="Open Houses"

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { getYouTubeCredentials } from "@/lib/settings";
+import { getYouTubeCredentials, getBaseUrl } from '@/lib/settings';
 import PageHero from "@/components/PageHero";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: 'Videos | Real Estate Tours & Content',

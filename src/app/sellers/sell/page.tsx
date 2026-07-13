@@ -1,6 +1,6 @@
 import { client } from "@/sanity/client";
 import type { Metadata } from "next";
-import { getSiteTemplate } from "@/lib/settings";
+import { getSiteTemplate, getBaseUrl, getSiteName } from '@/lib/settings';
 import RCSitePage from "@/components/RCSitePage";
 import Link from "next/link";
 
@@ -16,11 +16,11 @@ const options = { next: { revalidate: 60 } };
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await client.fetch(QUERY, {}, options);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
 
   return {
     title: data?.seo?.metaTitle || data?.title || 'Sell Your Home',
-    description: data?.seo?.metaDescription || 'Sell your home with Retter & Company Sotheby\'s International Realty',
+    description: data?.seo?.metaDescription || `Sell your home with ${siteName}`,
     alternates: { canonical: `${baseUrl}/sellers/sell` },
     openGraph: {
       title: data?.seo?.metaTitle || data?.title || 'Sell Your Home',

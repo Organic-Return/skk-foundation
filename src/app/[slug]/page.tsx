@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import MuxVideoPlayer from "@/components/MuxVideoPlayer";
+import { getBaseUrl } from '@/lib/settings';
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
   ...,
@@ -63,7 +64,7 @@ export async function generateMetadata({
   }
 
   // Get the base URL from environment or use a default
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const baseUrl = await getBaseUrl();
   const canonicalUrl = `${baseUrl}/${slug}`;
 
   // Handle noIndex robots meta tag

@@ -53,15 +53,10 @@ interface FooterProps {
   footer?: FooterSettings;
 }
 
-// Default image URLs (used as fallbacks)
-const DEFAULT_PORTRAIT = 'https://drupal-storage.s3.amazonaws.com/klug/public/2024-11/chris-portrait.jpg';
-const DEFAULT_TAGLINE = 'https://drupal-storage.s3.amazonaws.com/klug/public/2024-11/footer-tagline%402x_20220524164420_0.png';
-const DEFAULT_BROKERAGE_LOGO = 'https://drupal-storage.s3.amazonaws.com/klug/public/2024-11/assir-logo%402x.png';
-
 export default function Footer({
   logo,
   logoAlt = 'Logo',
-  siteTitle = 'Chris Klug Properties',
+  siteTitle = 'Real Estate',
   description,
   columns = [],
   socialMedia,
@@ -72,16 +67,18 @@ export default function Footer({
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState('');
 
-  // Get image URLs from Sanity or use defaults
+  // Footer imagery comes from Sanity only. There is deliberately no fallback:
+  // this is a multi-tenant template, and a default portrait/logo would render
+  // one tenant's branding on every other tenant's site.
   const portraitUrl = footer?.portraitImage
     ? urlFor(footer.portraitImage).width(400).url()
-    : DEFAULT_PORTRAIT;
+    : null;
   const taglineUrl = footer?.taglineImage
     ? urlFor(footer.taglineImage).width(800).url()
-    : DEFAULT_TAGLINE;
+    : null;
   const brokerageLogoUrl = footer?.brokerageLogo
     ? urlFor(footer.brokerageLogo).width(400).url()
-    : DEFAULT_BROKERAGE_LOGO;
+    : null;
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +91,7 @@ export default function Footer({
   const defaultLinks: FooterLink[] = [
     { label: 'Home', url: '/' },
     { label: 'Featured Properties', url: '/listings' },
-    { label: 'About Klug Properties', url: '/about' },
+    { label: 'About', url: '/about' },
     { label: 'Blog', url: '/blog' },
     { label: 'Living Aspen', url: '/media/living-aspen-magazine' },
     { label: 'Market Reports', url: '/market-reports' },
@@ -108,36 +105,44 @@ export default function Footer({
       <div className="flex flex-col w-full relative mt-14">
         <div className="relative bg-[#00254a] max-w-none w-full flex flex-col items-center p-0">
           <div className="flex flex-wrap xl:flex-nowrap w-full mx-0 px-6 pb-6 md:px-0 md:py-10 md:max-w-xl xl:max-w-screen-xl justify-center items-center">
-            {/* Chris Portrait */}
-            <div className="lg:max-w-none md:w-4/12 xl:w-2/12 relative w-full m-0 flex flex-col justify-center items-center">
-              <Image
-                src={portraitUrl}
-                alt="Chris Klug"
-                width={184}
-                height={237}
-                className="w-[165px] -mt-6 md:mt-0 md:absolute"
-              />
-            </div>
+            {/* Agent portrait */}
+            {portraitUrl && (
+              <div className="lg:max-w-none md:w-4/12 xl:w-2/12 relative w-full m-0 flex flex-col justify-center items-center">
+                <Image
+                  src={portraitUrl}
+                  alt={siteTitle}
+                  width={184}
+                  height={237}
+                  className="w-[165px] -mt-6 md:mt-0 md:absolute"
+                />
+              </div>
+            )}
 
             {/* Tagline Image */}
             <Link href="/" className="w-full md:w-8/12 xl:w-4/12 lg:max-w-none pb-0 xl:pl-10">
               <span className="sr-only">Homepage</span>
-              <Image
-                src={taglineUrl}
-                alt={siteTitle}
-                width={416}
-                height={80}
-                className="w-full"
-              />
+              {taglineUrl ? (
+                <Image
+                  src={taglineUrl}
+                  alt={siteTitle}
+                  width={416}
+                  height={80}
+                  className="w-full"
+                />
+              ) : (
+                <span className="font-serif text-white text-2xl md:text-3xl font-light tracking-wide">
+                  {siteTitle}
+                </span>
+              )}
             </Link>
 
             {/* Social Icons */}
             <nav className="w-full xl:w-3/12 lg:max-w-none flex flex-wrap justify-center pt-4 md:pt-24 xl:pt-0 pb-2 text-4xl" aria-label="Social media">
-                {(socialMedia?.facebook || true) && (
+                {socialMedia?.facebook && (
                   <a
                     className="p-3 text-white"
-                    href={socialMedia?.facebook || 'https://www.facebook.com/KlugProperties'}
-                    title="Chris Klug Properties on Facebook"
+                    href={socialMedia.facebook}
+                    title={`${siteTitle} on Facebook`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -146,11 +151,11 @@ export default function Footer({
                     </svg>
                   </a>
                 )}
-                {(socialMedia?.instagram || true) && (
+                {socialMedia?.instagram && (
                   <a
                     className="p-3 text-white"
-                    href={socialMedia?.instagram || 'https://www.instagram.com/klugproperties/'}
-                    title="Chris Klug Properties on Instagram"
+                    href={socialMedia.instagram}
+                    title={`${siteTitle} on Instagram`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -159,11 +164,11 @@ export default function Footer({
                     </svg>
                   </a>
                 )}
-                {(socialMedia?.twitter || true) && (
+                {socialMedia?.twitter && (
                   <a
                     className="p-3 text-white"
-                    href={socialMedia?.twitter || 'https://twitter.com/klugproperties'}
-                    title="Chris Klug Properties on Twitter"
+                    href={socialMedia.twitter}
+                    title={`${siteTitle} on Twitter`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -172,11 +177,11 @@ export default function Footer({
                     </svg>
                   </a>
                 )}
-                {(socialMedia?.youtube || true) && (
+                {socialMedia?.youtube && (
                   <a
                     className="p-3 text-white"
-                    href={socialMedia?.youtube || 'https://www.youtube.com/user/klugproperties'}
-                    title="Chris Klug Properties on YouTube"
+                    href={socialMedia.youtube}
+                    title={`${siteTitle} on YouTube`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -187,16 +192,18 @@ export default function Footer({
                 )}
             </nav>
 
-            {/* ASSIR Logo */}
-            <div className="w-1/2 md:w-1/4 lg:w-auto xl:w-1/4 lg:max-w-none">
-              <Image
-                src={brokerageLogoUrl}
-                alt="Aspen Snowmass Sotheby's International Realty"
-                width={200}
-                height={60}
-                className="w-full max-w-[200px]"
-              />
-            </div>
+            {/* Brokerage logo */}
+            {brokerageLogoUrl && (
+              <div className="w-1/2 md:w-1/4 lg:w-auto xl:w-1/4 lg:max-w-none">
+                <Image
+                  src={brokerageLogoUrl}
+                  alt={`${siteTitle} brokerage`}
+                  width={200}
+                  height={60}
+                  className="w-full max-w-[200px]"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { getBaseUrl } from '@/lib/settings';
 
 const RESOURCES_PAGE_QUERY = `*[_type == "resourcesPage"][0]{
   heroTitle,
@@ -58,7 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
     : null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: metaTitle,

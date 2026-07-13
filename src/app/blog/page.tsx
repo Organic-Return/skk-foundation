@@ -5,6 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import { getBaseUrl, getSiteName } from '@/lib/settings';
+import StructuredData from "@/components/StructuredData";
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 
 const POSTS_COUNT_QUERY = `count(*[_type == "post"])`;
 
@@ -28,16 +31,16 @@ const urlFor = (source: any) =>
 const options = { next: { revalidate: 30 } };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
 
   return {
-    title: 'Blog | Klug Properties',
+    title: `Blog | ${siteName}`,
     description: 'Insights, market updates, and lifestyle content from Aspen Snowmass and the Roaring Fork Valley.',
     alternates: {
       canonical: `${baseUrl}/blog`,
     },
     openGraph: {
-      title: 'Blog | Klug Properties',
+      title: `Blog | ${siteName}`,
       description: 'Insights, market updates, and lifestyle content from Aspen Snowmass and the Roaring Fork Valley.',
       type: 'website',
       url: `${baseUrl}/blog`,
@@ -55,9 +58,24 @@ export default async function BlogPage({
   const start = (currentPage - 1) * POSTS_PER_PAGE;
   const end = start + POSTS_PER_PAGE - 1;
 
-  const [posts, totalCount] = await Promise.all([
+  const [posts, totalCount, baseUrl] = await Promise.all([
     client.fetch<SanityDocument[]>(POSTS_QUERY, { start, end }, options),
     client.fetch<number>(POSTS_COUNT_QUERY, {}, options),
+    getBaseUrl(),
+  ]);
+
+  // Posts render at the root (/{slug}), not /blog/{slug}.
+  const blogSchema = collectionPageSchema({
+    name: 'Blog',
+    url: `${baseUrl}/blog`,
+    items: (posts || []).map((post) => ({
+      name: post.title,
+      url: `${baseUrl}/${post.slug?.current}`,
+    })),
+  });
+  const blogCrumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: 'Blog', url: `${baseUrl}/blog` },
   ]);
 
   const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE);
@@ -67,6 +85,8 @@ export default async function BlogPage({
 
   return (
     <main className="min-h-screen">
+      {blogSchema && <StructuredData data={blogSchema} />}
+      <StructuredData data={blogCrumbs} />
       {/* Hero Section */}
       <PageHero
         title="Blog"

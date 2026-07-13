@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 import { getOffMarketListings } from '@/lib/offMarketListings';
 import OffMarketListingsContent from '@/components/OffMarketListingsContent';
+import { getBaseUrl } from '@/lib/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: 'Off-Market Listings | Exclusive Properties',

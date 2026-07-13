@@ -1,6 +1,7 @@
 import { client } from "@/sanity/client";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getSiteTemplate } from "@/lib/settings";
+import { getSiteTemplate, getBaseUrl } from '@/lib/settings';
 import RCSitePage from "@/components/RCSitePage";
 import Link from "next/link";
 
@@ -16,7 +17,7 @@ const options = { next: { revalidate: 60 } };
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await client.fetch(QUERY, {}, options);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const baseUrl = await getBaseUrl();
 
   return {
     title: data?.seo?.metaTitle || data?.title || 'Washington Wine',
@@ -39,17 +40,7 @@ export default async function WashingtonWinePage() {
 
   const isRC = template === 'rcsothebys-custom';
 
-  if (!isRC) {
-    return (
-      <main className="min-h-screen pt-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-[#6a6a6a] dark:text-gray-400 font-light mb-8">
-            <Link href="/" className="text-[var(--color-gold)] hover:underline">Return Home</Link>
-          </p>
-        </div>
-      </main>
-    );
-  }
+  if (!isRC) notFound();
 
   return (
     <RCSitePage

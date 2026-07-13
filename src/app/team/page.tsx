@@ -1,9 +1,11 @@
 import { client } from "@/sanity/client";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import type { Metadata } from "next";
-import { getSiteTemplate } from "@/lib/settings";
+import { getBaseUrl, getSiteTemplate } from '@/lib/settings';
 import TeamGrid from "@/components/TeamGrid";
 import PageHero from "@/components/PageHero";
+import StructuredData from "@/components/StructuredData";
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 
 const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
@@ -42,12 +44,26 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamPage() {
-  const [members, template] = await Promise.all([
+  const [members, template, baseUrl] = await Promise.all([
     client.fetch<TeamMember[]>(ALL_TEAM_QUERY, {}, options),
     getSiteTemplate(),
+    getBaseUrl(),
   ]);
 
   const isRC = template === "rcsothebys-custom";
+  const teamPath = isRC ? 'agents' : 'team';
+  const teamSchema = collectionPageSchema({
+    name: isRC ? 'Our Agents' : 'Our Team',
+    url: `${baseUrl}/${teamPath}`,
+    items: (members || []).map((m) => ({
+      name: m.name,
+      url: `${baseUrl}/${teamPath}/${m.slug?.current}`,
+    })),
+  });
+  const teamCrumbs = breadcrumbSchema([
+    { name: 'Home', url: baseUrl },
+    { name: isRC ? 'Agents' : 'Team', url: `${baseUrl}/${teamPath}` },
+  ]);
 
   // Process image URLs server-side for the client component
   const processedMembers = members.map((m) => ({
@@ -68,6 +84,8 @@ export default async function TeamPage() {
 
   return (
     <main className="min-h-screen">
+      {teamSchema && <StructuredData data={teamSchema} />}
+      <StructuredData data={teamCrumbs} />
       {/* Hero */}
       <PageHero
         title={isRC ? "Retter & Company Sotheby's International Realty Team" : "Our Team"}
