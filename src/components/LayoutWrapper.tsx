@@ -37,17 +37,22 @@ export default function LayoutWrapper({ header, footer, children, template }: La
   // double the offset and leave a blank gap below the nav.
   const usesSpacerHeader = template === 'modern' || template === 'custom-one';
 
+  // Pages whose hero is built to sit *behind* the fixed nav: they carry their
+  // own tall top padding to clear it, so the nav stays transparent and no
+  // pt-20 spacer is added. Adding either would double the offset.
+  const isExclusiveListings = pathname === '/exclusive-listings';
+  const isTransparentNavPage = isHomepage || isCommunityPage || isExclusiveListings;
+
   // Modern/custom-one templates render content pages with a full-bleed hero, so
   // the nav stays transparent and overlays the hero image — the same treatment
-  // the homepage and community pages already use.
+  // the transparent-nav pages above already use.
   //
-  // Listing pages are excluded: their heroes (property galleries, the
-  // exclusive-listings banner) are not built to sit behind the nav, so they
-  // keep a solid nav pushed down by a spacer. The dashboard does too.
+  // Listing pages are excluded: their heroes (property galleries, search
+  // results) are not built to sit behind the nav, so they keep a solid nav
+  // pushed down by a spacer. The dashboard does too.
   const isDashboard = pathname?.startsWith('/dashboard') ?? false;
   const isListingPage =
     pathname?.startsWith('/listings') ||
-    pathname?.startsWith('/exclusive-listings') ||
     pathname?.startsWith('/off-market') ||
     pathname?.startsWith('/saved-properties') ||
     false;
@@ -56,10 +61,10 @@ export default function LayoutWrapper({ header, footer, children, template }: La
 
   // Force a solid header background. For full-bleed templates this is limited
   // to the functional pages above; for the other templates keep the previous
-  // behavior (solid on everything except the homepage and community pages).
+  // behavior (solid on everything except the transparent-nav pages).
   const needsForceBackground = isFullBleedTemplate
     ? isSolidNavPage
-    : !isRCSothebys && !isHomepage && !isCommunityPage;
+    : !isRCSothebys && !isTransparentNavPage;
 
   // Clone header element to add forceBackground prop if needed
   const headerWithProps = needsForceBackground && isValidElement(header)
@@ -87,9 +92,10 @@ export default function LayoutWrapper({ header, footer, children, template }: La
   const isPropertyPage = pathname?.startsWith('/listings/');
   const isCustomOnePropertyPage = template === 'custom-one' && isPropertyPage;
 
-  // Regular pages: include header/footer with padding (except homepage, community pages, custom-one property pages, and rcsothebys-custom)
+  // Regular pages: include header/footer with padding (except the transparent-nav
+  // pages, custom-one property pages, and rcsothebys-custom).
   // RC Sotheby's header is static so no padding offset needed
-  const needsPadding = !isRCSothebys && !usesSpacerHeader && !isHomepage && !isCommunityPage && !isCustomOnePropertyPage;
+  const needsPadding = !isRCSothebys && !usesSpacerHeader && !isTransparentNavPage && !isCustomOnePropertyPage;
 
   return (
     <>
