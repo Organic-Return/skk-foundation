@@ -37,14 +37,22 @@ export default function LayoutWrapper({ header, footer, children, template }: La
   // double the offset and leave a blank gap below the nav.
   const usesSpacerHeader = template === 'modern' || template === 'custom-one';
 
-  // Modern/custom-one templates render every content page with a full-bleed
-  // hero, so the nav stays transparent and overlays the hero image — the same
-  // treatment the homepage and community pages already use. Only functional
-  // app pages that have no hero (the listings search UI and the dashboard)
-  // keep a solid nav pushed down by a spacer.
+  // Modern/custom-one templates render content pages with a full-bleed hero, so
+  // the nav stays transparent and overlays the hero image — the same treatment
+  // the homepage and community pages already use.
+  //
+  // Listing pages are excluded: their heroes (property galleries, the
+  // exclusive-listings banner) are not built to sit behind the nav, so they
+  // keep a solid nav pushed down by a spacer. The dashboard does too.
   const isDashboard = pathname?.startsWith('/dashboard') ?? false;
+  const isListingPage =
+    pathname?.startsWith('/listings') ||
+    pathname?.startsWith('/exclusive-listings') ||
+    pathname?.startsWith('/off-market') ||
+    pathname?.startsWith('/saved-properties') ||
+    false;
   const isFullBleedTemplate = usesSpacerHeader;
-  const isSolidNavPage = isListingsPage || isDashboard;
+  const isSolidNavPage = isListingPage || isDashboard;
 
   // Force a solid header background. For full-bleed templates this is limited
   // to the functional pages above; for the other templates keep the previous

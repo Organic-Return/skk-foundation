@@ -179,7 +179,7 @@ export default async function ExclusiveListingsPage() {
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
       {listingsSchema && <StructuredData data={listingsSchema} />}
       {/* Hero */}
-      <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
+      <section className="relative bg-[var(--color-navy)] py-[6.5rem] md:py-[9.1rem] overflow-hidden">
         {heroImage && (
           <>
             <Image
@@ -194,6 +194,9 @@ export default async function ExclusiveListingsPage() {
           </>
         )}
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
+          <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
+            For Sale
+          </p>
           <h1 className="font-serif text-white text-4xl md:text-6xl font-light tracking-wide mb-5">
             {who} Exclusive Listings
           </h1>
