@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { getSiteTemplate } from "@/lib/settings";
 import type { SanityDocument } from "next-sanity";
+import PageHero from "@/components/PageHero";
 
 const BUILDERS_PAGE_QUERY = `*[_type == "buildersPage"][0]{
   heroTitle,
@@ -84,46 +85,7 @@ export default async function BuildersPage() {
   return (
     <main className="min-h-screen">
       {/* Hero */}
-      {isRC ? (
-        <section className="relative h-[50vh] md:h-[60vh] min-h-[400px] flex items-end">
-          {heroImageUrl ? (
-            <>
-              <Image src={heroImageUrl} alt={heroTitle} fill className="object-cover" priority />
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--rc-navy)]/90 via-[var(--rc-navy)]/40 to-[var(--rc-navy)]/20" />
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-[var(--rc-navy)]" />
-          )}
-          <div className="relative max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-16 md:pb-24">
-            <h1
-              className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em] text-white mb-4"
-              style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif', lineHeight: '1.1em' }}
-            >
-              {heroTitle}
-            </h1>
-            <p className="text-lg md:text-xl text-white/70 font-light max-w-2xl leading-relaxed">
-              {heroSubtitle}
-            </p>
-          </div>
-        </section>
-      ) : (
-        <section className="relative h-[50vh] md:h-[60vh] min-h-[400px] flex items-end">
-          {heroImageUrl ? (
-            <>
-              <Image src={heroImageUrl} alt={heroTitle} fill className="object-cover" priority />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-[var(--color-navy)]" />
-          )}
-          <div className="relative max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-16 md:pb-24">
-            <h1 className="font-serif text-white mb-4">{heroTitle}</h1>
-            <p className="text-lg md:text-xl text-white/80 font-light max-w-2xl leading-relaxed">
-              {heroSubtitle}
-            </p>
-          </div>
-        </section>
-      )}
+      <PageHero title={heroTitle} subtitle={heroSubtitle} image={heroImageUrl ?? undefined} />
 
       {/* Builders Grid */}
       <section className={`py-16 md:py-24 ${isRC ? 'bg-[var(--rc-cream)]' : 'bg-white dark:bg-[#1a1a1a]'}`}>

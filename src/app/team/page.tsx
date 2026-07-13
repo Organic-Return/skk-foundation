@@ -1,10 +1,9 @@
-import Image from "next/image";
 import { client } from "@/sanity/client";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import type { Metadata } from "next";
 import { getSiteTemplate } from "@/lib/settings";
 import TeamGrid from "@/components/TeamGrid";
-import { DEFAULT_HERO_IMAGE } from "@/components/PageHero";
+import PageHero from "@/components/PageHero";
 
 const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
@@ -70,49 +69,16 @@ export default async function TeamPage() {
   return (
     <main className="min-h-screen">
       {/* Hero */}
-      <section
-        className={
-          isRC
-            ? "rc-inverted relative overflow-hidden bg-[var(--rc-navy)] pt-[160px] pb-16 md:pt-[220px] md:pb-24"
-            : "relative overflow-hidden bg-[var(--color-navy,#002349)] pt-[160px] pb-16 md:pt-[220px] md:pb-24"
-        }
+      <PageHero
+        title={isRC ? "Retter & Company Sotheby's International Realty Team" : "Our Team"}
+        subtitle={isRC ? "Meet our Experienced Tri-Cities Real Estate Agents" : "Meet our experienced real estate professionals"}
       >
-        <Image
-          src={DEFAULT_HERO_IMAGE}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className={isRC ? "absolute inset-0 bg-[var(--rc-navy)]/75" : "absolute inset-0 bg-[var(--color-navy,#002349)]/75"} />
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
-          <h1
-            className={
-              isRC
-                ? "text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em] text-white mb-4"
-                : "font-serif text-white mb-4"
-            }
-            style={isRC ? { fontFamily: "var(--font-figtree), Figtree, sans-serif", lineHeight: "1.1em" } : undefined}
-          >
-            {isRC ? "Retter & Company Sotheby's International Realty Team" : "Our Team"}
-          </h1>
-          <p
-            className={
-              isRC
-                ? "text-white/60 text-base md:text-lg font-normal max-w-2xl mx-auto"
-                : "text-white/70 text-lg font-light max-w-2xl mx-auto"
-            }
-          >
-            {isRC ? "Meet our Experienced Tri-Cities Real Estate Agents" : "Meet our experienced real estate professionals"}
+        {!isRC && (
+          <p className="text-white/50 text-sm mt-3 font-light">
+            {members.length} Agents
           </p>
-          {!isRC && (
-            <p className="text-white/50 text-sm mt-3 font-light">
-              {members.length} Agents
-            </p>
-          )}
-        </div>
-      </section>
+        )}
+      </PageHero>
 
       {/* Team Grid with Letter Filter */}
       <section

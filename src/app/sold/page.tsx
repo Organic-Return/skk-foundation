@@ -203,7 +203,7 @@ export default async function SoldPage() {
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
       {agentSchema && <StructuredData data={agentSchema} />}
       {/* Hero */}
-      <section className="relative bg-[var(--color-navy)] pt-[160px] pb-[6.5rem] md:pt-[11rem] md:pb-[9.1rem] overflow-hidden">
+      <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
         {heroImage && (
           <>
             <Image
@@ -218,9 +218,6 @@ export default async function SoldPage() {
           </>
         )}
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
-          <div className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
-            Track Record
-          </div>
           <h1 className="font-serif text-white text-4xl md:text-6xl font-light tracking-wide mb-5">
             {who} Sold Properties
           </h1>

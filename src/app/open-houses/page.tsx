@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { getOpenHouseListings } from '@/lib/listings';
 import OpenHouseGrid from '@/components/OpenHouseGrid';
-import { DEFAULT_HERO_IMAGE } from '@/components/PageHero';
+import PageHero from '@/components/PageHero';
 
 export const revalidate = 60;
 
@@ -18,36 +17,16 @@ export default async function OpenHousesPage() {
   return (
     <main className="min-h-screen">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-[var(--rc-navy)] pt-[160px] pb-16 md:pt-[220px] md:pb-24">
-        <Image
-          src={DEFAULT_HERO_IMAGE}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-[var(--rc-navy)]/75" />
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
-          <h1
-            className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em] text-white mb-4"
-            style={{
-              fontFamily: 'var(--font-figtree), Figtree, sans-serif',
-              lineHeight: '1.1em',
-            }}
-          >
-            Open Houses
-          </h1>
-          <p className="text-white/60 text-base md:text-lg font-normal max-w-2xl mx-auto">
-            Visit our upcoming open houses and find your next home
+      <PageHero
+        title="Open Houses"
+        subtitle="Visit our upcoming open houses and find your next home"
+      >
+        {listings.length > 0 && (
+          <p className="text-white/50 text-sm mt-3 font-light">
+            {listings.length} upcoming {listings.length === 1 ? 'open house' : 'open houses'}
           </p>
-          {listings.length > 0 && (
-            <p className="text-white/40 text-sm mt-3 font-light">
-              {listings.length} upcoming {listings.length === 1 ? 'open house' : 'open houses'}
-            </p>
-          )}
-        </div>
-      </section>
+        )}
+      </PageHero>
 
       {/* Listings */}
       <section className="py-16 md:py-24 bg-[var(--rc-cream)]">

@@ -3,6 +3,7 @@ import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
 import Image from "next/image";
+import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { getSettings } from "@/lib/settings";
@@ -204,33 +205,11 @@ export default async function SellPage() {
         <StructuredData key={i} data={s as Record<string, unknown>} />
       ))}
       {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[70vh] min-h-[500px] flex items-end">
-        {heroImageUrl ? (
-          <>
-            <Image
-              src={heroImageUrl}
-              alt={data.heroTitle || 'Sell'}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
-          </>
-        ) : (
-          <div className="absolute inset-0 bg-[var(--color-navy)]" />
-        )}
-
-        <div className="relative max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 pb-16 md:pb-24">
-          <h1 className="font-serif text-white mb-4 max-w-4xl">
-            {data.heroTitle}
-          </h1>
-          {data.heroSubtitle && (
-            <p className="text-lg md:text-xl text-white/80 font-light max-w-2xl leading-relaxed">
-              {data.heroSubtitle}
-            </p>
-          )}
-        </div>
-      </section>
+      <PageHero
+        title={data.heroTitle || 'Sell'}
+        subtitle={data.heroSubtitle}
+        image={heroImageUrl ?? undefined}
+      />
 
       {/* Content Sections */}
       {data.sections && data.sections.length > 0 && (

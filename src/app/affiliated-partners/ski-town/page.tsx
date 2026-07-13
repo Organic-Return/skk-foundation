@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Partner, enrichPartnerWithAgentData, PartnerCard, PageContent, urlFor } from "../components";
 import CTASection from "../CTASection";
 import PartnersMapSection from "../PartnersMapSection";
+import { DEFAULT_HERO_IMAGE } from "@/components/PageHero";
 
 const SKI_TOWN_PARTNERS_QUERY = `*[_type == "affiliatedPartner" && active == true && partnerType == "ski_town"] | order(sortOrder asc, lastName asc) {
   _id,
@@ -87,18 +88,16 @@ export default async function SkiTownPartnersPage() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[var(--color-navy)] pt-[160px] pb-20 md:pt-[220px] md:pb-28">
-        {heroImageUrl && (
-          <div className="absolute inset-0">
-            <Image
-              src={heroImageUrl}
-              alt=""
-              fill
-              className="object-cover opacity-30"
-              priority
-            />
-          </div>
-        )}
+      <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
+        <Image
+          src={heroImageUrl || DEFAULT_HERO_IMAGE}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-[var(--color-navy)]/70" />
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
           {/* Breadcrumb */}
           <div className="mb-6">
@@ -121,10 +120,10 @@ export default async function SkiTownPartnersPage() {
             </div>
           )}
 
-          <h1 className="font-serif text-white mb-6">
+          <h1 className="font-serif text-white text-4xl md:text-6xl font-light tracking-wide mb-5">
             {pageContent?.heroTitle || 'Ski Town Partners'}
           </h1>
-          <p className="text-lg md:text-xl text-white/70 font-light max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/75 font-light max-w-2xl mx-auto leading-relaxed">
             {pageContent?.heroDescription ||
               'Expert agents specializing in premier ski resort communities. From Aspen to Vail, Park City to Jackson Hole, our partners know mountain real estate.'}
           </p>
