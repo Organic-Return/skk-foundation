@@ -357,10 +357,25 @@ export const settings = defineType({
           name: 'brokerageLogo',
           title: 'Brokerage Logo',
           type: 'image',
-          description: 'Brokerage or affiliate logo (e.g., ASSIR logo)',
+          description: 'Brokerage or affiliate logo shown in the footer',
           options: {
             hotspot: true,
           },
+        },
+        {
+          name: 'brokerageLogoAlt',
+          title: 'Brokerage Logo Alt Text',
+          type: 'string',
+          description:
+            'Accessible name for the brokerage logo, e.g. "Christie\'s International Real Estate Aspen | Snowmass". Must name the brokerage actually shown in the logo.',
+        },
+        {
+          name: 'legalDisclaimer',
+          title: 'Legal Disclaimer',
+          type: 'array',
+          of: [{ type: 'text', rows: 4 }],
+          description:
+            'Brokerage legal/fair-housing boilerplate, one paragraph per entry. Set this per site — the brokerage differs by tenant, so it must not be hardcoded in the template.',
         },
       ],
     }),

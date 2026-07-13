@@ -1,18 +1,14 @@
 import Image from 'next/image';
 
-/**
- * Default background image for hero sections on pages that don't supply their
- * own. A wide Aspen-style mountain landscape that reads well behind the
- * transparent site navigation.
- */
-export const DEFAULT_HERO_IMAGE =
-  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=80';
-
 interface PageHeroProps {
   title: string;
   subtitle?: string;
   eyebrow?: string;
-  /** Background image URL. Falls back to DEFAULT_HERO_IMAGE. */
+  /**
+   * Background image URL. Optional — with no image the hero renders as solid
+   * navy. There is deliberately no stock-photo fallback: a generic Unsplash
+   * mountain shot on a luxury brokerage's page reads as unfinished.
+   */
   image?: string;
   /** Extra content rendered below the subtitle (e.g. a count or CTA). */
   children?: React.ReactNode;
@@ -25,12 +21,14 @@ interface PageHeroProps {
  * clears the fixed transparent nav that overlays it.
  */
 export default function PageHero({ title, subtitle, eyebrow, image, children }: PageHeroProps) {
-  const src = image || DEFAULT_HERO_IMAGE;
-
   return (
     <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
-      <Image src={src} alt="" fill priority sizes="100vw" className="object-cover" />
-      <div className="absolute inset-0 bg-[var(--color-navy)]/70" />
+      {image && (
+        <>
+          <Image src={image} alt="" fill priority sizes="100vw" className="object-cover" />
+          <div className="absolute inset-0 bg-[var(--color-navy)]/70" />
+        </>
+      )}
       <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
         {eyebrow && (
           <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">

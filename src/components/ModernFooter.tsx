@@ -35,7 +35,20 @@ interface FooterSettings {
   portraitImage?: any;
   taglineImage?: any;
   brokerageLogo?: any;
+  brokerageLogoAlt?: string;
+  legalDisclaimer?: string[];
 }
+
+/**
+ * Brokerage legal boilerplate shown when Settings → Footer → Legal Disclaimer
+ * is empty. This is Christie's text, correct only for the tenant this template
+ * was built for — set legalDisclaimer in Sanity per site and this goes away.
+ */
+const LEGACY_LEGAL_DISCLAIMER = [
+  `\u00a9 1999 \u2013 ${new Date().getFullYear()} Christie's International Real Estate all rights reserved. Each office is independently owned and operated.`,
+  'All information provided herein has been obtained from sources believed reliable, but may be subject to errors, omissions, change of price, prior sale, or withdrawal without notice. Christie\u2019s International Real Estate and its affiliates make no representation, warranty or guaranty as to accuracy of any information contained herein. You should consult your advisors for an independent verification of any properties.',
+  'At World Properties, LLC and its subsidiaries do not discriminate against the use of Housing Choice Vouchers. Se Aceptan Vales de Elecci\u00f3n de Vivienda.',
+];
 
 interface ModernFooterProps {
   logo?: any;
@@ -69,6 +82,12 @@ export default function ModernFooter({
   const brokerageLogoUrl = footer?.brokerageLogo
     ? urlFor(footer.brokerageLogo).width(400).url()
     : null;
+  // Never assert a brokerage name the logo doesn't show.
+  const brokerageLogoAlt = footer?.brokerageLogoAlt || 'Brokerage logo';
+  const legalParagraphs =
+    footer?.legalDisclaimer && footer.legalDisclaimer.length > 0
+      ? footer.legalDisclaimer
+      : LEGACY_LEGAL_DISCLAIMER;
 
   const logoUrl = logo ? urlFor(logo).width(300).url() : null;
 
@@ -161,21 +180,15 @@ export default function ModernFooter({
             <h4 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
               Legal
             </h4>
+            {/* /privacy and /terms-of-service were both 404s. Only routes that
+                exist are linked; add a Terms page and restore its link here. */}
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/privacy"
+                  href="/privacy-policy"
                   className="text-white/60 text-sm font-light hover:text-[var(--modern-gold)] transition-colors duration-300"
                 >
                   Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms-of-service"
-                  className="text-white/60 text-sm font-light hover:text-[var(--modern-gold)] transition-colors duration-300"
-                >
-                  Terms of Service
                 </Link>
               </li>
             </ul>
@@ -284,7 +297,7 @@ export default function ModernFooter({
             <div>
               <Image
                 src={brokerageLogoUrl}
-                alt={`${siteTitle} brokerage`}
+                alt={brokerageLogoAlt}
                 width={180}
                 height={50}
                 className="brightness-0 invert opacity-40"
@@ -299,15 +312,15 @@ export default function ModernFooter({
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
           {/* Legal Disclaimer */}
           <div className="max-w-[980px]">
-            <p className="text-white/20 leading-relaxed mb-3" style={{ maxWidth: 'none', fontSize: '10px' }}>
-              &copy; 1999 &ndash; 2025 Christie&apos;s International Real Estate all rights reserved. Each office is independently owned and operated.
-            </p>
-            <p className="text-white/20 leading-relaxed mb-3" style={{ maxWidth: 'none', fontSize: '10px' }}>
-              All information provided herein has been obtained from sources believed reliable, but may be subject to errors, omissions, change of price, prior sale, or withdrawal without notice. Christie&apos;s International Real Estate and its affiliates make no representation, warranty or guaranty as to accuracy of any information contained herein. You should consult your advisors for an independent verification of any properties.
-            </p>
-            <p className="text-white/20 leading-relaxed mb-4" style={{ maxWidth: 'none', fontSize: '10px' }}>
-              At World Properties, LLC and its subsidiaries do not discriminate against the use of Housing Choice Vouchers. Se Aceptan Vales de Elecci&oacute;n de Vivienda.
-            </p>
+            {legalParagraphs.map((paragraph, i) => (
+              <p
+                key={i}
+                className="text-white/20 leading-relaxed mb-3"
+                style={{ maxWidth: 'none', fontSize: '10px' }}
+              >
+                {paragraph}
+              </p>
+            ))}
           </div>
           <div className="flex justify-end">
             <p className="text-white/20 text-[10px]">

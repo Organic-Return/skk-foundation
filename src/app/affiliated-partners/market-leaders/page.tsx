@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import { Partner, enrichPartnerWithAgentData, PartnerCard, PageContent, urlFor } from "../components";
 import CTASection from "../CTASection";
 import PartnersMapSection from "../PartnersMapSection";
-import { DEFAULT_HERO_IMAGE } from "@/components/PageHero";
 import { getBaseUrl, getSiteName } from '@/lib/settings';
 
 const MARKET_LEADERS_QUERY = `*[_type == "affiliatedPartner" && active == true && partnerType == "market_leader"] | order(sortOrder asc, lastName asc) {
@@ -90,15 +89,19 @@ export default async function MarketLeadersPage() {
     <main className="min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
-        <Image
-          src={heroImageUrl || DEFAULT_HERO_IMAGE}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-[var(--color-navy)]/70" />
+        {heroImageUrl && (
+          <>
+            <Image
+              src={heroImageUrl}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-[var(--color-navy)]/70" />
+          </>
+        )}
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
           {/* Breadcrumb */}
           <div className="mb-6">

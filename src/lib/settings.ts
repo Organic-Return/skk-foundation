@@ -43,6 +43,8 @@ interface SiteSettings {
     portraitImage?: any;
     taglineImage?: any;
     brokerageLogo?: any;
+    brokerageLogoAlt?: string;
+    legalDisclaimer?: string[];
   };
   teamSync?: {
     enabled?: boolean;
@@ -82,7 +84,9 @@ const SETTINGS_QUERY = `*[_type == "settings" && _id == "settings"][0]{
     },
     brokerageLogo {
       asset->
-    }
+    },
+    brokerageLogoAlt,
+    legalDisclaimer
   },
   teamSync
 }`;

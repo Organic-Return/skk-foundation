@@ -35,7 +35,19 @@ interface FooterSettings {
   portraitImage?: any;
   taglineImage?: any;
   brokerageLogo?: any;
+  brokerageLogoAlt?: string;
+  legalDisclaimer?: string[];
 }
+
+/**
+ * Brokerage legal boilerplate shown when Settings → Footer → Legal Disclaimer
+ * is empty. This is Sotheby's text, correct only for the tenant this template
+ * was built for — set legalDisclaimer in Sanity per site and this goes away.
+ */
+const LEGACY_LEGAL_DISCLAIMER = [
+  "\u00a9 {year} Sotheby's International Realty Affiliates LLC. All rights reserved. Sotheby's International Realty\u00ae and the Sotheby's International Realty Logo are service marks licensed to Sotheby's International Realty Affiliates LLC and used with permission. Sotheby's International Realty Affiliates LLC fully supports the principles of the Fair Housing Act and the Equal Opportunity Act. Each office is independently owned and operated.",
+  "This website is not the official website of Sotheby's International Realty. Real estate agents affiliated with Sotheby's International Realty are independent contractors and are not employees of Sotheby's International Realty. The information set forth on this site is based upon information which we consider reliable, but because it has been supplied by third parties to our franchisees (who in turn supplied it to us), we can not represent that it is accurate or complete, and it should not be relied upon as such. The offerings are subject to errors, omissions, changes, including price, or withdrawal without notice. All dimensions are approximate and have not been verified by the selling party and can not be verified by Sotheby's International Realty Affiliates LLC. It is recommended that you hire a professional in the business of determining dimensions, such as an appraiser, architect or civil engineer, to determine such information.",
+];
 
 interface FooterProps {
   logo?: any;
@@ -79,6 +91,13 @@ export default function Footer({
   const brokerageLogoUrl = footer?.brokerageLogo
     ? urlFor(footer.brokerageLogo).width(400).url()
     : null;
+  // Never assert a brokerage name the logo doesn't show.
+  const brokerageLogoAlt = footer?.brokerageLogoAlt || 'Brokerage logo';
+  const legalParagraphs = (
+    footer?.legalDisclaimer && footer.legalDisclaimer.length > 0
+      ? footer.legalDisclaimer
+      : LEGACY_LEGAL_DISCLAIMER
+  ).map((p) => p.replace('{year}', String(currentYear)));
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,7 +216,7 @@ export default function Footer({
               <div className="w-1/2 md:w-1/4 lg:w-auto xl:w-1/4 lg:max-w-none">
                 <Image
                   src={brokerageLogoUrl}
-                  alt={`${siteTitle} brokerage`}
+                  alt={brokerageLogoAlt}
                   width={200}
                   height={60}
                   className="w-full max-w-[200px]"
@@ -275,13 +294,8 @@ export default function Footer({
             <div className="flex flex-row flex-wrap justify-between gap-x-4 lg:mr-14">
               <dl>
                 <dd className="text-sm mb-3">
-                  <Link href="/privacy" className="hover:text-[var(--color-gold)] transition-colors">
+                  <Link href="/privacy-policy" className="hover:text-[var(--color-gold)] transition-colors">
                     Privacy Policy
-                  </Link>
-                </dd>
-                <dd className="text-sm mb-3">
-                  <Link href="/terms-of-service" className="hover:text-[var(--color-gold)] transition-colors">
-                    Terms Of Service
                   </Link>
                 </dd>
               </dl>
@@ -296,12 +310,18 @@ export default function Footer({
       {/* Legal Disclaimer */}
       <div className="w-full py-9 px-4">
         <div className="max-w-[1440px] w-full mx-auto text-[8px] text-gray-600">
-          <p style={{ maxWidth: 'none', fontSize: '8px', marginBottom: '0.5em' }}>
-            © {currentYear} Sotheby&apos;s International Realty Affiliates LLC. All rights reserved. Sotheby&apos;s International Realty® and the Sotheby&apos;s International Realty Logo are service marks licensed to Sotheby&apos;s International Realty Affiliates LLC and used with permission. Sotheby&apos;s International Realty Affiliates LLC fully supports the principles of the Fair Housing Act and the Equal Opportunity Act. Each office is independently owned and operated.
-          </p>
-          <p style={{ maxWidth: 'none', fontSize: '8px', marginBottom: '0' }}>
-            This website is not the official website of Sotheby&apos;s International Realty. Real estate agents affiliated with Sotheby&apos;s International Realty are independent contractors and are not employees of Sotheby&apos;s International Realty. The information set forth on this site is based upon information which we consider reliable, but because it has been supplied by third parties to our franchisees (who in turn supplied it to us), we can not represent that it is accurate or complete, and it should not be relied upon as such. The offerings are subject to errors, omissions, changes, including price, or withdrawal without notice. All dimensions are approximate and have not been verified by the selling party and can not be verified by Sotheby&apos;s International Realty Affiliates LLC. It is recommended that you hire a professional in the business of determining dimensions, such as an appraiser, architect or civil engineer, to determine such information.
-          </p>
+          {legalParagraphs.map((paragraph, i) => (
+            <p
+              key={i}
+              style={{
+                maxWidth: 'none',
+                fontSize: '8px',
+                marginBottom: i === legalParagraphs.length - 1 ? '0' : '0.5em',
+              }}
+            >
+              {paragraph}
+            </p>
+          ))}
         </div>
       </div>
 

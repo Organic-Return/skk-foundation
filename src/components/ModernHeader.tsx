@@ -62,6 +62,10 @@ export default function ModernHeader({
   email,
   forceBackground = false,
 }: ModernHeaderProps) {
+  // Logo comes from Sanity branding. It used to be a hardcoded S3 URL for one
+  // tenant, which put that tenant's logo on every other site using this template.
+  const logoUrl = logo ? urlFor(logo).width(400).url() : null;
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
@@ -217,14 +221,20 @@ export default function ModernHeader({
 
             {/* Center Logo - absolutely centered (desktop only) */}
             <Link href="/" className="hidden lg:block absolute left-1/2 -translate-x-1/2 z-10">
-              <Image
-                src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
-                alt={logoAlt}
-                width={200}
-                height={63}
-                className="h-[80px] w-auto object-contain transition-all duration-500 brightness-0 invert"
-                priority
-              />
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={logoAlt}
+                  width={200}
+                  height={63}
+                  className="h-[80px] w-auto object-contain transition-all duration-500 brightness-0 invert"
+                  priority
+                />
+              ) : (
+                <span className="text-white text-xl font-light tracking-wide whitespace-nowrap">
+                  {siteTitle}
+                </span>
+              )}
             </Link>
 
             {/* Right Navigation */}
@@ -311,14 +321,18 @@ export default function ModernHeader({
 
             {/* Mobile Logo */}
             <Link href="/" className="lg:hidden flex-shrink-0">
-              <Image
-                src="https://drupal-storage.s3.amazonaws.com/skk/public/2024-11/SKK_PrimaryLogo_20230427005520_0.png"
-                alt={logoAlt}
-                width={200}
-                height={63}
-                className="h-10 w-auto object-contain brightness-0 invert"
-                priority
-              />
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={logoAlt}
+                  width={200}
+                  height={63}
+                  className="h-10 w-auto object-contain brightness-0 invert"
+                  priority
+                />
+              ) : (
+                <span className="text-white text-base font-light tracking-wide">{siteTitle}</span>
+              )}
             </Link>
 
             {/* Mobile Menu Button */}
