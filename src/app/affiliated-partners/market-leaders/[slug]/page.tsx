@@ -71,7 +71,7 @@ export default async function MarketLeaderPartnerPage({ params }: Props) {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-[var(--color-navy)] py-16 md:py-24">
+      <section className="relative bg-[var(--color-navy)] pt-[160px] pb-16 md:pt-[220px] md:pb-24">
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
           {/* Breadcrumb */}
           <div className="mb-8 text-center">

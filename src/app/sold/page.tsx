@@ -203,7 +203,7 @@ export default async function SoldPage() {
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
       {agentSchema && <StructuredData data={agentSchema} />}
       {/* Hero */}
-      <section className="relative bg-[var(--color-navy)] py-[6.5rem] md:py-[9.1rem] overflow-hidden">
+      <section className="relative bg-[var(--color-navy)] pt-[160px] pb-[6.5rem] md:pt-[11rem] md:pb-[9.1rem] overflow-hidden">
         {heroImage && (
           <>
             <Image

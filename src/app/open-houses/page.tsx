@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { getOpenHouseListings } from '@/lib/listings';
 import OpenHouseGrid from '@/components/OpenHouseGrid';
+import { DEFAULT_HERO_IMAGE } from '@/components/PageHero';
 
 export const revalidate = 60;
 
@@ -16,8 +18,17 @@ export default async function OpenHousesPage() {
   return (
     <main className="min-h-screen">
       {/* Hero */}
-      <section className="bg-[var(--rc-navy)] py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+      <section className="relative overflow-hidden bg-[var(--rc-navy)] pt-[160px] pb-16 md:pt-[220px] md:pb-24">
+        <Image
+          src={DEFAULT_HERO_IMAGE}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-[var(--rc-navy)]/75" />
+        <div className="relative max-w-7xl mx-auto px-6 text-center">
           <h1
             className="text-3xl md:text-4xl lg:text-5xl font-light uppercase tracking-[0.08em] text-white mb-4"
             style={{

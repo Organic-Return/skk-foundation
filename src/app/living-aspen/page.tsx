@@ -4,6 +4,7 @@ import { client } from "@/sanity/client";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import PageHero from "@/components/PageHero";
 
 const MAGAZINES_QUERY = `*[_type == "publication" && publicationType == "magazine"] | order(publishedAt desc) {
   _id,
@@ -51,16 +52,10 @@ export default async function LivingAspenPage() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-[var(--color-navy)] py-16 md:py-20">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
-          <h1 className="font-serif text-white mb-6">
-            Living Aspen
-          </h1>
-          <p className="text-lg md:text-xl text-white/70 font-light max-w-2xl leading-relaxed">
-            Discover the essence of Aspen living through our curated magazine. Local culture, design inspiration, and the stories that define mountain luxury.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        title="Living Aspen"
+        subtitle="Discover the essence of Aspen living through our curated magazine. Local culture, design inspiration, and the stories that define mountain luxury."
+      />
 
       {/* Featured Magazine */}
       {featuredMagazine && (

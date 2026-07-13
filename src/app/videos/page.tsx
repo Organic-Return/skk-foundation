@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getYouTubeCredentials } from "@/lib/settings";
+import PageHero from "@/components/PageHero";
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
@@ -77,17 +77,13 @@ export default async function VideosPage() {
   const videos = await getYouTubeVideos();
 
   return (
-    <main className="container mx-auto min-h-screen max-w-7xl p-8">
-      <div className="mb-8">
-        <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
-          ← Back to home
-        </Link>
-        <h1 className="text-[var(--color-sothebys-blue)] mb-2">Videos</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Watch our latest real estate videos and virtual tours
-        </p>
-      </div>
+    <main className="min-h-screen">
+      <PageHero
+        title="Videos"
+        subtitle="Watch our latest real estate videos and virtual tours from Aspen, Snowmass, and the Roaring Fork Valley."
+      />
 
+      <div className="container mx-auto max-w-7xl p-8">
       {videos.length === 0 ? (
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-12 text-center">
           <div className="text-6xl mb-4">🎥</div>
@@ -154,6 +150,7 @@ YOUTUBE_CHANNEL_ID=your_channel_id_here`}
           ))}
         </div>
       )}
+      </div>
     </main>
   );
 }

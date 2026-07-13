@@ -102,7 +102,7 @@ export default async function AffiliatedPartnersPage() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-[var(--color-navy)] py-20 md:py-28">
+      <section className="relative overflow-hidden bg-[var(--color-navy)] pt-[160px] pb-20 md:pt-[220px] md:pb-28">
         {heroImageUrl && (
           <div className="absolute inset-0">
             <Image

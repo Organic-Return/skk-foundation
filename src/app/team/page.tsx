@@ -1,8 +1,10 @@
+import Image from "next/image";
 import { client } from "@/sanity/client";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import type { Metadata } from "next";
 import { getSiteTemplate } from "@/lib/settings";
 import TeamGrid from "@/components/TeamGrid";
+import { DEFAULT_HERO_IMAGE } from "@/components/PageHero";
 
 const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
@@ -71,11 +73,20 @@ export default async function TeamPage() {
       <section
         className={
           isRC
-            ? "rc-inverted bg-[var(--rc-navy)] py-16 md:py-24"
-            : "bg-[var(--color-navy,#002349)] py-16 md:py-24"
+            ? "rc-inverted relative overflow-hidden bg-[var(--rc-navy)] pt-[160px] pb-16 md:pt-[220px] md:pb-24"
+            : "relative overflow-hidden bg-[var(--color-navy,#002349)] pt-[160px] pb-16 md:pt-[220px] md:pb-24"
         }
       >
-        <div className="max-w-7xl mx-auto px-6 text-center">
+        <Image
+          src={DEFAULT_HERO_IMAGE}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className={isRC ? "absolute inset-0 bg-[var(--rc-navy)]/75" : "absolute inset-0 bg-[var(--color-navy,#002349)]/75"} />
+        <div className="relative max-w-7xl mx-auto px-6 text-center">
           <h1
             className={
               isRC

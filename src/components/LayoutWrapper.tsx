@@ -37,9 +37,21 @@ export default function LayoutWrapper({ header, footer, children, template }: La
   // double the offset and leave a blank gap below the nav.
   const usesSpacerHeader = template === 'modern' || template === 'custom-one';
 
-  // Force blue header on ALL pages except homepage and community pages (which have transparent hero overlays)
-  // Skip for rcsothebys-custom since its header is always cream/static
-  const needsForceBackground = !isRCSothebys && !isHomepage && !isCommunityPage;
+  // Modern/custom-one templates render every content page with a full-bleed
+  // hero, so the nav stays transparent and overlays the hero image — the same
+  // treatment the homepage and community pages already use. Only functional
+  // app pages that have no hero (the listings search UI and the dashboard)
+  // keep a solid nav pushed down by a spacer.
+  const isDashboard = pathname?.startsWith('/dashboard') ?? false;
+  const isFullBleedTemplate = usesSpacerHeader;
+  const isSolidNavPage = isListingsPage || isDashboard;
+
+  // Force a solid header background. For full-bleed templates this is limited
+  // to the functional pages above; for the other templates keep the previous
+  // behavior (solid on everything except the homepage and community pages).
+  const needsForceBackground = isFullBleedTemplate
+    ? isSolidNavPage
+    : !isRCSothebys && !isHomepage && !isCommunityPage;
 
   // Clone header element to add forceBackground prop if needed
   const headerWithProps = needsForceBackground && isValidElement(header)

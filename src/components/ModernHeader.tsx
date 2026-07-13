@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createImageUrlBuilder } from '@sanity/image-url';
@@ -63,7 +62,6 @@ export default function ModernHeader({
   email,
   forceBackground = false,
 }: ModernHeaderProps) {
-  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
@@ -71,8 +69,6 @@ export default function ModernHeader({
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLElement>(null);
-  const isHomepage = pathname === '/';
-  const isCommunityPage = pathname?.startsWith('/communities/');
 
   const showScrolledState = isScrolled || forceBackground;
 
@@ -453,8 +449,9 @@ export default function ModernHeader({
         </div>
       )}
 
-      {/* Header Spacer - hidden on pages with full-bleed heroes */}
-      {!isHomepage && !isCommunityPage && (
+      {/* Header Spacer - only on solid-nav pages (functional pages without a
+          hero). Transparent pages let their full-bleed hero sit behind the nav. */}
+      {forceBackground && (
         <div className="h-[120px] lg:h-[120px]" />
       )}
 
