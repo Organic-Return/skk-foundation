@@ -1178,3 +1178,35 @@ address {
   letter-spacing: 0.11em;
   color: var(--rc-navy);
 }
+
+/*
+ * Hero entrance.
+ *
+ * The hero content used to be rendered opacity-0 and revealed by a React state
+ * flag after hydration, which meant Largest Contentful Paint could not happen
+ * until JS ran — LCP measured 9.1s on mobile, exactly equal to Time to
+ * Interactive. Driving the same animation from CSS lets the browser paint on
+ * the first frame.
+ */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

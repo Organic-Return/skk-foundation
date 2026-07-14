@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface ModernHeroProps {
@@ -12,18 +12,12 @@ interface ModernHeroProps {
 
 export default function ModernHero({
   videoUrl,
-  fallbackImageUrl = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=80',
+  fallbackImageUrl,
   title = 'Exceptional Properties',
   subtitle = 'Discover a curated collection of the world\'s finest residences',
 }: ModernHeroProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +38,7 @@ export default function ModernHero({
             loop
             muted
             playsInline
+            preload="metadata"
             className="w-full h-full object-cover"
             style={{ filter: 'brightness(0.85) contrast(1.1)' }}
             poster={fallbackImageUrl}
@@ -68,30 +63,20 @@ export default function ModernHero({
       {/* Content - Omega/Rolex inspired centered layout */}
       <div className="relative z-10 h-full flex flex-col justify-end items-center text-center px-6 pb-24 md:pb-32">
         {/* Title - Patek Philippe inspired typography */}
-        <h1
-          className={`modern-hero-title text-white mb-6 max-w-4xl transition-all duration-1000 delay-400 ${
-            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
+        <h1 className="modern-hero-title text-white mb-6 max-w-4xl hero-rise" style={{ animationDelay: '0.1s' }}>
           {title}
         </h1>
 
         {/* Subtitle - Clean, minimal */}
         <p
-          className={`text-white/70 text-sm md:text-base font-light tracking-[0.15em] uppercase max-w-xl mb-12 transition-all duration-1000 delay-500 ${
-            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
+          className="text-white/70 text-sm md:text-base font-light tracking-[0.15em] uppercase max-w-xl mb-12 hero-rise"
+          style={{ animationDelay: '0.2s' }}
         >
           {subtitle}
         </p>
 
         {/* Search Box - Modern minimal style */}
-        <form
-          onSubmit={handleSearch}
-          className={`w-full max-w-xl transition-all duration-1000 delay-600 ${
-            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
+        <form onSubmit={handleSearch} className="w-full max-w-xl hero-rise" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-stretch">
             <input
               type="text"

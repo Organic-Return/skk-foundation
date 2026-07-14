@@ -5,6 +5,7 @@ import { getHomepageData, getAllCommunities } from '@/lib/homepage';
 import { getSettings, getBranding, getBaseUrl } from '@/lib/settings';
 import { getNewestHighPricedByCities, getNewestHighPricedByCity } from '@/lib/listings';
 import StructuredData from '@/components/StructuredData';
+import { postalAddressSchema } from '@/lib/seo';
 import HomepageContent from '@/components/HomepageContent';
 
 const builder = createImageUrlBuilder(client);
@@ -41,12 +42,28 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+const PRIMARY_AGENT_QUERY = `*[_type == "teamMember" && inactive != true && defined(name)] | order(featured desc)[0]{
+  name, "slug": slug.current, title, email, phone, image
+}`;
+
 export default async function Home() {
-  const [homepage, settings, branding] = await Promise.all([
+  const [homepage, settings, branding, agent] = await Promise.all([
     getHomepageData(),
     getSettings(),
     getBranding(),
+    client.fetch<{ name?: string; slug?: string; title?: string; email?: string; phone?: string; image?: unknown } | null>(
+      PRIMARY_AGENT_QUERY,
+      {},
+      { next: { revalidate: 300 } }
+    ),
   ]);
+
+  const primaryAgent = agent?.name
+    ? {
+        ...agent,
+        imageUrl: agent.image ? urlFor(agent.image).width(800).url() : undefined,
+      }
+    : null;
 
   const hero = homepage?.hero;
   const teamSection = homepage?.teamSection;
@@ -98,29 +115,79 @@ export default async function Home() {
   const baseUrl = await getBaseUrl();
 
   // RealEstateAgent / Organization structured data
+  // Identity is emitted as three separate entities linked by @id, each with a
+  // STRING @type.
+  //
+  // This used to be one node typed `["RealEstateAgent", "Organization"]`. That
+  // is valid schema.org, but an array @type is invisible to parsers that only
+  // match a string — auditors reported "no Organization or Person schema" and
+  // "no LocalBusiness schema" on a page that had both. AI extractors are no
+  // more sophisticated. Splitting costs nothing and reads correctly either way.
+  const socialProfiles = [
+    settings?.socialMedia?.facebook,
+    settings?.socialMedia?.instagram,
+    settings?.socialMedia?.twitter,
+    settings?.socialMedia?.linkedin,
+    settings?.socialMedia?.youtube,
+  ].filter(Boolean);
+
+  const postalAddress = postalAddressSchema(settings?.contactInfo?.address);
+  const logoUrl = branding?.logo ? urlFor(branding.logo).width(600).url() : undefined;
+
   const organizationSchema = {
     '@context': 'https://schema.org',
-    '@type': ['RealEstateAgent', 'Organization'],
+    '@type': 'Organization',
     '@id': `${baseUrl}#organization`,
     name: settings?.title || 'Real Estate',
     description: settings?.description,
     url: baseUrl,
-    telephone: settings?.contactInfo?.phone,
-    email: settings?.contactInfo?.email,
-    address: settings?.contactInfo?.address
-      ? {
-          '@type': 'PostalAddress',
-          streetAddress: settings.contactInfo.address,
-        }
-      : undefined,
-    sameAs: [
-      settings?.socialMedia?.facebook,
-      settings?.socialMedia?.instagram,
-      settings?.socialMedia?.twitter,
-      settings?.socialMedia?.linkedin,
-      settings?.socialMedia?.youtube,
-    ].filter(Boolean),
+    ...(logoUrl ? { logo: logoUrl } : {}),
+    ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
+    ...(settings?.contactInfo?.email ? { email: settings.contactInfo.email } : {}),
+    ...(postalAddress ? { address: postalAddress } : {}),
+    ...(socialProfiles.length > 0 ? { sameAs: socialProfiles } : {}),
   };
+
+  // RealEstateAgent is a subtype of LocalBusiness — this is the local-business
+  // entity, kept distinct from the brand above and linked back to it.
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateAgent',
+    '@id': `${baseUrl}#localbusiness`,
+    name: settings?.title || 'Real Estate',
+    url: baseUrl,
+    ...(logoUrl ? { image: logoUrl } : {}),
+    ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
+    ...(settings?.contactInfo?.email ? { email: settings.contactInfo.email } : {}),
+    ...(postalAddress ? { address: postalAddress } : {}),
+    areaServed: ['Aspen', 'Snowmass Village', 'Basalt', 'Carbondale', 'Roaring Fork Valley'],
+    parentOrganization: { '@id': `${baseUrl}#organization` },
+  };
+
+  // Person schema for the agent — what answers "who is Stacey K Kelly?" for
+  // search engines and LLMs. Absent entirely before.
+  const personSchema = primaryAgent?.name
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        '@id': `${baseUrl}#agent`,
+        name: primaryAgent.name,
+        url: `${baseUrl}/team/${primaryAgent.slug}`,
+        ...(primaryAgent.title ? { jobTitle: primaryAgent.title } : {}),
+        ...(primaryAgent.imageUrl ? { image: primaryAgent.imageUrl } : {}),
+        ...(primaryAgent.email ? { email: primaryAgent.email } : {}),
+        ...(primaryAgent.phone ? { telephone: primaryAgent.phone } : {}),
+        ...(postalAddress ? { address: postalAddress } : {}),
+        worksFor: { '@id': `${baseUrl}#organization` },
+        knowsAbout: [
+          'Aspen real estate',
+          'Snowmass Village real estate',
+          'Luxury home sales',
+          'Roaring Fork Valley properties',
+        ],
+        ...(socialProfiles.length > 0 ? { sameAs: socialProfiles } : {}),
+      }
+    : null;
 
   // WebSite schema with SearchAction for sitelinks search box
   const websiteSchema = {
@@ -166,6 +233,8 @@ export default async function Home() {
   return (
     <>
       <StructuredData data={organizationSchema} />
+      <StructuredData data={localBusinessSchema} />
+      {personSchema && <StructuredData data={personSchema} />}
       <StructuredData data={websiteSchema} />
       <StructuredData data={webPageSchema} />
 

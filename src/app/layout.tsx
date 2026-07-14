@@ -13,6 +13,7 @@ import RCSothebysFooter from "@/components/RCSothebysFooter";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { AuthProvider } from "@/components/AuthProvider";
 import UTMCapture from "@/components/UTMCapture";
+import Analytics from "@/components/Analytics";
 import { getSettings, getBranding, getBaseUrl } from "@/lib/settings";
 import { getMainNavigation, getFooterNavigation, groupFooterLinks } from "@/lib/navigation";
 import { getAllCommunities } from "@/lib/homepage";
@@ -178,6 +179,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${bodoni.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} antialiased ${templateClass}`}>
+        <Analytics />
         <AuthProvider>
         <UTMCapture />
         <LayoutWrapper
