@@ -285,7 +285,21 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
   const baseUrl = await getBaseUrl();
   const listingUrl = `${baseUrl}${getListingHref(listing)}`;
-  const title = `${listing.address || 'Property'} | ${formatPrice(listing.list_price)} | ${listing.city}, ${listing.state}`;
+
+  // Land and some new-construction records carry no street address. Falling back
+  // to the bare word "Property" produced titles like
+  // "Property | $5,950,000 | Aspen, CO" — indistinguishable from every other
+  // address-less listing. Describe what it actually is instead.
+  const addressLabel =
+    listing.address?.trim() ||
+    [
+      `${listing.property_type || 'Property'} for Sale`,
+      listing.mls_number ? `MLS ${listing.mls_number}` : null,
+    ]
+      .filter(Boolean)
+      .join(' — ');
+
+  const title = `${addressLabel} | ${formatPrice(listing.list_price)} | ${listing.city}, ${listing.state}`;
   const rawDescription = listing.description
     || `${listing.bedrooms || 0} bed, ${listing.bathrooms || 0} bath ${listing.property_type || 'property'} for ${listing.status === 'Closed' ? 'sale (sold)' : 'sale'} in ${listing.city}, ${listing.state}. ${listing.square_feet ? `${listing.square_feet.toLocaleString()} sq ft.` : ''} MLS# ${listing.mls_number}`;
   const description = rawDescription.length > 300 ? rawDescription.slice(0, 297) + '...' : rawDescription;

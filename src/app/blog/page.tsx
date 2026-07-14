@@ -30,21 +30,32 @@ const urlFor = (source: any) =>
 
 const options = { next: { revalidate: 30 } };
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}): Promise<Metadata> {
+  const [baseUrl, siteName, params] = await Promise.all([
+    getBaseUrl(),
+    getSiteName(),
+    searchParams,
+  ]);
+  const page = Math.max(1, parseInt(params.page || '1', 10) || 1);
+
+  // ?page=1 through ?page=5 all canonicalised to /blog and shared one title.
+  // Page 1 folds into /blog (they are the same page); later pages self-canonical.
+  const canonical = page > 1 ? `${baseUrl}/blog?page=${page}` : `${baseUrl}/blog`;
+  const title = page > 1 ? `Blog — Page ${page} | ${siteName}` : `Blog | ${siteName}`;
+  const description =
+    page > 1
+      ? `Page ${page} of insights, market updates, and lifestyle content from Aspen, Snowmass, and the Roaring Fork Valley.`
+      : 'Insights, market updates, and lifestyle content from Aspen Snowmass and the Roaring Fork Valley.';
 
   return {
-    title: `Blog | ${siteName}`,
-    description: 'Insights, market updates, and lifestyle content from Aspen Snowmass and the Roaring Fork Valley.',
-    alternates: {
-      canonical: `${baseUrl}/blog`,
-    },
-    openGraph: {
-      title: `Blog | ${siteName}`,
-      description: 'Insights, market updates, and lifestyle content from Aspen Snowmass and the Roaring Fork Valley.',
-      type: 'website',
-      url: `${baseUrl}/blog`,
-    },
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, type: 'website', url: canonical },
   };
 }
 

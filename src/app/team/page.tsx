@@ -1,7 +1,7 @@
 import { client } from "@/sanity/client";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import type { Metadata } from "next";
-import { getBaseUrl, getSiteTemplate } from '@/lib/settings';
+import { getBaseUrl, getSiteName, getSiteTemplate } from '@/lib/settings';
 import TeamGrid from "@/components/TeamGrid";
 import PageHero from "@/components/PageHero";
 import StructuredData from "@/components/StructuredData";
@@ -38,10 +38,26 @@ const ALL_TEAM_QUERY = `*[_type == "teamMember" && defined(slug.current) && inac
 
 const options = { next: { revalidate: 60 } };
 
-export const metadata: Metadata = {
-  title: "Our Team",
-  description: "Meet our team of experienced real estate professionals.",
-};
+// Was a static metadata object with no canonical at all — the crawl reported
+// "-" for canonicalisation on this page.
+export async function generateMetadata(): Promise<Metadata> {
+  const [baseUrl, siteName, template] = await Promise.all([
+    getBaseUrl(),
+    getSiteName(),
+    getSiteTemplate(),
+  ]);
+  const path = template === 'rcsothebys-custom' ? 'agents' : 'team';
+  const title = `Meet the Team | Aspen & Snowmass Real Estate Agents | ${siteName}`;
+  const description =
+    'Meet the agents behind our Aspen and Snowmass Village real estate practice, serving buyers and sellers across the Roaring Fork Valley.';
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `${baseUrl}/${path}` },
+    openGraph: { title, description, type: 'website', url: `${baseUrl}/${path}` },
+  };
+}
 
 export default async function TeamPage() {
   const [members, template, baseUrl] = await Promise.all([

@@ -101,20 +101,34 @@ function generateListingsSchema(listings: MLSProperty[], baseUrl: string, total:
   return [itemListSchema, breadcrumbSchema, collectionPageSchema];
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: ListingsPageProps): Promise<Metadata> {
   const baseUrl = await getBaseUrl();
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page || '1', 10) || 1);
+
+  // The 73 crawlable ?page=N URLs previously shared one title, one description
+  // and one canonical pointing at /listings — 74 pages of duplicate metadata.
+  // Each page now describes itself and canonicalises to itself.
+  //
+  // Filter params (city, price, beds…) are deliberately excluded from the
+  // canonical: they generate unbounded combinations, and every filtered view
+  // should consolidate onto the plain paginated URL rather than be indexed.
+  const canonical = page > 1 ? `${baseUrl}/listings?page=${page}` : `${baseUrl}/listings`;
+
+  const title =
+    page > 1
+      ? `Aspen & Snowmass Homes for Sale — Page ${page}`
+      : 'Aspen & Snowmass Homes for Sale | Current MLS Listings';
+  const description =
+    page > 1
+      ? `Page ${page} of homes, condos, and land for sale across Aspen, Snowmass Village, Basalt, and Carbondale, Colorado.`
+      : 'Browse every home, condo, and land listing for sale across Aspen, Snowmass Village, Basalt, and Carbondale, Colorado. Search by price, beds, and neighborhood.';
 
   return {
-    title: 'Property Listings | MLS Listings',
-    description: 'Browse all available property listings from the MLS database.',
-    alternates: {
-      canonical: `${baseUrl}/listings`,
-    },
-    openGraph: {
-      title: 'Property Listings | MLS Listings',
-      description: 'Browse all available property listings from the MLS database.',
-      url: `${baseUrl}/listings`,
-    },
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical },
   };
 }
 
