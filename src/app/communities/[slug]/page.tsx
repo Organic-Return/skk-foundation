@@ -1,4 +1,5 @@
 import { PortableText, type SanityDocument, type PortableTextComponents } from "next-sanity";
+import { notFound } from 'next/navigation';
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { client, writeClient } from "@/sanity/client";
 import Link from "next/link";
@@ -20,6 +21,7 @@ import CustomOneLocalHighlights from "@/components/CustomOneLocalHighlights";
 import { fetchDemographicData, formatCurrency, formatNumber } from "@/lib/census";
 import { getCommunityPriceRange, getNewestHighPricedByCity, type MLSProperty } from "@/lib/listings";
 import { getSettings, getBaseUrl } from '@/lib/settings';
+import { communitySeo } from '@/lib/seo';
 
 const COMMUNITY_QUERY = `*[_type == "community" && slug.current == $slug][0]{
   ...,
@@ -81,11 +83,17 @@ export async function generateMetadata({
     ? urlFor(community.featuredImage)?.width(1200).height(630).url()
     : null;
 
-  // Use custom meta title or fall back to community title
-  const metaTitle = community.seo?.metaTitle || community.title;
+  // Sanity's seo.metaTitle wins when set. The fallback is keyword-targeted
+  // rather than the bare document name ("Basalt Colorado"), which targets
+  // nothing — see communitySeo().
+  const generated = communitySeo({
+    title: community.title,
+    communityType: community.communityType,
+  });
+  const metaTitle = community.seo?.metaTitle || generated.title;
 
-  // Use custom meta description or extract from body/description
-  let metaDescription = community.seo?.metaDescription || community.description || community.title;
+  let metaDescription =
+    community.seo?.metaDescription || community.description || generated.description;
   if (!community.seo?.metaDescription && !community.description && Array.isArray(community.body)) {
     const firstTextBlock = community.body.find((block: any) => block._type === 'block' && block.children);
     if (firstTextBlock) {
@@ -348,16 +356,18 @@ export default async function CommunityPage({
   const isCustomOne = template === 'custom-one';
   const variant = isLuxury ? 'luxury' : 'classic';
 
+  // A missing community rendered a "Community not found" body with HTTP 200 —
+  // another soft 404, same class as the root catch-all.
   if (!community) {
-    return (
-      <main className="container mx-auto min-h-screen max-w-3xl p-8">
-        <Link href="/" className="hover:underline">
-          ← Back to home
-        </Link>
-        <h1 className="text-[var(--color-sothebys-blue)] mb-8">Community not found</h1>
-      </main>
-    );
+    notFound();
   }
+
+  // H1 leads with the search term ("Basalt Real Estate"), not the bare
+  // document name ("Basalt Colorado"), which targets no query.
+  const { heading: communityHeading } = communitySeo({
+    title: community.title,
+    communityType: community.communityType,
+  });
 
   // Fetch demographic data if coordinates are available and demographics are missing or outdated
   let demographics = community.demographics;
@@ -534,7 +544,7 @@ export default async function CommunityPage({
         {/* Hero Section */}
         {heroImageUrl ? (
           <CommunityHero
-            title={community.title}
+            title={communityHeading}
             description={community.description}
             imageUrl={heroImageUrl}
             priceRange={priceRange || undefined}
@@ -545,7 +555,7 @@ export default async function CommunityPage({
           <div className={isLuxury ? 'bg-[var(--color-charcoal)] pt-28 pb-16 px-6' : 'bg-[var(--color-navy)] pt-28 pb-16 px-6'}>
             <div className="max-w-7xl mx-auto">
               <h1 className={isLuxury ? 'font-luxury text-white font-light tracking-wide' : 'text-white'}>
-                {community.title}
+                {communityHeading}
               </h1>
               {community.description && (
                 <p className={isLuxury ? 'text-lg text-white/70 mt-6 max-w-2xl font-luxury-body font-light' : 'text-lg text-white/80 mt-6 max-w-2xl'}>
