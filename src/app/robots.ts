@@ -12,12 +12,19 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   //
   // SEO auditing tools are allowlisted: the pre-launch build is exactly what
   // they need to crawl, and they don't publish an index.
+  //
+  // Order matters here, even though it shouldn't. A spec-compliant parser picks
+  // the most specific matching group regardless of position, but Semrush's
+  // checker reports the site as forbidden unless its record follows the
+  // wildcard — its own remediation text says to add the record "to the end of
+  // your robots.txt file". So: wildcard deny first, audit-bot allows last.
+  // Correct parsers are unaffected.
   const host = (await headers()).get('host') || '';
   if (isStagingHost(host)) {
     return {
       rules: [
-        ...AUDIT_BOT_USER_AGENTS.map((userAgent) => ({ userAgent, allow: '/' })),
         { userAgent: '*', disallow: '/' },
+        ...AUDIT_BOT_USER_AGENTS.map((userAgent) => ({ userAgent, allow: '/' })),
       ],
       sitemap: `${getCrawlBaseUrl(host, baseUrl)}/sitemap.xml`,
     };
