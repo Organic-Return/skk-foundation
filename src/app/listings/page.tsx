@@ -294,6 +294,36 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         mlsWithMatterport={Array.from(sirMedia.matterports)}
         teamAgentMlsIds={teamAgentIds}
       />
+
+      {/*
+        Crawlable pagination. The grid above paginates client-side, so without
+        real <a> links a crawler only ever sees page 1 — 24 of ~1,750 listings,
+        and no link path to the rest. Each /listings?page=N URL is genuinely
+        server-rendered, so these resolve to real pages.
+
+        sr-only rather than hidden: the links are exposed to assistive tech, not
+        buried for crawlers alone.
+      */}
+      {totalPages > 1 && (
+        <nav aria-label="Listing pages" className="sr-only">
+          <ul>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
+              const pageParams = new URLSearchParams(currentSearchParams);
+              if (pageNumber > 1) {
+                pageParams.set('page', String(pageNumber));
+              } else {
+                pageParams.delete('page');
+              }
+              const query = pageParams.toString();
+              return (
+                <li key={pageNumber}>
+                  <a href={`/listings${query ? `?${query}` : ''}`}>Page {pageNumber}</a>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      )}
     </>
   );
 }

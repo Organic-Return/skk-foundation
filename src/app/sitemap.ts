@@ -201,11 +201,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  // Fetch MLS listings (limit to recent/active for performance)
+  // Every listing detail page, not just the first slice. This used to fetch a
+  // single page of 500, which silently dropped ~2/3 of the ~1,750 listings —
+  // they have no crawlable link path either (the /listings grid paginates
+  // client-side), so a missing sitemap entry meant the page was undiscoverable.
+  //
+  // The sitemap spec allows 50,000 URLs; MAX_LISTINGS is a build-time guard, and
+  // hitting it is logged rather than silently truncating.
+  const LISTINGS_PAGE_SIZE = 500;
+  const MAX_LISTINGS = 25_000;
   let listingPages: MetadataRoute.Sitemap = [];
   try {
-    const { listings } = await getListings(1, 500, { excludedStatuses: ['Closed'] });
-    listingPages = listings.map((listing) => ({
+    const collected: Awaited<ReturnType<typeof getListings>>['listings'] = [];
+    let page = 1;
+    let totalPages = 1;
+
+    do {
+      const result = await getListings(page, LISTINGS_PAGE_SIZE, {
+        excludedStatuses: ['Closed'],
+      });
+      collected.push(...result.listings);
+      totalPages = result.totalPages || 1;
+      page += 1;
+    } while (page <= totalPages && collected.length < MAX_LISTINGS);
+
+    if (collected.length >= MAX_LISTINGS) {
+      console.warn(
+        `sitemap: listing cap of ${MAX_LISTINGS} reached; some listings are not in the sitemap`
+      );
+    }
+
+    listingPages = collected.map((listing) => ({
       url: `${baseUrl}${getListingHref(listing)}`,
       lastModified: listing.updated_at ? new Date(listing.updated_at) : new Date(),
       changeFrequency: 'daily' as const,
