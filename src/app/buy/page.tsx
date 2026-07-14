@@ -189,6 +189,7 @@ export default async function BuyPage() {
       name: agent?.name,
       url: `${baseUrl}/buy`,
       telephone: settings?.contactInfo?.phone || null,
+      address: settings?.contactInfo?.address || null,
       description: `${agent?.name} is an Aspen real estate agent helping buyers purchase luxury homes across Aspen, Snowmass, and the Roaring Fork Valley.`,
       knowsAbout: ["Aspen real estate", "Snowmass real estate", "Luxury home buyers", "Roaring Fork Valley properties"],
     }),

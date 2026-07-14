@@ -28,6 +28,49 @@ export function faqPageSchema(faqs?: Faq[]) {
   };
 }
 
+/**
+ * Build a PostalAddress from the free-text office address in Sanity settings,
+ * which is entered as newline-separated lines, e.g.
+ *
+ *   Snowmass Village Office
+ *   16 Kearns Road, Suite 110
+ *   Snowmass Village, CO 81615
+ *
+ * RealEstateAgent extends LocalBusiness, and `address` is a required field —
+ * omitting it is a structured-data error. Parsing is best-effort: the last line
+ * is treated as "City, ST ZIP" and everything before it as the street address.
+ * If it doesn't match that shape, the whole string becomes streetAddress rather
+ * than emitting nothing.
+ */
+export function postalAddressSchema(address?: string | null) {
+  if (!address?.trim()) return null;
+
+  const lines = address
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return null;
+
+  const cityStateZip = /^(.+?),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/.exec(lines[lines.length - 1]);
+  if (!cityStateZip) {
+    return { "@type": "PostalAddress", streetAddress: lines.join(", ") };
+  }
+
+  const [, city, region, postalCode] = cityStateZip;
+  // Drop a leading office label ("Snowmass Village Office") from the street.
+  const streetLines = lines.slice(0, -1);
+  const street = streetLines.length > 1 ? streetLines.slice(1).join(", ") : streetLines.join(", ");
+
+  return {
+    "@type": "PostalAddress",
+    ...(street ? { streetAddress: street } : {}),
+    addressLocality: city,
+    addressRegion: region,
+    postalCode,
+    addressCountry: "US",
+  };
+}
+
 /** RealEstateAgent schema for the primary agent. Returns null without a name. */
 export function realEstateAgentSchema(opts: {
   name?: string | null;
@@ -35,10 +78,13 @@ export function realEstateAgentSchema(opts: {
   image?: string | null;
   telephone?: string | null;
   description?: string | null;
+  /** Free-text office address from Sanity settings. Required by LocalBusiness. */
+  address?: string | null;
   areaServed?: string[];
   knowsAbout?: string[];
 }) {
   if (!opts.name) return null;
+  const address = postalAddressSchema(opts.address);
   return {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
@@ -47,6 +93,7 @@ export function realEstateAgentSchema(opts: {
     ...(opts.image ? { image: opts.image } : {}),
     ...(opts.telephone ? { telephone: opts.telephone } : {}),
     ...(opts.description ? { description: opts.description } : {}),
+    ...(address ? { address } : {}),
     areaServed: opts.areaServed || DEFAULT_AREA_SERVED,
     ...(opts.knowsAbout ? { knowsAbout: opts.knowsAbout } : {}),
   };
@@ -107,9 +154,7 @@ export function agentProfileSchema(opts: {
     ...(opts.description ? { description: opts.description } : {}),
     ...(opts.email ? { email: opts.email } : {}),
     ...(opts.telephone ? { telephone: opts.telephone } : {}),
-    ...(opts.address
-      ? { address: { "@type": "PostalAddress", streetAddress: opts.address } }
-      : {}),
+    ...(postalAddressSchema(opts.address) ? { address: postalAddressSchema(opts.address) } : {}),
     ...(opts.worksFor
       ? { worksFor: { "@type": "Organization", name: opts.worksFor } }
       : {}),

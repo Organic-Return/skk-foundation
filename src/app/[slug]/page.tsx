@@ -1,4 +1,5 @@
 import { PortableText, type SanityDocument, type PortableTextComponents } from "next-sanity";
+import { notFound } from 'next/navigation';
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
@@ -189,15 +190,11 @@ export default async function PostPage({
   const { slug } = await params;
   const post = await client.fetch<SanityDocument>(POST_QUERY, { slug }, options);
 
+  // This is the root catch-all, so any unmatched path lands here. Rendering a
+  // "Post not found" body with HTTP 200 makes every bad URL a soft 404 —
+  // /communities, /contact and /contact-us were all being indexed that way.
   if (!post) {
-    return (
-      <main className="container mx-auto min-h-screen max-w-3xl p-8">
-        <Link href="/blog" className="hover:underline">
-          ← Back to posts
-        </Link>
-        <h1 className="text-[var(--color-sothebys-blue)] mb-8">Post not found</h1>
-      </main>
-    );
+    notFound();
   }
 
   const postImageUrl = post.image
@@ -258,6 +255,13 @@ export default async function PostPage({
         </div>
       )}
       <div className="max-w-3xl mx-auto w-full px-8 pb-8 pt-8">
+        {/* The hero h1 only renders when the post has an image, so posts
+            without one had no h1 at all. Fall back to a plain heading. */}
+        {!postImageUrl && (
+          <h1 className="font-serif text-4xl md:text-5xl font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6">
+            {post.title}
+          </h1>
+        )}
         <div className="prose prose-lg max-w-none">
           <p className="my-[10px]">Published: {new Date(post.publishedAt).toLocaleDateString()}</p>
           {Array.isArray(post.body) && (

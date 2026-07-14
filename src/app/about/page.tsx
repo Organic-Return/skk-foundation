@@ -6,9 +6,9 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { getBaseUrl, getSiteName } from '@/lib/settings';
+import { getBaseUrl, getSettings, getSiteName } from '@/lib/settings';
 import StructuredData from '@/components/StructuredData';
-import { breadcrumbSchema } from '@/lib/seo';
+import { breadcrumbSchema, postalAddressSchema } from '@/lib/seo';
 
 const ABOUT_PAGE_QUERY = `*[_type == "aboutPage"][0]{
   heroTitle,
@@ -95,10 +95,11 @@ const portableTextComponents: PortableTextComponents = {
 };
 
 export default async function AboutPage() {
-  const [data, baseUrl, siteName] = await Promise.all([
+  const [data, baseUrl, siteName, settings] = await Promise.all([
     client.fetch<SanityDocument>(ABOUT_PAGE_QUERY, {}, options),
     getBaseUrl(),
     getSiteName(),
+    getSettings(),
   ]);
 
   if (!data) {
@@ -132,7 +133,16 @@ export default async function AboutPage() {
       ? { description: data.seo?.metaDescription || data.heroSubtitle }
       : {}),
     ...(heroImageUrl ? { primaryImageOfPage: heroImageUrl } : {}),
-    mainEntity: { '@type': 'RealEstateAgent', name: siteName, url: baseUrl },
+    mainEntity: {
+      '@type': 'RealEstateAgent',
+      name: siteName,
+      url: baseUrl,
+      ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
+      // address is required on LocalBusiness (RealEstateAgent extends it).
+      ...(postalAddressSchema(settings?.contactInfo?.address)
+        ? { address: postalAddressSchema(settings?.contactInfo?.address) }
+        : {}),
+    },
   };
   const aboutCrumbs = breadcrumbSchema([
     { name: 'Home', url: baseUrl },

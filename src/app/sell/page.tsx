@@ -189,6 +189,7 @@ export default async function SellPage() {
       name: agent?.name,
       url: `${baseUrl}/sell`,
       telephone: settings?.contactInfo?.phone || null,
+      address: settings?.contactInfo?.address || null,
       description: `${agent?.name} is an Aspen real estate agent who markets and sells luxury homes across Aspen, Snowmass, and the Roaring Fork Valley.`,
       knowsAbout: ["Aspen real estate", "Snowmass real estate", "Luxury home sales", "Home valuation"],
     }),

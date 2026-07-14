@@ -262,6 +262,13 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
       {schemas.map((schema, index) => (
         <StructuredData key={index} data={schema} />
       ))}
+      {/* The search UI has no visible heading, so the page shipped without an
+          h1. sr-only keeps the layout intact while giving the page a heading. */}
+      <h1 className="sr-only">
+        {total > 0
+          ? `Aspen & Snowmass Properties for Sale — ${total} Listings`
+          : 'Aspen & Snowmass Properties for Sale'}
+      </h1>
       <ListingsSearchClient
         initialListings={listings}
         initialTotal={total}
