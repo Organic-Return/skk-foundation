@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
 import { getBaseUrl } from '@/lib/settings';
-import { AUDIT_BOT_USER_AGENTS, getCrawlBaseUrl, isStagingHost } from '@/lib/crawlers';
+import { AI_BOT_USER_AGENTS, AUDIT_BOT_USER_AGENTS, getCrawlBaseUrl, isStagingHost } from '@/lib/crawlers';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const baseUrl = await getBaseUrl();
@@ -44,19 +44,31 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   //   /dashboard/       — agent dashboard
   //   /account/         — user account pages (if present)
   //   /private/         — any private folder
+  const privatePaths = [
+    '/api/',
+    '/studio/',
+    '/saved-properties/',
+    '/dashboard/',
+    '/account/',
+    '/private/',
+  ];
+
   return {
     rules: [
+      // AI crawlers are named explicitly. They would already match `*` below, so
+      // this is functionally identical — but it states the allowance outright so
+      // it cannot be revoked by accident. Note each group repeats the private
+      // paths: a crawler that matches a named group ignores `*` entirely, so
+      // omitting them here would expose /studio and /dashboard to these bots.
+      ...AI_BOT_USER_AGENTS.map((userAgent) => ({
+        userAgent,
+        allow: '/',
+        disallow: privatePaths,
+      })),
       {
         userAgent: '*',
         allow: '/',
-        disallow: [
-          '/api/',
-          '/studio/',
-          '/saved-properties/',
-          '/dashboard/',
-          '/account/',
-          '/private/',
-        ],
+        disallow: privatePaths,
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

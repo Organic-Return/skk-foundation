@@ -23,6 +23,30 @@ export const AUDIT_BOT_USER_AGENTS = [
   'Screaming Frog SEO Spider',
 ] as const;
 
+/**
+ * AI search and answer-engine crawlers, named explicitly in production
+ * robots.txt.
+ *
+ * They already match the permissive `User-agent: *` group, so this changes
+ * nothing functionally. It is here so the allowance is unambiguous to auditors
+ * and cannot be silently revoked by a future edit to the wildcard rule — being
+ * absent from AI answers is a slow, invisible failure.
+ */
+export const AI_BOT_USER_AGENTS = [
+  'GPTBot', // OpenAI training
+  'OAI-SearchBot', // ChatGPT search
+  'ChatGPT-User', // ChatGPT browsing on a user's behalf
+  'ClaudeBot',
+  'Claude-User',
+  'PerplexityBot',
+  'Perplexity-User',
+  'Google-Extended', // Gemini / AI Overviews grounding
+  'Applebot-Extended',
+  'meta-externalagent',
+  'Bytespider',
+  'cohere-ai',
+] as const;
+
 /** Strip everything but letters and digits, so "Screaming Frog SEO Spider/21.4" matches its token. */
 function normalize(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, '');
