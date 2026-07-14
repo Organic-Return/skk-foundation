@@ -1,8 +1,10 @@
 import { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
 import { client } from '@/sanity/client';
 import { getListings, getListingHref } from '@/lib/listings';
 import { getOffMarketListings } from '@/lib/offMarketListings';
 import { getBaseUrl } from '@/lib/settings';
+import { getCrawlBaseUrl } from '@/lib/crawlers';
 
 // Sanity queries for dynamic content
 const COMMUNITIES_QUERY = `*[_type == "community"]{ "slug": slug.current, _updatedAt }`;
@@ -18,7 +20,11 @@ const PARTNERS_QUERY = `*[_type == "affiliatedPartner" && active == true]{
 }`;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = await getBaseUrl();
+  // On staging, list staging URLs. settings.siteUrl points at the production
+  // domain, so emitting it here would send an auditing crawler off this build
+  // and onto the live site.
+  const host = (await headers()).get('host');
+  const baseUrl = getCrawlBaseUrl(host, await getBaseUrl());
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [

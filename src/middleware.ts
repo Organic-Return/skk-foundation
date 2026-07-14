@@ -1,16 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { isAuditBot, isStagingHost } from '@/lib/crawlers';
 
 const isRCSothebys = process.env.NEXT_PUBLIC_SITE_TEMPLATE === 'rcsothebys-custom';
-
-/**
- * Staging hosts must never be indexed. Production runs on a custom domain, so
- * any *.vercel.app host is a preview or staging build. These have been getting
- * crawled and competing with the real site in search results.
- */
-function isStagingHost(host: string | null): boolean {
-  return !!host && host.endsWith('.vercel.app');
-}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -28,7 +20,12 @@ export function middleware(request: NextRequest) {
   // An X-Robots-Tag header rather than a meta tag: reading the request host
   // inside generateMetadata would opt the entire site out of static
   // generation. Google honors the header identically.
-  if (isStagingHost(request.headers.get('host'))) {
+  //
+  // Audit tools are exempt. `nofollow` would stop them after the homepage, so
+  // sending it would make the allowlist in robots.txt pointless.
+  const staging = isStagingHost(request.headers.get('host'));
+  const auditing = isAuditBot(request.headers.get('user-agent'));
+  if (staging && !auditing) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
 

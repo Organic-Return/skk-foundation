@@ -1,17 +1,25 @@
 import { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
 import { getBaseUrl } from '@/lib/settings';
+import { AUDIT_BOT_USER_AGENTS, getCrawlBaseUrl, isStagingHost } from '@/lib/crawlers';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const baseUrl = await getBaseUrl();
 
   // Staging/preview builds run on *.vercel.app; production is a custom domain.
-  // Refuse crawling outright there so staging never competes with production
-  // in the index. (The middleware also sets X-Robots-Tag: noindex.)
+  // Search engines are refused outright so staging never competes with
+  // production in the index. (The middleware also sets X-Robots-Tag: noindex.)
+  //
+  // SEO auditing tools are allowlisted: the pre-launch build is exactly what
+  // they need to crawl, and they don't publish an index.
   const host = (await headers()).get('host') || '';
-  if (host.endsWith('.vercel.app')) {
+  if (isStagingHost(host)) {
     return {
-      rules: [{ userAgent: '*', disallow: '/' }],
+      rules: [
+        ...AUDIT_BOT_USER_AGENTS.map((userAgent) => ({ userAgent, allow: '/' })),
+        { userAgent: '*', disallow: '/' },
+      ],
+      sitemap: `${getCrawlBaseUrl(host, baseUrl)}/sitemap.xml`,
     };
   }
 
