@@ -39,8 +39,8 @@
   --color-sand: var(--color-sand);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-bodoni);
-  /* Luxury heading font - Cormorant Garamond (elegant high-contrast serif, closest to Atacama) */
-  --font-luxury: var(--font-atacama, var(--font-cormorant)), "Cormorant Garamond", Didot, "Bodoni MT", "Noto Serif Display", serif;
+  /* Luxury heading font - Cormorant Garamond (elegant high-contrast serif) */
+  --font-luxury: var(--font-cormorant), "Cormorant Garamond", Didot, "Bodoni MT", "Noto Serif Display", serif;
   /* Luxury body font - clean sans-serif */
   --font-luxury-body: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
@@ -90,19 +90,17 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 0.75em;
 }
 
-/* Atacama on the top three heading levels. h4-h6 stay on the existing serif.
+/* Noto Serif Display on the top three heading levels. h4-h6 stay on the
+   existing serif.
  *
- * Weight is set through font-weight rather than font-variation-settings. The
- * Dior axis block that used to live here pinned wght to 352, which read heavy:
- * Playfair, the previous heading face, is a Didone with hairline thins, while
- * Atacama's strokes are far more even, so it looks bolder at a nominally
- * lighter number. Dropping the axis block alone would have handed the weight
- * back to font-weight's 400 and made that worse, so the weight is stated here
- * explicitly and set lighter than either. */
+ * Chosen for its figures: they sit at cap height (1.009 measured), so numerals
+ * in a property address line up with the capitals beside them. The previous two
+ * faces both failed here — Playfair sets old-style figures that hop above and
+ * below the baseline, and the Atacama trial drew them at 85% of cap height with
+ * no OpenType feature to raise them. */
 h1, h2, h3 {
-  font-family: var(--font-atacama), var(--font-bodoni), Didot, Georgia, serif;
+  font-family: var(--font-noto-serif-display), var(--font-bodoni), Didot, Georgia, serif;
   font-weight: 300;
-  font-stretch: 100%;
   letter-spacing: -0.03rem;
 }
 
@@ -982,13 +980,13 @@ address {
   text-transform: none;
 }
 
-/* h1-h3 move to Atacama. This override is required, not redundant: the block
-   above is more specific than the bare `h1, h2, h3` rule and would otherwise
-   keep Playfair on every heading in this template. */
+/* h1-h3 move to Noto Serif Display. This override is required, not redundant:
+   the block above is more specific than the bare `h1, h2, h3` rule and would
+   otherwise keep Playfair on every heading in this template. */
 .custom-one-template h1,
 .custom-one-template h2,
 .custom-one-template h3 {
-  font-family: var(--font-atacama), var(--font-playfair), Georgia, serif;
+  font-family: var(--font-noto-serif-display), var(--font-playfair), Georgia, serif;
 }
 
 .custom-one-template h1 {
@@ -1011,7 +1009,6 @@ address {
 .custom-one-template h2,
 .custom-one-template h3 {
   font-weight: 300;
-  font-stretch: 100%;
   letter-spacing: -0.03rem;
 }
 
@@ -1027,9 +1024,8 @@ address {
    selector outranks every element rule above, so it needs the family and the
    type settings restated or the hero alone would keep the old treatment. */
 .custom-one-template .modern-hero-title {
-  font-family: var(--font-atacama), var(--font-playfair), Georgia, serif;
+  font-family: var(--font-noto-serif-display), var(--font-playfair), Georgia, serif;
   font-weight: 300;
-  font-stretch: 100%;
   letter-spacing: -0.03rem;
   text-transform: none;
   font-size: clamp(2.5rem, 5.5vw, 4.5rem);

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Bodoni_Moda, Cormorant_Garamond, Montserrat, Playfair_Display, Figtree } from "next/font/google";
-import localFont from "next/font/local";
+import { Inter, Bodoni_Moda, Cormorant_Garamond, Montserrat, Playfair_Display, Figtree, Noto_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import LuxuryHeader from "@/components/LuxuryHeader";
@@ -69,22 +68,20 @@ const playfairDisplay = Playfair_Display({
   display: "swap",
 });
 
-// Atacama - Premium display serif used for h1/h2.
+// Noto Serif Display - display serif for h1-h3.
 //
-// Both files are variable fonts carrying a wght axis of 100-900 (plus wdth and
-// CNTR), so one file covers the whole weight range and `font-light` on a
-// heading now resolves to a real 300 rather than being ignored.
-//
-// The directory is `public/Fonts` with a capital F. macOS is case-insensitive
-// so `public/fonts` resolves locally, but the Vercel build runs on Linux where
-// it does not — the casing here has to match the repo exactly.
-const atacama = localFont({
-  src: [
-    { path: '../../public/Fonts/Atacama Trial VAR-VF.ttf', weight: '100 900', style: 'normal' },
-    { path: '../../public/Fonts/Atacama Italic Trial VAR-VF.ttf', weight: '100 900', style: 'italic' },
-  ],
-  variable: '--font-atacama',
-  display: 'swap',
+// Replaces Atacama, whose trial cut drew its figures at 85% of cap height with
+// no OpenType feature to raise them, so numerals in an address sat visibly
+// short beside the capitals. Noto Serif Display sets them at cap height
+// (measured 1.009) and is close to Atacama in contrast and set width, so line
+// breaks barely move. OFL licensed, so nothing to buy and no font files in the
+// repo.
+const notoSerifDisplay = Noto_Serif_Display({
+  variable: "--font-noto-serif-display",
+  subsets: ["latin"],
+  weight: ["300", "400"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -183,7 +180,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${bodoni.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} ${atacama.variable} antialiased ${templateClass}`}>
+      <body className={`${inter.variable} ${bodoni.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} ${notoSerifDisplay.variable} antialiased ${templateClass}`}>
         <Analytics />
         <AuthProvider>
         <UTMCapture />
