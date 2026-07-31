@@ -166,11 +166,12 @@ export default function ModernNewestListings({
           }`}
         >
           <div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white mb-8">
               {title}
             </h2>
+            <div className="w-16 h-[1px] bg-[var(--modern-gold)]" />
             {subtitle && (
-              <p className="text-white/60 mt-4 text-base md:text-lg font-light">
+              <p className="text-white/60 mt-8 text-base md:text-lg font-light">
                 {subtitle}
               </p>
             )}

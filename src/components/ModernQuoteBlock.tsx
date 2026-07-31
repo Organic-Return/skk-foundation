@@ -79,10 +79,10 @@ export default function ModernQuoteBlock({
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mb-8" />
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white tracking-wide">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white tracking-wide mb-8">
             {title}
           </h2>
+          <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mb-8" />
         </div>
 
         {/* Written client testimonial - above stats */}
@@ -100,23 +100,16 @@ export default function ModernQuoteBlock({
               &ldquo;{testimonial.quote}&rdquo;
             </blockquote>
 
-            <p className="text-white text-sm uppercase tracking-[0.2em] mb-1">
+            <p className="mx-auto text-white text-sm uppercase tracking-[0.2em] mb-1">
               {testimonial.author}
             </p>
             {(testimonial.role || testimonial.location) && (
-              <p className="text-white/40 text-xs uppercase tracking-[0.15em]">
+              <p className="mx-auto text-white/40 text-xs uppercase tracking-[0.15em]">
                 {[testimonial.role, testimonial.location].filter(Boolean).join(' — ')}
               </p>
             )}
           </div>
         )}
-
-        {/* Gold line separator */}
-        <div
-          className={`w-24 h-[1px] bg-[var(--modern-gold)] mx-auto mb-16 md:mb-20 transition-all duration-1000 delay-500 ${
-            isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
-          }`}
-        />
 
         {/* Stats Grid - 4 items */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">

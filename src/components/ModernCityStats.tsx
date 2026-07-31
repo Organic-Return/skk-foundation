@@ -155,14 +155,14 @@ export default function ModernCityStats({
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          {isDark && <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mb-8" />}
           <h2
-            className={`text-3xl md:text-4xl lg:text-5xl font-light ${isDark ? 'text-white' : 'text-[var(--modern-dark)]'}`}
+            className={`text-3xl md:text-4xl lg:text-5xl font-light mb-8 ${isDark ? 'text-white' : 'text-[var(--modern-dark)]'}`}
           >
             {title}
           </h2>
+          <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto" />
           {subtitle && (
-            <p className={`mt-4 text-base md:text-lg font-light max-w-2xl mx-auto ${isDark ? 'text-white/60' : 'text-[var(--modern-gray)]'}`}>
+            <p className={`mt-8 text-base md:text-lg font-light max-w-2xl mx-auto ${isDark ? 'text-white/60' : 'text-[var(--modern-gray)]'}`}>
               {subtitle}
             </p>
           )}
@@ -238,14 +238,6 @@ export default function ModernCityStats({
           ))}
         </div>
 
-        {/* Bottom accent (dark variant only) */}
-        {isDark && (
-          <div
-            className={`w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mt-20 transition-all duration-1000 delay-500 ${
-              isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
-            }`}
-          />
-        )}
       </div>
     </section>
   );

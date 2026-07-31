@@ -63,14 +63,17 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
 
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center mb-12 md:mb-16 relative z-10">
+        {/* mx-auto matters: the global `p { max-width: 75ch }` shrinks this
+            box, and without it the eyebrow sits left of the heading. */}
         {eyebrow && (
-          <p className="text-center text-white/70 text-xs md:text-sm uppercase tracking-[0.25em] [text-indent:0.25em] mb-5">
+          <p className="mx-auto text-center text-white/70 text-xs md:text-sm uppercase tracking-[0.25em] [text-indent:0.25em] mb-5">
             {eyebrow}
           </p>
         )}
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.05]">
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.05] mb-8">
           {title}
         </h2>
+        <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto" />
       </div>
 
       {/* Carousel */}

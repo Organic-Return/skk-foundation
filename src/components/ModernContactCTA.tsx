@@ -136,15 +136,15 @@ export default function ModernContactCTA({ backgroundImage }: { backgroundImage?
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] mb-6">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] mb-8">
               Let&apos;s Start a Conversation
             </h2>
-            <p className="text-[var(--modern-gray)] text-base md:text-lg font-light leading-relaxed mb-8">
+            <div className="w-16 h-[1px] bg-[var(--modern-gold)] mb-8" />
+            <p className="text-[var(--modern-gray)] text-base md:text-lg font-light leading-relaxed">
               Whether you&apos;re looking to buy, sell, or simply explore the market,
               we&apos;re here to provide the guidance and expertise you deserve.
               Reach out and let us help you find your next chapter.
             </p>
-            <div className="w-16 h-[1px] bg-[var(--modern-gold)]" />
           </div>
 
           {/* Right Column - Form */}

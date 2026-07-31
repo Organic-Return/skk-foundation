@@ -147,9 +147,10 @@ export default function ModernFeaturedProperty({
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)]">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] mb-8">
             {headline}
           </h2>
+          <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto" />
         </div>
 
         {/* Property Card */}
