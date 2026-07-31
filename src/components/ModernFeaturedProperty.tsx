@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getListingHref } from '@/lib/listings';
-import Figures from '@/components/Figures';
 
 interface ModernFeaturedPropertyProps {
   mlsId?: string;
@@ -177,7 +176,7 @@ export default function ModernFeaturedProperty({
           <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
             {/* Address — leads the card, with the price beneath it */}
             <h3 className="text-[var(--modern-black)] text-xl md:text-2xl font-light mb-2 tracking-wide">
-              <Figures>{property.address}</Figures>
+              {property.address}
             </h3>
             <p className="text-[var(--modern-gray-light)] text-sm uppercase tracking-[0.2em] mb-4">
               {property.city}, {property.state}

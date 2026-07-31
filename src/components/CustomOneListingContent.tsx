@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { MLSProperty } from '@/lib/listings';
 import PropertyMap from '@/components/PropertyMap';
-import Figures from '@/components/Figures';
 
 interface ListingAgentInfo {
   name: string;
@@ -580,7 +579,7 @@ export default function CustomOneListingContent({
             </span>
           )}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-white tracking-wide mb-6 font-serif">
-            <Figures>{streetAddress}</Figures>
+            {streetAddress}
           </h1>
           <p className="text-white/80 text-lg md:text-xl tracking-[0.3em] uppercase">
             {cityState}
