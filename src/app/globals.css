@@ -90,9 +90,11 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 0.75em;
 }
 
-/* Atacama on the top two heading levels. Sub-headings stay on the existing
-   serif so the change is confined to h1/h2. */
-h1, h2 {
+/* Atacama on the top three heading levels. h3 is included because property
+   addresses are h3 ("45 Ermine Lane, Snowmass Village, CO 81615") and the
+   previous serifs set those numerals as old-style figures. h4-h6 stay on the
+   existing serif. */
+h1, h2, h3 {
   font-family: var(--font-atacama), var(--font-bodoni), Didot, Georgia, serif;
 }
 
@@ -972,11 +974,12 @@ address {
   text-transform: none;
 }
 
-/* h1/h2 move to Atacama. This override is required, not redundant: the block
-   above is more specific than the bare `h1, h2` rule and would otherwise keep
-   Playfair on every heading in this template. */
+/* h1-h3 move to Atacama. This override is required, not redundant: the block
+   above is more specific than the bare `h1, h2, h3` rule and would otherwise
+   keep Playfair on every heading in this template. */
 .custom-one-template h1,
-.custom-one-template h2 {
+.custom-one-template h2,
+.custom-one-template h3 {
   font-family: var(--font-atacama), var(--font-playfair), Georgia, serif;
 }
 
