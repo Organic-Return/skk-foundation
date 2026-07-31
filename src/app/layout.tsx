@@ -69,18 +69,23 @@ const playfairDisplay = Playfair_Display({
   display: "swap",
 });
 
-// Atacama - Premium luxury font (add font files to /public/fonts/)
-// Uncomment when font files are available:
-// const atacama = localFont({
-//   src: [
-//     { path: '../../public/fonts/Atacama-Light.woff2', weight: '300', style: 'normal' },
-//     { path: '../../public/fonts/Atacama-Regular.woff2', weight: '400', style: 'normal' },
-//     { path: '../../public/fonts/Atacama-Medium.woff2', weight: '500', style: 'normal' },
-//     { path: '../../public/fonts/Atacama-SemiBold.woff2', weight: '600', style: 'normal' },
-//   ],
-//   variable: '--font-atacama',
-//   display: 'swap',
-// });
+// Atacama - Premium display serif used for h1/h2.
+//
+// Both files are variable fonts carrying a wght axis of 100-900 (plus wdth and
+// CNTR), so one file covers the whole weight range and `font-light` on a
+// heading now resolves to a real 300 rather than being ignored.
+//
+// The directory is `public/Fonts` with a capital F. macOS is case-insensitive
+// so `public/fonts` resolves locally, but the Vercel build runs on Linux where
+// it does not — the casing here has to match the repo exactly.
+const atacama = localFont({
+  src: [
+    { path: '../../public/Fonts/Atacama Trial VAR-VF.ttf', weight: '100 900', style: 'normal' },
+    { path: '../../public/Fonts/Atacama Italic Trial VAR-VF.ttf', weight: '100 900', style: 'italic' },
+  ],
+  variable: '--font-atacama',
+  display: 'swap',
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const [settings, baseUrl] = await Promise.all([getSettings(), getBaseUrl()]);
@@ -178,7 +183,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${bodoni.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} antialiased ${templateClass}`}>
+      <body className={`${inter.variable} ${bodoni.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} ${atacama.variable} antialiased ${templateClass}`}>
         <Analytics />
         <AuthProvider>
         <UTMCapture />

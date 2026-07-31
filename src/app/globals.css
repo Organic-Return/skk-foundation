@@ -90,6 +90,12 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 0.75em;
 }
 
+/* Atacama on the top two heading levels. Sub-headings stay on the existing
+   serif so the change is confined to h1/h2. */
+h1, h2 {
+  font-family: var(--font-atacama), var(--font-bodoni), Didot, Georgia, serif;
+}
+
 /* H1: Hero/Page titles - 46px */
 h1 {
   display: block;
@@ -966,6 +972,14 @@ address {
   text-transform: none;
 }
 
+/* h1/h2 move to Atacama. This override is required, not redundant: the block
+   above is more specific than the bare `h1, h2` rule and would otherwise keep
+   Playfair on every heading in this template. */
+.custom-one-template h1,
+.custom-one-template h2 {
+  font-family: var(--font-atacama), var(--font-playfair), Georgia, serif;
+}
+
 .custom-one-template h1 {
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -986,9 +1000,10 @@ address {
   font-size: 15px;
 }
 
-/* Custom One hero overrides */
+/* Custom One hero overrides. The hero headline is an h1, and this class-based
+   rule outranks the element selectors above, so it needs the family too. */
 .custom-one-template .modern-hero-title {
-  font-family: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  font-family: var(--font-atacama), var(--font-playfair), Georgia, serif;
   font-weight: 400;
   letter-spacing: 0.02em;
   text-transform: none;
