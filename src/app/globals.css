@@ -1024,6 +1024,17 @@ address {
   font-variation-settings: "wght" 352, "wdth" 100, "CNTR" 28, "XHGT" 0;
 }
 
+/* Digit runs inside Atacama headings, emitted by <Figures>. Scaled by the
+   inverse of the font's figure height (measured at 0.847 of cap height) so
+   numerals line up with the capitals beside them. The lighter wght compensates
+   for the stroke thickening that comes with scaling up: 352 / 1.18 ~= 300.
+   line-height is pinned so the taller run cannot grow the line box. */
+.cap-figures {
+  font-size: 1.18em;
+  line-height: 1;
+  font-variation-settings: "wght" 300, "wdth" 100, "CNTR" 28, "XHGT" 0;
+}
+
 /* Custom One navigation typography */
 .custom-one-template .modern-nav {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
