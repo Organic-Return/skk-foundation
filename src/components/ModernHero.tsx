@@ -87,7 +87,7 @@ export default function ModernHero({
             />
             <button
               type="submit"
-              className="group flex items-center gap-3 px-8 py-4 bg-[var(--modern-gold)] text-[var(--modern-black)] text-xs uppercase tracking-[0.2em] font-medium hover:bg-[var(--modern-gold-light)] transition-all duration-300"
+              className="btn-modern-cta group shrink-0"
             >
               <span className="hidden sm:inline">Explore</span>
               <svg

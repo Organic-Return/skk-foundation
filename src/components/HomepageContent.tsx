@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 
+import type { QuoteBlockTestimonial } from '@/components/ModernQuoteBlock';
+
 // Classic template components
 import HeroWithSearch from '@/components/HeroWithSearch';
 import TeamSection from '@/components/TeamSection';
@@ -39,6 +41,24 @@ const ModernContactCTA = dynamic(() => import('@/components/ModernContactCTA'), 
 
 // Shared
 import VideoFeatureCarousel from '@/components/VideoFeatureCarousel';
+
+// Client testimonial videos shown until Homepage → Client Video Testimonials
+// Section is populated in Sanity, which overrides this list entirely.
+//
+// These five are the tenant's own testimonial recordings — they exist as
+// mux.videoAsset documents in this site's Sanity dataset (filenames "Anne
+// McGrath Testimonial", "Goodwins Testimonial", …) and all five playback IDs
+// still resolve on Mux. An earlier pass read them as another tenant's
+// placeholder content and dropped the fallback, which is what took the whole
+// "In their words" section off the homepage: the Sanity field it fell back to
+// has never been filled in, so `videos` came through empty.
+const DEFAULT_CLIENT_VIDEOS = [
+  { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo', eyebrow: 'CLIENT TESTIMONIAL', title: 'Anne McGrath' },
+  { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk', eyebrow: 'CLIENT TESTIMONIAL', title: 'The Goodwins' },
+  { playbackId: '9XsyyxEs6R4MBVAxffhQ4uJqGe8zBFb00NrpANTi0214s', eyebrow: 'CLIENT TESTIMONIAL', title: 'Michelle' },
+  { playbackId: 'VXGLYAMwFcrv5L6XqOn5H3gpdI4cJ2eJrYllpeUQjM4', eyebrow: 'CLIENT TESTIMONIAL', title: 'Danny' },
+  { playbackId: 'x9mZ0101LIHgpqkq2LLqTkki2U02nLDvCglG1xXUT015EK4', eyebrow: 'CLIENT TESTIMONIAL', title: 'Amy' },
+];
 
 interface HomepageContentProps {
   // Template selection from Sanity
@@ -132,6 +152,9 @@ interface HomepageContentProps {
     }>;
   };
 
+  // Written client testimonial shown inside the accolades block
+  featuredTestimonial?: QuoteBlockTestimonial | null;
+
   // Client video testimonials carousel ("In their words")
   clientVideosSection?: {
     enabled?: boolean;
@@ -166,6 +189,7 @@ export default function HomepageContent({
   featuredPropertiesCarousel,
   featuredCommunities,
   marketStatsSection,
+  featuredTestimonial,
   clientVideosSection,
   logoUrl,
   logoAlt,
@@ -194,22 +218,23 @@ export default function HomepageContent({
           primaryButtonLink={teamSection?.primaryButtonLink}
         />
 
-        {/* Client Video Feature Carousel — above the stats. Renders only once
-            real videos exist in Sanity: there is deliberately no fallback, since
-            placeholder "Client story" cards are worse than no section at all. */}
-        {clientVideosSection?.enabled !== false &&
-          clientVideosSection?.videos &&
-          clientVideosSection.videos.length > 0 && (
-            <VideoFeatureCarousel
-              eyebrow={clientVideosSection?.eyebrow || 'CLIENT STORIES'}
-              title={clientVideosSection?.title || 'In their words'}
-              videos={clientVideosSection.videos.map((v) => ({
-                playbackId: v.playbackId,
-                eyebrow: v.eyebrow,
-                title: v.title || '',
-              }))}
-            />
-          )}
+        {/* Client Video Feature Carousel — above the stats. Editable in Sanity;
+            falls back to the tenant's own testimonial videos until populated. */}
+        {clientVideosSection?.enabled !== false && (
+          <VideoFeatureCarousel
+            eyebrow={clientVideosSection?.eyebrow || 'CLIENT STORIES'}
+            title={clientVideosSection?.title || 'In their words'}
+            videos={
+              clientVideosSection?.videos && clientVideosSection.videos.length > 0
+                ? clientVideosSection.videos.map((v) => ({
+                    playbackId: v.playbackId,
+                    eyebrow: v.eyebrow,
+                    title: v.title || '',
+                  }))
+                : DEFAULT_CLIENT_VIDEOS
+            }
+          />
+        )}
 
         {/* Featured Property Section - above the "what sets apart" accolades block */}
         {featuredProperty?.enabled && (featuredProperty?.mlsId || agentMlsId) && (
@@ -226,6 +251,7 @@ export default function HomepageContent({
           <ModernQuoteBlock
             title={accolades.title || 'The Standard of Excellence'}
             items={accolades.items}
+            testimonial={featuredTestimonial}
           />
         )}
 

@@ -798,6 +798,56 @@ address {
   color: var(--modern-black);
 }
 
+/*
+ * Canonical call-to-action button for the modern / custom-one templates.
+ * Matches the contact form's "Send Message" submit exactly — black block,
+ * white uppercase label, gold on hover. Every action button on the homepage
+ * uses this so the page reads as one system.
+ *
+ * The transparent border keeps the box metrics identical to the -on-dark
+ * variant, which has to draw its edge so a black button stays visible on the
+ * black sections.
+ */
+.btn-modern-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2.5rem;
+  background-color: var(--modern-black);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+  cursor: pointer;
+}
+
+.btn-modern-cta:hover {
+  background-color: var(--modern-gold);
+  border-color: var(--modern-gold);
+  color: #fff;
+}
+
+.btn-modern-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-modern-cta:disabled:hover {
+  background-color: var(--modern-black);
+  border-color: transparent;
+}
+
+.btn-modern-cta-on-dark {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn-modern-cta-on-dark:hover {
+  border-color: var(--modern-gold);
+}
+
 /* Modern divider */
 .modern-divider {
   width: 60px;

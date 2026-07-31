@@ -173,18 +173,18 @@ export default function ModernFeaturedProperty({
 
           {/* Content */}
           <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-            {/* Price */}
-            <div className="text-[var(--modern-gold)] text-2xl md:text-3xl font-light tracking-wider mb-4">
-              {formatPrice(property.list_price)}
-            </div>
-
-            {/* Address */}
+            {/* Address — leads the card, with the price beneath it */}
             <h3 className="text-[var(--modern-black)] text-xl md:text-2xl font-light mb-2 tracking-wide">
               {property.address}
             </h3>
-            <p className="text-[var(--modern-gray-light)] text-sm uppercase tracking-[0.2em] mb-8">
+            <p className="text-[var(--modern-gray-light)] text-sm uppercase tracking-[0.2em] mb-4">
               {property.city}, {property.state}
             </p>
+
+            {/* Price */}
+            <div className="text-[var(--modern-gold)] text-2xl md:text-3xl font-light tracking-wider mb-8">
+              {formatPrice(property.list_price)}
+            </div>
 
             {/* Stats */}
             <div className="flex gap-8 mb-10 pb-10 border-b border-[var(--modern-gray-lighter)]">
@@ -212,7 +212,7 @@ export default function ModernFeaturedProperty({
             <div className="flex items-center justify-between">
               <Link
                 href={getListingHref(property)}
-                className="btn-modern-outline inline-flex items-center gap-3 self-start group"
+                className="btn-modern-cta self-start group"
               >
                 <span>{buttonText}</span>
                 <svg

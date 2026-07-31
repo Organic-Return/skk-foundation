@@ -245,18 +245,18 @@ export default function ModernNewestListings({
 
             {/* Content */}
             <div className="px-4 py-3">
-              {/* Price */}
-              <div className="text-[var(--modern-gold)] text-xl font-light tracking-wider mb-1">
-                {formatPrice(property.list_price)}
-              </div>
-
-              {/* Address */}
+              {/* Address — leads the card, with the price beneath it */}
               <p className="text-[var(--modern-black)] text-[11px] uppercase tracking-[0.15em] truncate">
                 {getStreetAddress(property.address, property.city, property.state, property.zip_code)}
               </p>
-              <p className="text-[var(--modern-gray-light)] text-[11px] uppercase tracking-[0.15em] mb-2">
+              <p className="text-[var(--modern-gray-light)] text-[11px] uppercase tracking-[0.15em]">
                 {[property.city, property.state].filter(Boolean).join(', ')}
               </p>
+
+              {/* Price */}
+              <div className="text-[var(--modern-gold)] text-xl font-light tracking-wider mt-1 mb-2">
+                {formatPrice(property.list_price)}
+              </div>
 
               {/* Stats */}
               <div className="flex gap-3 text-[var(--modern-gray)] text-xs pt-2 border-t border-[var(--modern-gray-lighter)]">
@@ -287,7 +287,7 @@ export default function ModernNewestListings({
       >
         <Link
           href="/listings"
-          className="inline-flex items-center gap-2 group text-white/70 hover:text-[var(--modern-gold)] transition-colors duration-300 text-sm uppercase tracking-[0.2em]"
+          className="btn-modern-cta btn-modern-cta-on-dark group"
         >
           <span>View All Properties</span>
           <svg

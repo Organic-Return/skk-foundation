@@ -116,7 +116,7 @@ export default function ModernAbout({
             {/* CTA Button */}
             <Link
               href={primaryButtonLink}
-              className="btn-modern-outline inline-flex items-center gap-3 group"
+              className="btn-modern-cta group"
             >
               <span>{primaryButtonText}</span>
               <svg

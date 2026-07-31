@@ -246,7 +246,7 @@ export default function ModernContactCTA({ backgroundImage }: { backgroundImage?
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-3 bg-[var(--modern-black)] text-white text-xs uppercase tracking-[0.2em] px-10 py-4 hover:bg-[var(--modern-gold)] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-modern-cta"
                 >
                   {submitting ? 'Sending...' : 'Send Message'}
                   {!submitting && (

@@ -105,6 +105,12 @@ interface HomepageData {
     metaImage?: any;
     keywords?: string[];
   };
+  featuredTestimonial?: {
+    quote?: string;
+    author?: string;
+    role?: string;
+    location?: string;
+  } | null;
 }
 
 const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
@@ -249,7 +255,11 @@ const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
       }
     },
     keywords
-  }
+  },
+  "featuredTestimonial": coalesce(
+    *[_type == "testimonialsPage"][0].featuredTestimonial,
+    *[_type == "testimonialsPage"][0].testimonials[featured == true][0]
+  ){ quote, author, role, location }
 }`;
 
 /**

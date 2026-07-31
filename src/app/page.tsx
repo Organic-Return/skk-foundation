@@ -263,6 +263,16 @@ export default async function Home() {
           backgroundImage: accolades?.backgroundImage,
           items: accolades?.items,
         }}
+        featuredTestimonial={
+          homepage?.featuredTestimonial?.quote && homepage?.featuredTestimonial?.author
+            ? {
+                quote: homepage.featuredTestimonial.quote,
+                author: homepage.featuredTestimonial.author,
+                role: homepage.featuredTestimonial.role,
+                location: homepage.featuredTestimonial.location,
+              }
+            : null
+        }
         agentMlsId={teamSection?.featuredTeamMember?.mlsAgentId}
         officeName={settings?.template === 'rcsothebys-custom' ? 'Retter' : undefined}
         heroMinPrice={settings?.template === 'rcsothebys-custom' ? 950000 : undefined}

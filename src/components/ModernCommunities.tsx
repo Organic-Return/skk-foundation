@@ -127,7 +127,7 @@ export default function ModernCommunities({
         >
           <Link
             href="/communities"
-            className="inline-flex items-center gap-2 group text-[var(--modern-gray)] hover:text-[var(--modern-gold)] transition-colors duration-300 text-sm uppercase tracking-[0.2em]"
+            className="btn-modern-cta group"
           >
             <span>Explore All Communities</span>
             <svg
