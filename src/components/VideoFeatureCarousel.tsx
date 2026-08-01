@@ -76,8 +76,11 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
           ref={scrollerRef}
           className="flex gap-4 md:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pl-6 pr-4 lg:pr-6 lg:pl-[max(2rem,calc(((100vw_-_80rem)/2_+_2rem)_*_0.7))] scroll-pl-6 lg:scroll-pl-[max(2rem,calc(((100vw_-_80rem)/2_+_2rem)_*_0.7))] pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
+          {/* Cards are 20% wider than they were (640→768, 760→912). The mobile
+              width stays at 90vw — it is already near full-bleed, and scaling it
+              up would only push the card past the viewport. */}
           {videos.map((video, i) => (
-            <div key={i} className="snap-start shrink-0 w-[90vw] sm:w-[640px] lg:w-[760px]">
+            <div key={i} className="snap-start shrink-0 w-[90vw] sm:w-[768px] lg:w-[912px]">
               <div className="relative aspect-video overflow-hidden bg-black">
                 <MuxPlayer
                   playbackId={video.playbackId}
