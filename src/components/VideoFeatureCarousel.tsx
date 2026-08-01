@@ -85,8 +85,19 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
                   className="absolute inset-0 w-full h-full"
                 />
               </div>
-              <div className="mt-5">
-                <h3 className="text-white text-xl md:text-2xl font-light">{video.title}</h3>
+              <div className="mt-2.5">
+                {/* The visible gap above the name is the heading's own
+                    margin-top, not this wrapper's — the two collapse and the
+                    heading's is larger. Halving it here halves the gap. It has
+                    to be an inline style: the global `h1-h6 { margin-top }` rule
+                    is unlayered, so a Tailwind mt-* class on a heading loses to
+                    it and would do nothing. */}
+                <h3
+                  className="text-white text-xl md:text-2xl font-light"
+                  style={{ marginTop: '0.75em' }}
+                >
+                  {video.title}
+                </h3>
                 {video.description && (
                   <p className="mt-3 text-white/60 text-sm md:text-base font-light leading-relaxed max-w-prose">
                     {video.description}
