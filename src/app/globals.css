@@ -862,6 +862,31 @@ address {
   border-color: var(--modern-gold);
 }
 
+/*
+ * Square icon control — the carousel chevrons. Same colour behaviour as
+ * .btn-modern-cta above (black block, hairline edge on dark, gold fill on
+ * hover), sized for an icon instead of a label, so the controls read as part of
+ * the same button family rather than a separate white-filled treatment.
+ */
+.btn-modern-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--modern-black);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+  cursor: pointer;
+}
+
+.btn-modern-control:hover {
+  background-color: var(--modern-gold);
+  border-color: var(--modern-gold);
+  color: #fff;
+}
+
 /* Modern divider */
 .modern-divider {
   width: 60px;

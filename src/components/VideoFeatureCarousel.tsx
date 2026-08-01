@@ -43,9 +43,9 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
       </div>
 
       {/* Header. The chevrons live here rather than over the carousel: floated
-          on the videos they landed on Mux's centred play button. This is the
-          same treatment as Newest to Market — square, hairline-bordered,
-          filling white on hover. */}
+          on the videos they landed on Mux's centred play button. They share
+          .btn-modern-control with Newest to Market, which carries the same gold
+          hover fill as the page's CTA buttons. */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-12 md:mb-16 relative z-10">
         <div className="text-center">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.05] mb-8">
@@ -59,7 +59,7 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
             type="button"
             onClick={() => scroll(-1)}
             aria-label="Previous videos"
-            className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
+            className="btn-modern-control"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
@@ -69,7 +69,7 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
             type="button"
             onClick={() => scroll(1)}
             aria-label="Next videos"
-            className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
+            className="btn-modern-control"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />

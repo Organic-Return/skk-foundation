@@ -187,7 +187,7 @@ export default function ModernNewestListings({
           <div className="flex justify-end gap-3 mt-10">
             <button
               onClick={() => scroll('left')}
-              className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
+              className="btn-modern-control"
               aria-label="Previous"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +196,7 @@ export default function ModernNewestListings({
             </button>
             <button
               onClick={() => scroll('right')}
-              className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
+              className="btn-modern-control"
               aria-label="Next"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
