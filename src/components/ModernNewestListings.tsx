@@ -161,24 +161,30 @@ export default function ModernNewestListings({
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-16 relative z-10">
         <div
-          className={`flex flex-col md:flex-row md:items-end md:justify-between gap-8 transition-all duration-1000 ${
+          className={`transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <div>
+          {/* Centred, matching every other full-width blade. The heading used to
+              be pinned left because it shared a flex row with the arrows; those
+              now sit on their own line below, as in the client story carousel. */}
+          <div className="text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-white mb-8">
               {title}
             </h2>
-            <div className="w-16 h-[1px] bg-[var(--modern-gold)]" />
+            <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto" />
             {subtitle && (
-              <p className="text-white/60 mt-8 text-base md:text-lg font-light">
+              // mx-auto is required, not decorative: the global `p { max-width:
+              // 75ch }` shrinks this box, and text-align alone would centre the
+              // text inside a box still sitting at the left edge.
+              <p className="mx-auto text-white/60 mt-8 text-base md:text-lg font-light">
                 {subtitle}
               </p>
             )}
           </div>
 
           {/* Navigation Arrows */}
-          <div className="flex gap-3">
+          <div className="flex justify-end gap-3 mt-10">
             <button
               onClick={() => scroll('left')}
               className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
