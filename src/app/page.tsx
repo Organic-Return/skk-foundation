@@ -306,11 +306,10 @@ export default async function Home() {
         }}
         clientVideosSection={{
           enabled: homepage?.clientVideosSection?.enabled,
-          eyebrow: homepage?.clientVideosSection?.eyebrow,
           title: homepage?.clientVideosSection?.title,
           videos: (homepage?.clientVideosSection?.videos || []).flatMap((v) => {
             const playbackId = v?.muxVideo?.asset?.playbackId;
-            return playbackId ? [{ playbackId, eyebrow: v?.eyebrow, title: v?.title }] : [];
+            return playbackId ? [{ playbackId, title: v?.title, description: v?.description }] : [];
           }),
         }}
         logoUrl={branding?.logo?.asset?.url ? urlFor(branding.logo).width(420).url() : undefined}

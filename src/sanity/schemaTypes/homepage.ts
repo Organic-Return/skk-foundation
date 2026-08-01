@@ -226,12 +226,6 @@ export const homepage = defineType({
           initialValue: true,
         },
         {
-          name: 'eyebrow',
-          title: 'Eyebrow (small label above the title)',
-          type: 'string',
-          initialValue: 'CLIENT STORIES',
-        },
-        {
           name: 'title',
           title: 'Section Title',
           type: 'string',
@@ -255,19 +249,21 @@ export const homepage = defineType({
                   description: 'Upload or select the testimonial video.',
                 },
                 {
-                  name: 'eyebrow',
-                  title: 'Card Eyebrow (small label under the video)',
+                  name: 'title',
+                  title: 'Client Name',
                   type: 'string',
-                  initialValue: 'CLIENT TESTIMONIAL',
+                  description: 'Shown under the video, e.g. "Michelle".',
                 },
                 {
-                  name: 'title',
-                  title: 'Card Title',
-                  type: 'string',
+                  name: 'description',
+                  title: 'Description',
+                  type: 'text',
+                  rows: 3,
+                  description: 'A few lines under the name. Around three lines reads best.',
                 },
               ],
               preview: {
-                select: { title: 'title', subtitle: 'eyebrow' },
+                select: { title: 'title', subtitle: 'description' },
                 prepare({ title, subtitle }: { title?: string; subtitle?: string }) {
                   return { title: title || 'Client video', subtitle };
                 },

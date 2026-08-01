@@ -91,12 +91,11 @@ interface HomepageData {
   };
   clientVideosSection?: {
     enabled?: boolean;
-    eyebrow?: string;
     title?: string;
     videos?: Array<{
       muxVideo?: { asset?: { playbackId?: string } };
-      eyebrow?: string;
       title?: string;
+      description?: string;
     }>;
   };
   seo?: {
@@ -235,14 +234,13 @@ const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
   },
   clientVideosSection {
     enabled,
-    eyebrow,
     title,
     videos[] {
       muxVideo {
         asset-> { playbackId }
       },
-      eyebrow,
-      title
+      title,
+      description
     }
   },
   seo {

@@ -5,17 +5,18 @@ import MuxPlayer from '@mux/mux-player-react'
 
 interface FeatureVideo {
   playbackId: string
-  eyebrow?: string
+  /** The client's name, shown under the video. */
   title: string
+  /** Short description under the name — around three lines. Optional. */
+  description?: string
 }
 
 interface VideoFeatureCarouselProps {
-  eyebrow?: string
   title: string
   videos: FeatureVideo[]
 }
 
-export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFeatureCarouselProps) {
+export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCarouselProps) {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [canLeft, setCanLeft] = useState(false)
   const [canRight, setCanRight] = useState(false)
@@ -63,13 +64,6 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
 
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center mb-12 md:mb-16 relative z-10">
-        {/* mx-auto matters: the global `p { max-width: 75ch }` shrinks this
-            box, and without it the eyebrow sits left of the heading. */}
-        {eyebrow && (
-          <p className="mx-auto text-center text-white/70 text-xs md:text-sm uppercase tracking-[0.25em] [text-indent:0.25em] mb-5">
-            {eyebrow}
-          </p>
-        )}
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.05] mb-8">
           {title}
         </h2>
@@ -92,12 +86,12 @@ export default function VideoFeatureCarousel({ eyebrow, title, videos }: VideoFe
                 />
               </div>
               <div className="mt-5">
-                {video.eyebrow && (
-                  <p className="text-white/50 text-xs uppercase tracking-[0.2em] mb-2">
-                    {video.eyebrow}
+                <h3 className="text-white text-xl md:text-2xl font-light">{video.title}</h3>
+                {video.description && (
+                  <p className="mt-3 text-white/60 text-sm md:text-base font-light leading-relaxed max-w-prose">
+                    {video.description}
                   </p>
                 )}
-                <h3 className="text-white text-xl md:text-2xl font-light">{video.title}</h3>
               </div>
             </div>
           ))}

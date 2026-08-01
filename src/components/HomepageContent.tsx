@@ -52,12 +52,15 @@ import VideoFeatureCarousel from '@/components/VideoFeatureCarousel';
 // placeholder content and dropped the fallback, which is what took the whole
 // "In their words" section off the homepage: the Sanity field it fell back to
 // has never been filled in, so `videos` came through empty.
+// `description` is deliberately absent: these cards render name-only until the
+// section is populated in Sanity, where each video has a Description field.
+// Inventing testimonial copy here would put words in a real client's mouth.
 const DEFAULT_CLIENT_VIDEOS = [
-  { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo', eyebrow: 'CLIENT TESTIMONIAL', title: 'Anne McGrath' },
-  { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk', eyebrow: 'CLIENT TESTIMONIAL', title: 'The Goodwins' },
-  { playbackId: '9XsyyxEs6R4MBVAxffhQ4uJqGe8zBFb00NrpANTi0214s', eyebrow: 'CLIENT TESTIMONIAL', title: 'Michelle' },
-  { playbackId: 'VXGLYAMwFcrv5L6XqOn5H3gpdI4cJ2eJrYllpeUQjM4', eyebrow: 'CLIENT TESTIMONIAL', title: 'Danny' },
-  { playbackId: 'x9mZ0101LIHgpqkq2LLqTkki2U02nLDvCglG1xXUT015EK4', eyebrow: 'CLIENT TESTIMONIAL', title: 'Amy' },
+  { playbackId: '7yu92MIHCn2WKgFPo3FXABLHeF7Pp5865oXQJlp6Dvo', title: 'Anne McGrath' },
+  { playbackId: 'N01q01jdd9nighexU3EIgTJs02aThZAgPyiVXF2AF4usEk', title: 'The Goodwins' },
+  { playbackId: '9XsyyxEs6R4MBVAxffhQ4uJqGe8zBFb00NrpANTi0214s', title: 'Michelle' },
+  { playbackId: 'VXGLYAMwFcrv5L6XqOn5H3gpdI4cJ2eJrYllpeUQjM4', title: 'Danny' },
+  { playbackId: 'x9mZ0101LIHgpqkq2LLqTkki2U02nLDvCglG1xXUT015EK4', title: 'Amy' },
 ];
 
 interface HomepageContentProps {
@@ -158,9 +161,8 @@ interface HomepageContentProps {
   // Client video testimonials carousel ("In their words")
   clientVideosSection?: {
     enabled?: boolean;
-    eyebrow?: string;
     title?: string;
-    videos?: Array<{ playbackId: string; eyebrow?: string; title?: string }>;
+    videos?: Array<{ playbackId: string; title?: string; description?: string }>;
   };
 
   // Branding logo for sections that need it
@@ -222,14 +224,13 @@ export default function HomepageContent({
             falls back to the tenant's own testimonial videos until populated. */}
         {clientVideosSection?.enabled !== false && (
           <VideoFeatureCarousel
-            eyebrow={clientVideosSection?.eyebrow || 'CLIENT STORIES'}
             title={clientVideosSection?.title || 'In their words'}
             videos={
               clientVideosSection?.videos && clientVideosSection.videos.length > 0
                 ? clientVideosSection.videos.map((v) => ({
                     playbackId: v.playbackId,
-                    eyebrow: v.eyebrow,
                     title: v.title || '',
+                    description: v.description,
                   }))
                 : DEFAULT_CLIENT_VIDEOS
             }
