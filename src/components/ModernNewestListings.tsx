@@ -35,6 +35,7 @@ export default function ModernNewestListings({
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const [index, setIndex] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -88,14 +89,38 @@ export default function ModernNewestListings({
     fetchProperties();
   }, [cities, limit]);
 
+  // One card's width plus the flex gap, measured from the DOM so it follows the
+  // 320px/380px breakpoints. Scrolling by this rather than a flat 400px keeps
+  // the position counter honest about what is on screen.
+  const cardStep = (el: HTMLDivElement) => {
+    const first = el.firstElementChild as HTMLElement | null;
+    if (!first) return 0;
+    return first.offsetWidth + (parseFloat(getComputedStyle(el).columnGap) || 0);
+  };
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const step = cardStep(el);
+      if (!step) return;
+      setIndex(Math.max(0, Math.min(properties.length - 1, Math.round(el.scrollLeft / step))));
+    };
+
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      el.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [properties.length]);
+
   const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 400;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: cardStep(el) * (direction === 'left' ? -1 : 1), behavior: 'smooth' });
   };
 
   const formatPrice = (price: number | null) => {
@@ -183,8 +208,9 @@ export default function ModernNewestListings({
             )}
           </div>
 
-          {/* Navigation Arrows */}
-          <div className="flex justify-end gap-3 mt-10">
+          {/* Navigation — centred on the section's axis with a position counter
+              between the chevrons, matching the client story carousel. */}
+          <div className="flex items-center justify-center gap-4 mt-10">
             <button
               onClick={() => scroll('left')}
               className="btn-modern-control"
@@ -194,6 +220,12 @@ export default function ModernNewestListings({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
+            <span
+              className="text-white/60 text-xs tracking-[0.2em] tabular-nums select-none"
+              aria-live="polite"
+            >
+              {index + 1} / {properties.length}
+            </span>
             <button
               onClick={() => scroll('right')}
               className="btn-modern-control"

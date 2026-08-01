@@ -863,10 +863,12 @@ address {
 }
 
 /*
- * Square icon control — the carousel chevrons. Same colour behaviour as
- * .btn-modern-cta above (black block, hairline edge on dark, gold fill on
- * hover), sized for an icon instead of a label, so the controls read as part of
- * the same button family rather than a separate white-filled treatment.
+ * Carousel chevron. A bare 48px icon with no box, matching the pagination
+ * controls on fourseasons.com, which pair them either side of a position
+ * counter on the centre axis. The box was dropped with the border: sitting
+ * centred under a heading, two outlined squares read as heavier than the
+ * heading itself. Gold is kept as the hover accent so the controls still
+ * belong to the same palette as the CTA buttons.
  */
 .btn-modern-control {
   display: inline-flex;
@@ -874,17 +876,15 @@ address {
   justify-content: center;
   width: 3rem;
   height: 3rem;
-  background-color: var(--modern-black);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 0;
+  transition: color 0.3s;
   cursor: pointer;
 }
 
 .btn-modern-control:hover {
-  background-color: var(--modern-gold);
-  border-color: var(--modern-gold);
-  color: #fff;
+  color: var(--modern-gold);
 }
 
 /* Modern divider */

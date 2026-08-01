@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import MuxPlayer from '@mux/mux-player-react'
 
 interface FeatureVideo {
@@ -18,13 +18,43 @@ interface VideoFeatureCarouselProps {
 
 export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCarouselProps) {
   const scrollerRef = useRef<HTMLDivElement>(null)
+  const [index, setIndex] = useState(0)
+
+  // One card's width plus the flex gap — the unit both the counter and the
+  // chevrons work in, measured from the DOM so it stays correct across the
+  // 90vw / 768px / 912px breakpoints without repeating those numbers here.
+  const cardStep = (el: HTMLDivElement) => {
+    const first = el.firstElementChild as HTMLElement | null
+    if (!first) return 0
+    return first.offsetWidth + (parseFloat(getComputedStyle(el).columnGap) || 0)
+  }
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+
+    const update = () => {
+      const step = cardStep(el)
+      if (!step) return
+      setIndex(Math.max(0, Math.min(videos.length - 1, Math.round(el.scrollLeft / step))))
+    }
+
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      el.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [videos.length])
 
   if (!videos || videos.length === 0) return null
 
+  // Advance exactly one card, so the counter always matches what is on screen.
   const scroll = (dir: number) => {
     const el = scrollerRef.current
     if (!el) return
-    el.scrollBy({ left: el.clientWidth * 0.85 * dir, behavior: 'smooth' })
+    el.scrollBy({ left: cardStep(el) * dir, behavior: 'smooth' })
   }
 
   return (
@@ -43,9 +73,9 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
       </div>
 
       {/* Header. The chevrons live here rather than over the carousel: floated
-          on the videos they landed on Mux's centred play button. They share
-          .btn-modern-control with Newest to Market, which carries the same gold
-          hover fill as the page's CTA buttons. */}
+          on the videos they landed on Mux's centred play button. They sit on the
+          section's centre axis with a position counter between them — a
+          right-justified pair under a centred heading broke that axis. */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-12 md:mb-16 relative z-10">
         <div className="text-center">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.05] mb-8">
@@ -54,7 +84,7 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
           <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto" />
         </div>
 
-        <div className="flex justify-end gap-3 mt-10">
+        <div className="flex items-center justify-center gap-4 mt-10">
           <button
             type="button"
             onClick={() => scroll(-1)}
@@ -65,6 +95,12 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
+          <span
+            className="text-white/60 text-xs tracking-[0.2em] tabular-nums select-none"
+            aria-live="polite"
+          >
+            {index + 1} / {videos.length}
+          </span>
           <button
             type="button"
             onClick={() => scroll(1)}
