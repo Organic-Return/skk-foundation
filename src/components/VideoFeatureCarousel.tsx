@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import MuxPlayer from '@mux/mux-player-react'
 
 interface FeatureVideo {
@@ -18,26 +18,6 @@ interface VideoFeatureCarouselProps {
 
 export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCarouselProps) {
   const scrollerRef = useRef<HTMLDivElement>(null)
-  const [canLeft, setCanLeft] = useState(false)
-  const [canRight, setCanRight] = useState(false)
-
-  useEffect(() => {
-    const el = scrollerRef.current
-    if (!el) return
-
-    const update = () => {
-      setCanLeft(el.scrollLeft > 8)
-      setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8)
-    }
-
-    update()
-    el.addEventListener('scroll', update, { passive: true })
-    window.addEventListener('resize', update)
-    return () => {
-      el.removeEventListener('scroll', update)
-      window.removeEventListener('resize', update)
-    }
-  }, [videos.length])
 
   if (!videos || videos.length === 0) return null
 
@@ -62,12 +42,40 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
         }} />
       </div>
 
-      {/* Header */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center mb-12 md:mb-16 relative z-10">
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.05] mb-8">
-          {title}
-        </h2>
-        <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto" />
+      {/* Header. The chevrons live here rather than over the carousel: floated
+          on the videos they landed on Mux's centred play button. This is the
+          same treatment as Newest to Market — square, hairline-bordered,
+          filling white on hover. */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-12 md:mb-16 relative z-10">
+        <div className="text-center">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.05] mb-8">
+            {title}
+          </h2>
+          <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto" />
+        </div>
+
+        <div className="flex justify-end gap-3 mt-10">
+          <button
+            type="button"
+            onClick={() => scroll(-1)}
+            aria-label="Previous videos"
+            className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => scroll(1)}
+            aria-label="Next videos"
+            className="w-12 h-12 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-[var(--modern-black)] transition-all duration-300"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Carousel */}
@@ -111,30 +119,6 @@ export default function VideoFeatureCarousel({ title, videos }: VideoFeatureCaro
           ))}
         </div>
 
-        {canLeft && (
-          <button
-            type="button"
-            onClick={() => scroll(-1)}
-            aria-label="Previous videos"
-            className="hidden md:flex absolute left-4 top-[38%] -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-sm transition-colors duration-300"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-        )}
-        {canRight && (
-          <button
-            type="button"
-            onClick={() => scroll(1)}
-            aria-label="Next videos"
-            className="hidden md:flex absolute right-4 top-[38%] -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-sm transition-colors duration-300"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
       </div>
     </section>
   )
