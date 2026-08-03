@@ -577,11 +577,21 @@ export default async function CommunityPage({
                 <div className="max-w-4xl mx-auto text-center">
                   {Array.isArray(community.body) && community.body.length > 0 && (
                     <>
-                      <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mb-8" />
-                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] mb-10 tracking-wide leading-tight">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-[var(--modern-black)] mb-8 tracking-wide leading-tight">
                         Discover {community.title}
                       </h2>
-                      <div className="max-w-none text-left mx-auto">
+                      <div className="w-16 h-[1px] bg-[var(--modern-gold)] mx-auto mb-10" />
+                      {/* The body sits in its own centred measure. Left as
+                          `max-w-none text-left` it inherited the global
+                          `p { max-width: 75ch }`, which capped each paragraph at
+                          648px inside this 896px box and pinned it to the left
+                          edge — 248px of white on one side, none on the other,
+                          under a heading that was centred. content-wide lifts
+                          that cap so the paragraph fills this measure instead,
+                          and mx-auto centres the column. The text itself stays
+                          ragged-right: centring five sentences would cost more
+                          in readability than it gains. */}
+                      <div className="content-wide max-w-2xl mx-auto text-left">
                         <PortableText value={community.body} components={isLuxury ? luxuryComponents : components} />
                       </div>
                     </>
