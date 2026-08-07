@@ -104,6 +104,12 @@ export interface MLSProperty {
   property_type: string | null;
   listing_date: string | null;
   sold_date: string | null;
+  /**
+   * Which side of a closed sale the agent acted on, derived from whether their
+   * MLS id appears in the listing-agent or buyer-agent columns. Only set for
+   * sold listings fetched per agent; undefined everywhere else.
+   */
+  representation?: 'buyer' | 'seller' | 'both' | null;
   days_on_market: number | null;
   description: string | null;
   features: Record<string, any>;
@@ -1380,6 +1386,28 @@ export interface AgentListingsResult {
   soldListings: MLSProperty[];
 }
 
+/**
+ * Which side of a closed sale the agent worked, from the four agent-id columns
+ * the sold query filters on. Returns null when none of them match, so a badge
+ * is only shown where the data actually says something.
+ */
+function representationFor(
+  row: Record<string, unknown>,
+  agentIds: (string | null | undefined)[]
+): 'buyer' | 'seller' | 'both' | null {
+  const ids = new Set(agentIds.filter(Boolean).map(String));
+  const matches = (col: string) => {
+    const v = row[col];
+    return v != null && ids.has(String(v));
+  };
+  const seller = matches('list_agent_mls_id') || matches('co_list_agent_mls_id');
+  const buyer = matches('buyer_agent_mls_id') || matches('co_buyer_agent_mls_id');
+  if (seller && buyer) return 'both';
+  if (seller) return 'seller';
+  if (buyer) return 'buyer';
+  return null;
+}
+
 export async function getListingsByAgentId(
   agentMlsId: string | null,
   soldAgentMlsId?: string,
@@ -1487,13 +1515,21 @@ export async function getListingsByAgentId(
               ]);
               return {
                 activeListings: dedup(activeByName.data || []).map(transformListing),
-                soldListings: dedup(soldByName.data || []).map(transformListing),
+                // Matched on list_agent_full_name, so these are listing-side by
+                // construction — the filter cannot surface a buyer-side sale.
+                soldListings: dedup(soldByName.data || []).map((row) => ({
+                  ...transformListing(row),
+                  representation: 'seller' as const,
+                })),
               };
             }
 
             return {
               activeListings: dedup(activeData).map(transformListing),
-              soldListings: dedup(soldData).map(transformListing),
+              soldListings: dedup(soldData).map((row) => ({
+                ...transformListing(row),
+                representation: representationFor(row, [agentMlsId, soldId]),
+              })),
             };
           } else {
             // No MLS ID — fall back to name-based query on list_agent_full_name
@@ -1525,7 +1561,11 @@ export async function getListingsByAgentId(
 
             return {
               activeListings: dedup(activeRes.data || []).map(transformListing),
-              soldListings: dedup(soldRes.data || []).map(transformListing),
+              // Name-filtered on list_agent_full_name — listing-side by construction.
+              soldListings: dedup(soldRes.data || []).map((row) => ({
+                ...transformListing(row),
+                representation: 'seller' as const,
+              })),
             };
           }
         })()

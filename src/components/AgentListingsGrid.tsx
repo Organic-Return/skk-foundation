@@ -137,6 +137,17 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
               Sold
             </span>
           )}
+          {/* Which side of the sale was represented. Only rendered when the MLS
+              agent columns actually say — never guessed from the sale alone. */}
+          {isSold && listing.representation && (
+            <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-light bg-white/90 text-[#1a1a1a]">
+              {listing.representation === 'both'
+                ? 'Represented Both Sides'
+                : listing.representation === 'buyer'
+                ? 'Represented Buyer'
+                : 'Represented Seller'}
+            </span>
+          )}
           {!isSold && (() => {
             const s = listing.status?.toLowerCase() || '';
             const label = s.startsWith('pending')
