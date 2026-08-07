@@ -181,15 +181,13 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
             formatPrice(listing.list_price)
           )}
         </div>
-        <p className="text-sm text-[#4a4a4a] dark:text-gray-300 font-light line-clamp-1">
+        {/* `listing.address` is the full address — "45 Ermine Lane, Snowmass
+            Village, CO 81615" — so the city/state/zip line that used to sit
+            here just repeated the tail of it. The mb-2 moved up from that
+            removed line to keep the gap to the stats row. */}
+        <p className="text-sm text-[#4a4a4a] dark:text-gray-300 font-light line-clamp-1 mb-2">
           {listing.address || 'Address not available'}
         </p>
-        {(listing.city || listing.state || listing.zip_code) && (
-          <p className="text-sm text-[#6a6a6a] dark:text-gray-400 font-light mb-2">
-            {[listing.city, listing.state].filter(Boolean).join(', ')}
-            {listing.zip_code && ` ${listing.zip_code}`}
-          </p>
-        )}
         <div className="flex items-center text-xs text-[#6a6a6a] dark:text-gray-400 font-light">
           {listing.bedrooms && (
             <>
@@ -225,9 +223,12 @@ export default function AgentListingsGrid({ activeListings, soldListings, mlsWit
 
   return (
     <div>
-      {/* Tabs */}
-      <div className="flex items-center gap-8 border-b border-gray-200 mb-10">
-        {hasActive && (
+      {/* Tabs — only when there is actually something to switch between. The
+          dedicated /exclusive-listings and /sold pages pass one empty list, so
+          this rendered a single tab that toggled nothing (plus its rule). Team
+          pages pass both and keep the toggle. */}
+      {hasActive && hasSold && (
+        <div className="flex items-center gap-8 border-b border-gray-200 mb-10">
           <button
             onClick={() => setActiveTab('active')}
             className={`pb-4 text-[11px] uppercase tracking-[0.2em] font-medium transition-colors ${
@@ -238,8 +239,6 @@ export default function AgentListingsGrid({ activeListings, soldListings, mlsWit
           >
             Active Listings ({activeListings.length})
           </button>
-        )}
-        {hasSold && (
           <button
             onClick={() => setActiveTab('sold')}
             className={`pb-4 text-[11px] uppercase tracking-[0.2em] font-medium transition-colors ${
@@ -250,8 +249,8 @@ export default function AgentListingsGrid({ activeListings, soldListings, mlsWit
           >
             Sold Properties ({soldListings.length})
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Grid */}
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${twoColumn ? '' : 'lg:grid-cols-3'} gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-12`}>

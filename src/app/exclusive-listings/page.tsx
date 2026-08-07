@@ -204,7 +204,7 @@ export default async function ExclusiveListingsPage() {
       </section>
 
       {/* SEO content — properties currently for sale */}
-      <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a] border-b border-[#e8e6e3] dark:border-gray-800">
+      <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a]">
         <div className="content-wide max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
           <h2 className="font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
             {contentTitle}
