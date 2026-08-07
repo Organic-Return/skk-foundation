@@ -172,8 +172,8 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
             <>
               {formatPrice(listing.sold_price)}
               {listing.list_price && listing.list_price !== listing.sold_price && (
-                <span className="text-sm text-[#6a6a6a] line-through ml-2">
-                  {formatPrice(listing.list_price)}
+                <span className="text-sm text-[#6a6a6a] dark:text-gray-400 font-light ml-2">
+                  Last Asking Price: {formatPrice(listing.list_price)}
                 </span>
               )}
             </>

@@ -41,6 +41,9 @@ interface GraphQLListing {
   property_type: string | null;
   property_sub_type: string | null;
   listing_date: string | null;
+  // mls_properties spells this `sold_date`; `close_date` is kept for the other
+  // shapes fed through transformListing.
+  sold_date: string | null;
   close_date: string | null;
   original_list_price: number | null;
   description: string | null;
@@ -302,7 +305,11 @@ function transformListing(row: GraphQLListing): MLSProperty {
     year_built: row.year_built ? parseInt(row.year_built, 10) : null,
     property_type: row.property_sub_type || row.property_type,
     listing_date: row.listing_date,
-    sold_date: row.close_date,
+    // Was `row.close_date` alone. mls_properties has no close_date column, so
+    // every Supabase-sourced sold listing carried a null sold_date and the
+    // /sold page's sort by it silently did nothing — leaving the rows in the
+    // query's price order.
+    sold_date: row.sold_date ?? row.close_date ?? null,
     days_on_market: daysOnMarket,
     description: row.description,
     features: {},
