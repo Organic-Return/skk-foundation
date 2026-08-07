@@ -108,11 +108,8 @@ export default function ModernFooter({
 
   const footerLinks = columns.length > 0 ? columns[0]?.links || defaultLinks : defaultLinks;
 
-  // Absolute black, not --modern-black: that token is the navy (#1a2332) used
-  // by the dark blades up the page. Scoped to this element rather than changed
-  // at the token, which those blades and the CTA buttons share.
   return (
-    <footer className="bg-black text-white">
+    <footer className="bg-[var(--modern-black)] text-white">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
