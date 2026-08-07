@@ -220,7 +220,11 @@ export default async function SoldPage() {
           <h1 className="font-serif text-white text-4xl md:text-6xl font-light tracking-wide mb-5">
             {who} Sold Properties
           </h1>
-          <p className="text-lg md:text-xl text-white/75 font-light max-w-2xl mx-auto leading-relaxed">
+          {/* 14px -> 18px. The `!` is load-bearing: `.custom-one-template p`
+              sets 14px from an unlayered rule, which outranks Tailwind's
+              layered text-* utilities — the `text-lg md:text-xl` that used to
+              be here never applied at all. */}
+          <p className="!text-[18px] text-white/75 font-light max-w-2xl mx-auto leading-relaxed">
             A record of recently closed transactions across Aspen, Snowmass, and the Roaring Fork Valley.
           </p>
 
