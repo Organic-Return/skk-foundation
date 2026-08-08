@@ -197,7 +197,7 @@ export default async function ExclusiveListingsPage() {
               sets 14px from an unlayered rule, which outranks Tailwind's
               layered text-* utilities — the `text-lg md:text-xl` that used to
               be here never applied at all. */}
-          <p className="!text-[18px] text-white/75 font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="!text-[20px] md:!text-[24px] text-white/75 font-light max-w-2xl mx-auto leading-relaxed">
             A curated collection of properties currently represented across Aspen, Snowmass, and the Roaring Fork Valley.
           </p>
         </div>
