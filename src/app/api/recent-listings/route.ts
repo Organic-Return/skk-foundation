@@ -47,7 +47,7 @@ async function fetchRecentListings(city: string, limit: number): Promise<Listing
       status,
       property_type,
       listing_date,
-      preferred_photo,
+      photos,
       media
     `)
     .eq('city', city)
@@ -66,17 +66,23 @@ async function fetchRecentListings(city: string, limit: number): Promise<Listing
 
   // Transform the data to match the Listing interface
   return (data || []).map((listing) => {
-    // Build photos array from preferred_photo and media
+    // Prefer the dedicated `photos` array, exactly as transformListing does:
+    // `media` mixes photos with virtual-tour and video entries, so deriving
+    // images from it can yield a Matterport URL that renders as a broken image.
+    // Only fall back to media when `photos` is empty.
     const photos: string[] = [];
-    if (listing.preferred_photo) {
-      let pp = listing.preferred_photo;
-      if (pp.startsWith('//')) pp = `https:${pp}`;
-      photos.push(pp);
+    if (Array.isArray(listing.photos)) {
+      for (let p of listing.photos) {
+        if (typeof p === 'string' && p) {
+          if (p.startsWith('//')) p = `https:${p}`;
+          if (!photos.includes(p)) photos.push(p);
+        }
+      }
     }
     // Parse media — may be a JSON string, array of URL strings, or array of objects
     let mediaItems: any[] = [];
     const rawMedia: any = listing.media;
-    if (rawMedia) {
+    if (photos.length === 0 && rawMedia) {
       let parsed = rawMedia;
       if (typeof parsed === 'string') {
         try { parsed = JSON.parse(parsed); } catch { /* not JSON */ }
