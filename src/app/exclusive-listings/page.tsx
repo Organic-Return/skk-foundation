@@ -259,6 +259,15 @@ export default async function ExclusiveListingsPage() {
       {/* Listings grid */}
       <section className="py-16 md:py-24">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16">
+          {/* Section header. Centred with the rule beneath the heading, the
+              convention the rest of the site follows for full-width blades. */}
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
+              My Exclusive Listings
+            </h2>
+            <div className="w-16 h-[1px] bg-[var(--color-gold)] mx-auto" />
+          </div>
+
           {total > 0 ? (
             <AgentListingsGrid
               activeListings={activeListings}
