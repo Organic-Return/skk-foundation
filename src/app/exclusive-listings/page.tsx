@@ -204,12 +204,12 @@ export default async function ExclusiveListingsPage() {
       </section>
 
       {/* SEO content — properties currently for sale */}
-      <section className="py-12 md:py-16 bg-white dark:bg-[#1a1a1a]">
+      <section className="py-8 md:py-10 bg-white dark:bg-[#1a1a1a]">
         <div className="content-wide max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
           {/* !mt-0 is load-bearing: the global `h1-h6 { margin-top: 1.5em }`
               is unlayered, so it beats Tailwind mt-* and was adding ~66px on
               top of this section's padding. */}
-          <h2 className="!mt-0 font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
+          <h2 className="!mt-0 font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-6 tracking-wide">
             {contentTitle}
           </h2>
           {hasManagedContent ? (
@@ -260,12 +260,12 @@ export default async function ExclusiveListingsPage() {
       </section>
 
       {/* Listings grid */}
-      <section className="py-12 md:py-16">
+      <section className="py-8 md:py-10">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16">
           {/* Section header. Centred with the rule beneath the heading, the
               convention the rest of the site follows for full-width blades. */}
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="!mt-0 font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
+          <div className="text-center mb-8 md:mb-10">
+            <h2 className="!mt-0 font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-6 tracking-wide">
               My Exclusive Listings
             </h2>
             <div className="w-16 h-[1px] bg-[var(--color-gold)] mx-auto" />
