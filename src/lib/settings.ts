@@ -40,6 +40,11 @@ interface SiteSettings {
     keywords?: string[];
   };
   footer?: {
+    contactInfo?: {
+      phone?: string;
+      email?: string;
+      address?: string;
+    };
     portraitImage?: any;
     taglineImage?: any;
     brokerageLogo?: any;
@@ -76,6 +81,7 @@ const SETTINGS_QUERY = `*[_type == "settings" && _id == "settings"][0]{
     }
   },
   footer {
+    contactInfo,
     portraitImage {
       asset->
     },

@@ -62,7 +62,13 @@ interface ModernFooterProps {
     phone?: string;
     address?: string;
   };
-  footer?: FooterSettings;
+  footer?: FooterSettings & {
+    contactInfo?: {
+      phone?: string;
+      email?: string;
+      address?: string;
+    };
+  };
 }
 
 
@@ -108,6 +114,16 @@ export default function ModernFooter({
 
   const footerLinks = columns.length > 0 ? columns[0]?.links || defaultLinks : defaultLinks;
 
+  // Settings > Footer Settings > Footer Contact Information is what the footer
+  // shows. Settings > Contact Information stays the business record behind the
+  // structured data, and fills in per field where the footer leaves one blank,
+  // so the footer never silently loses a detail that used to be there.
+  const footerContact = {
+    phone: footer?.contactInfo?.phone || contactInfo?.phone,
+    email: footer?.contactInfo?.email || contactInfo?.email,
+    address: footer?.contactInfo?.address || contactInfo?.address,
+  };
+
   return (
     <footer className="bg-[var(--modern-black)] text-white">
       {/* Main Footer Content */}
@@ -131,25 +147,27 @@ export default function ModernFooter({
                 <span className="text-xl font-light tracking-wide">{siteTitle}</span>
               </Link>
             )}
-            {contactInfo?.address && (
-              <p className="text-white/40 text-sm font-light leading-relaxed mb-4">
-                {contactInfo.address}
+            {footerContact.address && (
+              <p className="text-white/40 text-sm font-light leading-relaxed mb-4 whitespace-pre-line">
+                {footerContact.address}
               </p>
             )}
-            {contactInfo?.phone && (
+            {footerContact.phone && (
+              // tel: strips everything but digits and a leading +, so the
+              // displayed number can carry whatever punctuation an editor types.
               <a
-                href={`tel:${contactInfo.phone}`}
+                href={`tel:${footerContact.phone.replace(/[^\d+]/g, '')}`}
                 className="block text-white/60 text-sm font-light hover:text-[var(--modern-gold)] transition-colors mb-1"
               >
-                {contactInfo.phone}
+                {footerContact.phone}
               </a>
             )}
-            {contactInfo?.email && (
+            {footerContact.email && (
               <a
-                href={`mailto:${contactInfo.email}`}
+                href={`mailto:${footerContact.email}`}
                 className="block text-white/60 text-sm font-light hover:text-[var(--modern-gold)] transition-colors"
               >
-                {contactInfo.email}
+                {footerContact.email}
               </a>
             )}
           </div>

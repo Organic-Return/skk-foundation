@@ -336,6 +336,37 @@ export const settings = defineType({
       },
       fields: [
         {
+          name: 'contactInfo',
+          title: 'Footer Contact Information',
+          type: 'object',
+          description:
+            'Contact details shown in the footer. Separate from Settings > Contact Information, which is the business record used for search-engine structured data — set these to show something different in the footer. Leave a field blank to fall back to the business record.',
+          options: {
+            collapsible: true,
+            collapsed: false,
+          },
+          fields: [
+            {
+              name: 'phone',
+              title: 'Phone',
+              type: 'string',
+              description:
+                'Displayed exactly as typed, e.g. "970-948-4695" or "(970) 948-4695". The click-to-call link strips punctuation automatically.',
+            },
+            {
+              name: 'email',
+              title: 'Email',
+              type: 'string',
+            },
+            {
+              name: 'address',
+              title: 'Address',
+              type: 'text',
+              rows: 3,
+            },
+          ],
+        },
+        {
           name: 'portraitImage',
           title: 'Portrait Image',
           type: 'image',
