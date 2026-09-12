@@ -36,7 +36,7 @@ interface FooterSettings {
   taglineImage?: any;
   brokerageLogo?: any;
   brokerageLogoAlt?: string;
-  affiliationLogos?: Array<{ _key?: string; image?: any; alt?: string; href?: string; openInNewTab?: boolean }>;
+  affiliationLogos?: Array<{ _key?: string; image?: any; alt?: string; href?: string; openInNewTab?: boolean; height?: number }>;
   legalDisclaimer?: string[];
 }
 
@@ -98,20 +98,25 @@ export default function ModernFooter({
 
   const logoUrl = logo ? urlFor(logo).width(300).url() : null;
 
-  // Affiliation badges are drawn 40px tall; request at 3x for retina and let
-  // the width follow the artwork's own aspect ratio.
+  // Affiliation badges. A wordmark and a square badge should not share a
+  // height — at 40px a square mark reads as a speck beside a 160px-wide word.
+  // Near-square artwork therefore defaults to 80px tall, wide artwork to 40px,
+  // and the CMS can override per logo. Requested at 3x for retina; width
+  // follows the artwork's own aspect ratio.
   const affiliationLogos = (footer?.affiliationLogos || [])
     .filter((a) => a?.image?.asset)
     .map((a, i) => {
       const dims = a.image?.asset?.metadata?.dimensions;
       const aspect = dims?.width && dims?.height ? dims.width / dims.height : 3;
+      const height = a.height && a.height > 0 ? a.height : aspect < 1.5 ? 80 : 40;
       return {
         key: a._key || String(i),
-        url: urlFor(a.image).height(120).url(),
+        url: urlFor(a.image).height(height * 3).url(),
         alt: a.alt || 'Affiliation logo',
         href: a.href || '',
         openInNewTab: !!a.openInNewTab,
-        width: Math.round(40 * aspect),
+        height,
+        width: Math.round(height * aspect),
       };
     });
 
@@ -348,8 +353,9 @@ export default function ModernFooter({
                     src={a.url}
                     alt={a.alt}
                     width={a.width}
-                    height={40}
-                    className="h-10 w-auto object-contain brightness-0 invert opacity-40 hover:opacity-80 transition-opacity duration-300"
+                    height={a.height}
+                    style={{ height: a.height }}
+                    className="w-auto object-contain brightness-0 invert opacity-40 hover:opacity-80 transition-opacity duration-300"
                   />
                 );
                 return a.href ? (

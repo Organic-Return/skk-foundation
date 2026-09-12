@@ -49,7 +49,7 @@ interface SiteSettings {
     taglineImage?: any;
     brokerageLogo?: any;
     brokerageLogoAlt?: string;
-    affiliationLogos?: Array<{ _key?: string; image?: any; alt?: string; href?: string; openInNewTab?: boolean }>;
+    affiliationLogos?: Array<{ _key?: string; image?: any; alt?: string; href?: string; openInNewTab?: boolean; height?: number }>;
     legalDisclaimer?: string[];
   };
   teamSync?: {
@@ -100,7 +100,8 @@ const SETTINGS_QUERY = `*[_type == "settings" && _id == "settings"][0]{
       },
       alt,
       href,
-      openInNewTab
+      openInNewTab,
+      height
     },
     legalDisclaimer
   },

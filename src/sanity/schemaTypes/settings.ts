@@ -416,6 +416,13 @@ export const settings = defineType({
                 { name: 'alt', title: 'Alt Text', type: 'string', description: 'Name of the affiliation, e.g. "Christie\'s International Real Estate Masters Circle".', validation: (Rule: any) => Rule.required() },
                 { name: 'href', title: 'Link', type: 'string', description: 'Internal path (e.g. /about/the-council) or full URL. Leave empty for no link.' },
                 { name: 'openInNewTab', title: 'Open in new tab', type: 'boolean', initialValue: false },
+                {
+                  name: 'height',
+                  title: 'Display height (px)',
+                  type: 'number',
+                  description: 'Leave empty for automatic sizing: near-square badges show at 80px tall, wide wordmarks at 40px.',
+                  validation: (Rule: any) => Rule.min(24).max(160),
+                },
               ],
               preview: { select: { title: 'alt', subtitle: 'href', media: 'image' } },
             },
