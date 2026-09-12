@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
       { source: '/christies-masters-circle', destination: '/about/christies-masters-circle', permanent: true },
       { source: '/the-council', destination: '/affiliated-partners/the-council', permanent: true },
       { source: '/about/the-council', destination: '/affiliated-partners/the-council', permanent: true },
+      // The Council is the only partner group on this site; the index and the
+      // retired Ski Town / Market Leaders sections all resolve to it.
+      { source: '/affiliated-partners', destination: '/affiliated-partners/the-council', permanent: true },
+      { source: '/affiliated-partners/ski-town/:path*', destination: '/affiliated-partners/the-council', permanent: true },
+      { source: '/affiliated-partners/market-leaders/:path*', destination: '/affiliated-partners/the-council', permanent: true },
     ];
   },
 

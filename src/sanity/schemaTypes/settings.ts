@@ -351,7 +351,7 @@ export const settings = defineType({
               title: 'Phone',
               type: 'string',
               description:
-                'Displayed exactly as typed, e.g. "970-948-4695" or "(970) 948-4695". The click-to-call link strips punctuation automatically.',
+                'Displayed exactly as typed, e.g. "970.948.4694" or "(970) 948-4694". The click-to-call link strips punctuation automatically.',
             },
             {
               name: 'email',

@@ -17,9 +17,7 @@ const PARTNER_BY_SLUG_QUERY = `*[_type == "affiliatedPartner" && active == true 
   title,
   company,
   location,
-  email,
-  phone,
-  website,
+  // email / phone / website deliberately not projected — see the list page.
   overridePhoto,
   overrideBio,
   specialties,
@@ -78,10 +76,6 @@ export default async function TheCouncilMemberPage({ params }: Props) {
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
           {/* Breadcrumb */}
           <div className="mb-8 text-center">
-            <Link href="/affiliated-partners" className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
-              Affiliated Partners
-            </Link>
-            <span className="text-white/30 mx-2">/</span>
             <Link href="/affiliated-partners/the-council" className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
               The Council
             </Link>
@@ -241,10 +235,10 @@ export default async function TheCouncilMemberPage({ params }: Props) {
       <section className="py-20 md:py-28 bg-[var(--color-navy)]">
         <div className="max-w-4xl mx-auto px-6 md:px-12 text-center">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-white tracking-wide mb-6">
-            Interested in Working Together?
+            Work with Stacey K. Kelly
           </h2>
           <p className="text-lg text-white/70 font-light mb-10 max-w-2xl mx-auto leading-relaxed">
-            Connect with {enrichedPartner.firstName} to explore real estate opportunities in {enrichedPartner.location || 'their market'}.
+            Stacey can connect you with {enrichedPartner.firstName} and the wider Council network for real estate in {enrichedPartner.location || 'their market'}.
           </p>
           {enrichedPartner.email ? (
             <a

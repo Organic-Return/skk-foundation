@@ -18,9 +18,8 @@ const COUNCIL_QUERY = `*[_type == "affiliatedPartner" && active == true && partn
   location,
   latitude,
   longitude,
-  email,
-  phone,
-  website,
+  // email / phone / website deliberately not projected: the directory is a
+  // members' document, so the public page shows name, brokerage and location only.
   overridePhoto,
   overrideBio,
   specialties,
@@ -110,13 +109,6 @@ export default async function TheCouncilPage() {
         )}
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
           {/* Breadcrumb */}
-          <div className="mb-6">
-            <Link href="/affiliated-partners" className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
-              Affiliated Partners
-            </Link>
-            <span className="text-white/30 mx-2">/</span>
-            <span className="text-white/80 text-sm font-light">The Council</span>
-          </div>
 
           {logoUrl && (
             <div className="mb-8">
@@ -206,9 +198,6 @@ export default async function TheCouncilPage() {
               <p className="text-[#6a6a6a] dark:text-gray-400 font-light mb-8">
                 Members will appear here shortly.
               </p>
-              <Link href="/affiliated-partners" className="text-[var(--color-gold)] hover:underline">
-                View All Partners
-              </Link>
             </div>
           ) : null}
         </div>

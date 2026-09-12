@@ -67,7 +67,7 @@ export const christiesMastersCircle = defineType({
       }],
     }),
 
-    // Christie's + SKK benefits
+    // Christie's + Stacey K. Kelly benefits
     defineField({ name: 'christieHeading', title: "Christie's Benefits Heading", type: 'string' }),
     defineField({ name: 'christieIntro', title: "Christie's Benefits Intro", type: 'text', rows: 3 }),
     defineField({

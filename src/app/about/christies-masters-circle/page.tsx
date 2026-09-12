@@ -57,7 +57,7 @@ const DEFAULT = {
     { title: "The power of the Christie's name", description: "Few brands open doors like Christie's. That prestige — and the buyer confidence it carries — accompanies every home she represents." },
     { title: "Local mastery, global reach", description: "She pairs Christie's worldwide platform with intimate, on-the-ground knowledge of Aspen, Snowmass, and the Roaring Fork Valley." },
   ],
-  christieHeading: "The advantage of listing with Christie's & SKK",
+  christieHeading: "The advantage of listing with Christie's & Stacey K. Kelly",
   christieIntro:
     "When you list with Stacey K. Kelly, your home is represented by the full marketing power of Christie's International Real Estate — tailored to your property and our market.",
   christieBenefits: [
@@ -66,13 +66,13 @@ const DEFAULT = {
     { title: "Luxury publications", description: "Christie's renowned luxury editorial — including Luxury Defined and Luxury Perspectives — places exceptional homes in front of a discerning, design-led audience." },
     { title: "A qualified buyer network", description: "Christie's connection to the worlds of art, collecting, and wealth means genuine access to high-net-worth buyers and a powerful global referral network." },
     { title: "Discretion and trust", description: "A reputation built over more than 250 years rests on confidentiality and integrity — the same standard Stacey brings to every client relationship." },
-    { title: "Local expertise", description: "SKK's deep knowledge of Aspen and Snowmass ensures your home is positioned and priced to perform in our unique market." },
+    { title: "Local expertise", description: "Stacey K. Kelly's deep knowledge of Aspen and Snowmass ensures your home is positioned and priced to perform in our unique market." },
   ],
   stats: [
     { value: "1766", label: "The year Christie's was founded" },
     { value: "Global", label: "Network of luxury brokerages" },
     { value: "By invitation", label: "Masters Circle membership" },
-    { value: "Aspen · Snowmass", label: "SKK local expertise" },
+    { value: "Aspen · Snowmass", label: "Stacey K. Kelly local expertise" },
   ],
   ctaHeading: "Experience the difference",
   ctaSubtitle:
@@ -114,7 +114,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const metaTitle = data?.seo?.metaTitle || "Christie's Masters Circle | Stacey K. Kelly";
   const metaDescription =
     data?.seo?.metaDescription ||
-    "Stacey K. Kelly is a member of the Christie's International Real Estate Masters Circle. Learn what it means, how it sets her apart, and the advantages of listing with Christie's and SKK in Aspen & Snowmass.";
+    "Stacey K. Kelly is a member of the Christie's International Real Estate Masters Circle. Learn what it means, how it sets her apart, and the advantages of listing with Christie's and Stacey K. Kelly in Aspen & Snowmass.";
   const ogImageUrl = data?.seo?.ogImage
     ? urlFor(data.seo.ogImage)?.width(1200).height(630).url()
     : c.heroImage
@@ -259,7 +259,7 @@ export default async function ChristiesMastersCirclePage() {
         </div>
       </section>
 
-      {/* Christie's + SKK benefits */}
+      {/* Christie's + Stacey K. Kelly benefits */}
       <section className="py-16 md:py-24 bg-[#f8f7f5] dark:bg-[#141414]">
         <div className="max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
           <div className="max-w-3xl mb-14 md:mb-16">

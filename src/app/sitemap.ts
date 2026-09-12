@@ -95,22 +95,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/affiliated-partners`,
+      url: `${baseUrl}/affiliated-partners/the-council`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/affiliated-partners/market-leaders`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/affiliated-partners/ski-town`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
     },
     {
       url: `${baseUrl}/videos`,
@@ -192,9 +180,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Partner pages
   const partnerPages: MetadataRoute.Sitemap = (partners || []).map((partner) => {
     const slug = partner.slug || `${partner.firstName}-${partner.lastName}`.toLowerCase();
-    const pathPrefix = partner.partnerType === 'market_leader' ? 'market-leaders' : 'ski-town';
     return {
-      url: `${baseUrl}/affiliated-partners/${pathPrefix}/${slug}`,
+      url: `${baseUrl}/affiliated-partners/the-council/${slug}`,
       lastModified: new Date(partner._updatedAt),
       changeFrequency: 'monthly' as const,
       priority: 0.5,
