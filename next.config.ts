@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
 
+  // Short URLs for the affiliation pages, which live under /about/.
+  async redirects() {
+    return [
+      { source: '/christies-masters-circle', destination: '/about/christies-masters-circle', permanent: true },
+      { source: '/the-council', destination: '/about/the-council', permanent: true },
+    ];
+  },
+
   // Image optimization with modern formats
   images: {
     remotePatterns: [

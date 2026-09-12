@@ -36,6 +36,7 @@ interface FooterSettings {
   taglineImage?: any;
   brokerageLogo?: any;
   brokerageLogoAlt?: string;
+  affiliationLogos?: Array<{ _key?: string; image?: any; alt?: string; href?: string; openInNewTab?: boolean }>;
   legalDisclaimer?: string[];
 }
 
@@ -96,6 +97,23 @@ export default function ModernFooter({
       : LEGACY_LEGAL_DISCLAIMER;
 
   const logoUrl = logo ? urlFor(logo).width(300).url() : null;
+
+  // Affiliation badges are drawn 40px tall; request at 3x for retina and let
+  // the width follow the artwork's own aspect ratio.
+  const affiliationLogos = (footer?.affiliationLogos || [])
+    .filter((a) => a?.image?.asset)
+    .map((a, i) => {
+      const dims = a.image?.asset?.metadata?.dimensions;
+      const aspect = dims?.width && dims?.height ? dims.width / dims.height : 3;
+      return {
+        key: a._key || String(i),
+        url: urlFor(a.image).height(120).url(),
+        alt: a.alt || 'Affiliation logo',
+        href: a.href || '',
+        openInNewTab: !!a.openInNewTab,
+        width: Math.round(40 * aspect),
+      };
+    });
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -310,16 +328,45 @@ export default function ModernFooter({
             )}
           </div>
 
-          {/* Brokerage Logo */}
-          {brokerageLogoUrl && (
-            <div>
-              <Image
-                src={brokerageLogoUrl}
-                alt={brokerageLogoAlt}
-                width={180}
-                height={50}
-                className="brightness-0 invert opacity-40"
-              />
+          {/* Brokerage logo, then any affiliation badges from Settings > Footer
+              Settings > Affiliation Logos, all in the same muted-white
+              treatment. Each badge links where the CMS says. */}
+          {(brokerageLogoUrl || affiliationLogos.length > 0) && (
+            <div className="flex flex-wrap items-center gap-8">
+              {brokerageLogoUrl && (
+                <Image
+                  src={brokerageLogoUrl}
+                  alt={brokerageLogoAlt}
+                  width={180}
+                  height={50}
+                  className="brightness-0 invert opacity-40"
+                />
+              )}
+              {affiliationLogos.map((a) => {
+                const img = (
+                  <Image
+                    src={a.url}
+                    alt={a.alt}
+                    width={a.width}
+                    height={40}
+                    className="h-10 w-auto object-contain brightness-0 invert opacity-40 hover:opacity-80 transition-opacity duration-300"
+                  />
+                );
+                return a.href ? (
+                  <Link
+                    key={a.key}
+                    href={a.href}
+                    target={a.openInNewTab ? '_blank' : undefined}
+                    rel={a.openInNewTab ? 'noopener noreferrer' : undefined}
+                    aria-label={a.alt}
+                    className="inline-block"
+                  >
+                    {img}
+                  </Link>
+                ) : (
+                  <span key={a.key} className="inline-block">{img}</span>
+                );
+              })}
             </div>
           )}
         </div>

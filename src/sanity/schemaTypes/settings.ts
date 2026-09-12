@@ -401,6 +401,27 @@ export const settings = defineType({
             'Accessible name for the brokerage logo, e.g. "Christie\'s International Real Estate Aspen | Snowmass". Must name the brokerage actually shown in the logo.',
         },
         {
+          name: 'affiliationLogos',
+          title: 'Affiliation Logos',
+          type: 'array',
+          description:
+            'Membership / affiliation badges shown beside the brokerage logo in the footer (e.g. Masters Circle, The Council). Supply white-on-transparent artwork; the footer renders logos muted white. Each can link to a page.',
+          of: [
+            {
+              type: 'object',
+              name: 'affiliationLogo',
+              title: 'Affiliation Logo',
+              fields: [
+                { name: 'image', title: 'Logo', type: 'image', options: { hotspot: false }, validation: (Rule: any) => Rule.required() },
+                { name: 'alt', title: 'Alt Text', type: 'string', description: 'Name of the affiliation, e.g. "Christie\'s International Real Estate Masters Circle".', validation: (Rule: any) => Rule.required() },
+                { name: 'href', title: 'Link', type: 'string', description: 'Internal path (e.g. /about/the-council) or full URL. Leave empty for no link.' },
+                { name: 'openInNewTab', title: 'Open in new tab', type: 'boolean', initialValue: false },
+              ],
+              preview: { select: { title: 'alt', subtitle: 'href', media: 'image' } },
+            },
+          ],
+        },
+        {
           name: 'legalDisclaimer',
           title: 'Legal Disclaimer',
           type: 'array',

@@ -23,7 +23,8 @@ import { builder } from './builder'
 import { buildersPage } from './buildersPage'
 import { sitePage } from './sitePage'
 import { christiesMastersCircle } from './christiesMastersCircle'
+import { affiliationPage } from './affiliationPage'
 import { soldPage } from './soldPage'
 import { exclusiveListingsPage } from './exclusiveListingsPage'
 
-export const schemaTypes = [post, community, publication, settings, homepage, teamMember, accolade, navigation, mlsConfiguration, whyKlugProperties, testimonialsPage, affiliatedPartner, affiliatedPartnersPage, offMarketListing, propertyEnhancement, buyPage, sellPage, aboutPage, resourcesPage, relocationPage, firstTimeBuyersPage, builder, buildersPage, sitePage, christiesMastersCircle, soldPage, exclusiveListingsPage]
+export const schemaTypes = [post, community, publication, settings, homepage, teamMember, accolade, navigation, mlsConfiguration, whyKlugProperties, testimonialsPage, affiliatedPartner, affiliatedPartnersPage, offMarketListing, propertyEnhancement, buyPage, sellPage, aboutPage, resourcesPage, relocationPage, firstTimeBuyersPage, builder, buildersPage, sitePage, christiesMastersCircle, soldPage, exclusiveListingsPage, affiliationPage]
