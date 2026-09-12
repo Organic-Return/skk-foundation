@@ -207,7 +207,7 @@ export default function ModernHero({
               <ul
                 id="hero-search-suggestions"
                 role="listbox"
-                className="absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto bg-[var(--modern-black)]/95 backdrop-blur-md border border-white/20 text-left shadow-2xl"
+                className="absolute left-0 right-0 bottom-full z-50 mb-2 max-h-80 overflow-y-auto bg-[var(--modern-black)]/95 backdrop-blur-md border border-white/20 text-left shadow-2xl"
               >
                 {items.map((item, index) => {
                   const active = index === activeIndex;

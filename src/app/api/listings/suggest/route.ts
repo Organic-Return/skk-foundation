@@ -29,13 +29,18 @@ export async function GET(request: NextRequest) {
   let properties: { id: string; mlsNumber: string; street: string; city: string; state: string }[] = [];
   try {
     const res = await getListings(1, 6, { keyword: q, sort: 'newest', allowedStatuses: ACTIVE_STATUSES });
-    properties = (res.listings || []).map((l: any) => ({
-      id: l.id,
-      mlsNumber: l.mls_number || '',
-      street: l.address || l.street_name || '',
-      city: l.city || '',
-      state: l.state || '',
-    }));
+    properties = (res.listings || []).map((l: any) => {
+      const city: string = l.city || '';
+      let street: string = l.address || l.street_name || '';
+      // UnparsedAddress usually carries the town, state and ZIP already
+      // ("467 Snowmass Club Circle 23, Snowmass Village, CO 81615"); keep just
+      // the street part so the row can show the town once.
+      if (city) {
+        const idx = street.toLowerCase().indexOf(`, ${city.toLowerCase()}`);
+        if (idx > 0) street = street.slice(0, idx);
+      }
+      return { id: l.id, mlsNumber: l.mls_number || '', street, city, state: l.state || '' };
+    });
   } catch (error) {
     console.error('[suggest] listings error:', error instanceof Error ? error.message : error);
   }
