@@ -205,7 +205,7 @@ export default async function ExclusiveListingsPage() {
 
       {/* SEO content — properties currently for sale */}
       <section className="py-8 md:py-10 bg-white dark:bg-[#1a1a1a]">
-        <div className="content-wide max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
+        <div className="content-wide max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
           {/* Centred heading with the rule beneath, matching every other
               full-width block on the site. The body copy below stays
               left-aligned: centred prose is harder to read than a centred

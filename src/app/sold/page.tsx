@@ -14,14 +14,17 @@ const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAg
 
 const SOLD_PAGE_QUERY = `*[_type == "soldPage"][0]{
   stats[]{ value, label },
+  baseline{ soldCount, salesVolume, asOf },
   contentHeading,
   contentBody,
   seo{ metaTitle, metaDescription }
 }`;
 
 type SoldPageStat = { value?: string; label?: string };
+type SoldBaseline = { soldCount?: number; salesVolume?: number; asOf?: string };
 type SoldPageData = {
   stats?: SoldPageStat[];
+  baseline?: SoldBaseline;
   contentHeading?: string;
   contentBody?: unknown[];
   seo?: { metaTitle?: string; metaDescription?: string };
@@ -115,6 +118,7 @@ async function getSoldData() {
     agentEmail,
     heroImage,
     managedStats,
+    baseline: soldPage?.baseline || null,
     contentHeading: soldPage?.contentHeading || null,
     contentBody: soldPage?.contentBody || null,
     seo: soldPage?.seo || null,
@@ -157,12 +161,27 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SoldPage() {
-  const { soldListings, firstName, agentName, agentEmail, heroImage, managedStats, contentHeading, contentBody } =
+  const { soldListings, firstName, agentName, agentEmail, heroImage, managedStats, baseline, contentHeading, contentBody } =
     await getSoldData();
   const baseUrl = await getBaseUrl();
   const who = firstName ? `${firstName}'s` : "Our";
-  const totalSold = soldListings.length;
-  const totalVolume = soldListings.reduce((sum, l) => sum + (l.sold_price || l.list_price || 0), 0);
+
+  // Hero totals. With a baseline configured in Sanity, the figures are the
+  // verified totals as of a date plus every MLS sale closed after that date —
+  // so they move on their own as new closings land, and sales already inside
+  // the baseline are never counted twice. Without one, fall back to what the
+  // MLS feed alone can see.
+  const mlsSold = soldListings.length;
+  const mlsVolume = soldListings.reduce((sum, l) => sum + (l.sold_price || l.list_price || 0), 0);
+  const hasBaseline =
+    typeof baseline?.soldCount === "number" && typeof baseline?.salesVolume === "number" && !!baseline?.asOf;
+  const closedAfterBaseline = hasBaseline
+    ? soldListings.filter((l) => l.sold_date && new Date(l.sold_date) > new Date(`${baseline!.asOf}T23:59:59Z`))
+    : [];
+  const totalSold = hasBaseline ? baseline!.soldCount! + closedAfterBaseline.length : mlsSold;
+  const totalVolume = hasBaseline
+    ? baseline!.salesVolume! + closedAfterBaseline.reduce((sum, l) => sum + (l.sold_price || l.list_price || 0), 0)
+    : mlsVolume;
 
   // SEO content section — Sanity overrides the built-in default copy.
   const name = agentName || "Our team";
@@ -229,7 +248,7 @@ export default async function SoldPage() {
           </p>
 
           {/* Stats — third line in the hero */}
-          {stats.length > 0 && (totalSold > 0 || managedStats.length > 0) && (
+          {stats.length > 0 && (totalSold > 0 || managedStats.length > 0 || hasBaseline) && (
             <div className={`mt-12 md:mt-16 grid ${stats.length >= 4 ? "grid-cols-2 md:grid-cols-4" : stats.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-8 max-w-3xl mx-auto`}>
               {stats.map((stat, i) => (
                 <div key={i}>
@@ -247,11 +266,18 @@ export default async function SoldPage() {
       </section>
 
       {/* SEO content — what makes the agent great at selling Aspen & Snowmass real estate */}
-      <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a] border-b border-[#e8e6e3] dark:border-gray-800">
-        <div className="content-wide max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
-          <h2 className="font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
-            {contentTitle}
-          </h2>
+      <section className="py-8 md:py-10 bg-white dark:bg-[#1a1a1a]">
+        {/* Same treatment as /exclusive-listings: centred heading with the
+            rule beneath; the column is narrowed so the left-aligned body sits
+            centred under it rather than running as a full-width slab. !mt-0 is
+            load-bearing — the global `h1-h6 { margin-top }` is unlayered. */}
+        <div className="content-wide max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
+          <div className="text-center mb-10">
+            <h2 className="!mt-0 font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-6 tracking-wide">
+              {contentTitle}
+            </h2>
+            <div className="w-16 h-[1px] bg-[var(--color-gold)] mx-auto" />
+          </div>
           {hasManagedContent ? (
             <PortableText value={contentBody as never} components={portableTextComponents} />
           ) : (
@@ -308,7 +334,7 @@ export default async function SoldPage() {
       </section>
 
       {/* Sold listings grid */}
-      <section className="py-16 md:py-24">
+      <section className="py-8 md:py-10">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16">
           {totalSold > 0 ? (
             <AgentListingsGrid activeListings={[]} soldListings={soldListings} />

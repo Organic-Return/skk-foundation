@@ -34,6 +34,39 @@ export const soldPage = defineType({
       validation: (Rule) => Rule.max(4),
     }),
 
+    // Running totals: a verified starting point plus every MLS sale closed after
+    // it. This is what keeps "Properties Sold" and "Total Sales Volume" current
+    // without anyone editing numbers by hand.
+    defineField({
+      name: 'baseline',
+      title: 'Sales Totals Baseline',
+      type: 'object',
+      description:
+        'The hero totals = these baseline figures + every MLS sale that closed AFTER the "as of" date. Set the baseline to your verified career totals as of that date; new closings then add themselves automatically. Sales closed on or before the date are assumed to be inside the baseline and are not double-counted. (The Stats Band above, if filled in, overrides this entirely.)',
+      options: { collapsible: true, collapsed: false },
+      fields: [
+        {
+          name: 'soldCount',
+          title: 'Properties Sold (as of date)',
+          type: 'number',
+          validation: (Rule) => Rule.min(0).integer(),
+        },
+        {
+          name: 'salesVolume',
+          title: 'Total Sales Volume in dollars (as of date)',
+          type: 'number',
+          description: 'Whole dollars, no formatting — e.g. 451793276.',
+          validation: (Rule) => Rule.min(0),
+        },
+        {
+          name: 'asOf',
+          title: 'Totals are correct through (date)',
+          type: 'date',
+          description: 'Inclusive. MLS sales dated after this day are added on top.',
+        },
+      ],
+    }),
+
     // SEO content section — rendered below the hero.
     defineField({
       name: 'contentHeading',
