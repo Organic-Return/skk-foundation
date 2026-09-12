@@ -12,13 +12,15 @@ interface CTASectionProps {
   buttonLink?: string;
 }
 
-export default function CTASection({
-  title = 'Looking to Partner With Us?',
-  description = "We're always looking to connect with exceptional real estate professionals who share our commitment to excellence.",
-  buttonText = 'Get in Touch',
-  buttonAction = 'link',
-  buttonLink = '/contact-us',
-}: CTASectionProps) {
+export default function CTASection(props: CTASectionProps) {
+  // GROQ returns null (not undefined) for fields an editor left empty, and a
+  // null skips destructuring defaults — which put href={null} on a <Link> and
+  // failed the build the moment the partners page document existed.
+  const title = props.title ?? 'Looking to Partner With Us?';
+  const description = props.description ?? "We're always looking to connect with exceptional real estate professionals who share our commitment to excellence.";
+  const buttonText = props.buttonText ?? 'Get in Touch';
+  const buttonAction = props.buttonAction ?? 'link';
+  const buttonLink = props.buttonLink ?? '/contact-us';
   const [contactModalOpen, setContactModalOpen] = useState(false);
 
   return (

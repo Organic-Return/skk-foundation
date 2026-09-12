@@ -14,6 +14,7 @@ export const affiliatedPartnersPage = defineType({
           { title: 'Main Landing Page', value: 'main' },
           { title: 'Ski Town Partners', value: 'ski_town' },
           { title: 'Market Leaders', value: 'market_leaders' },
+          { title: 'The Council', value: 'the_council' },
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -120,6 +121,58 @@ export const affiliatedPartnersPage = defineType({
           rows: 4,
         },
       ],
+    }),
+    defineField({
+      name: 'theCouncilCard',
+      title: 'The Council Category Card',
+      type: 'object',
+      hidden: ({ parent }) => parent?.pageType !== 'main',
+      fields: [
+        {
+          name: 'title',
+          title: 'Card Title',
+          type: 'string',
+        },
+        {
+          name: 'description',
+          title: 'Card Description',
+          type: 'text',
+          rows: 2,
+        },
+        {
+          name: 'image',
+          title: 'Card Image',
+          type: 'image',
+          options: {
+            hotspot: true,
+          },
+        },
+        {
+          name: 'icon',
+          title: 'Custom Icon SVG',
+          type: 'text',
+          description: 'Optional: Paste SVG code for a custom icon (replaces default icon)',
+          rows: 4,
+        },
+      ],
+    }),
+    defineField({
+      name: 'introTitle',
+      title: 'Intro Section Title',
+      type: 'string',
+      description: 'Optional section between the hero and the member grid (used on The Council page).',
+    }),
+    defineField({
+      name: 'introText',
+      title: 'Intro Section Text',
+      type: 'text',
+      rows: 6,
+    }),
+    defineField({
+      name: 'introImage',
+      title: 'Intro Section Image',
+      type: 'image',
+      options: { hotspot: true },
     }),
 
     // Featured Section (only for main page)

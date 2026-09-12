@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: '/christies-masters-circle', destination: '/about/christies-masters-circle', permanent: true },
-      { source: '/the-council', destination: '/about/the-council', permanent: true },
+      { source: '/the-council', destination: '/affiliated-partners/the-council', permanent: true },
+      { source: '/about/the-council', destination: '/affiliated-partners/the-council', permanent: true },
     ];
   },
 

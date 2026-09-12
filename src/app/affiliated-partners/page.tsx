@@ -37,6 +37,7 @@ const PAGE_CONTENT_QUERY = `*[_type == "affiliatedPartnersPage" && pageType == "
   logo,
   skiTownCard,
   marketLeadersCard,
+  theCouncilCard,
   featuredSectionTitle,
   ctaTitle,
   ctaDescription,
@@ -73,6 +74,7 @@ export default async function AffiliatedPartnersPage() {
   // Count partners by type
   const skiTownCount = partners.filter(p => p.partnerType === 'ski_town').length;
   const marketLeaderCount = partners.filter(p => p.partnerType === 'market_leader').length;
+  const theCouncilCount = partners.filter(p => p.partnerType === 'the_council').length;
 
   // Enrich all partners with agent data for the map
   const enrichedPartners = await Promise.all(
@@ -95,6 +97,9 @@ export default async function AffiliatedPartnersPage() {
   // Get category card images
   const skiTownCardImageUrl = pageContent?.skiTownCard?.image
     ? urlFor(pageContent.skiTownCard.image)?.width(600).height(400).url()
+    : null;
+  const theCouncilCardImageUrl = pageContent?.theCouncilCard?.image
+    ? urlFor(pageContent.theCouncilCard.image)?.width(600).height(400).url()
     : null;
   const marketLeadersCardImageUrl = pageContent?.marketLeadersCard?.image
     ? urlFor(pageContent.marketLeadersCard.image)?.width(600).height(400).url()
@@ -142,7 +147,7 @@ export default async function AffiliatedPartnersPage() {
       {/* Partner Categories */}
       <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a]">
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Ski Town Partners Card */}
             <Link
               href="/affiliated-partners/ski-town"
@@ -236,6 +241,58 @@ export default async function AffiliatedPartnersPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-[var(--color-gold)] text-sm font-light">
                     {marketLeaderCount} {marketLeaderCount === 1 ? 'Partner' : 'Partners'}
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-[#1a1a1a] dark:text-white text-sm font-light group-hover:text-[var(--color-gold)] transition-colors">
+                    View All
+                    <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </Link>
+
+            {/* The Council Card */}
+            <Link
+              href="/affiliated-partners/the-council"
+              className="group relative overflow-hidden bg-[#f8f7f5] dark:bg-[#141414] border border-[#e8e6e3] dark:border-gray-800 hover:border-[var(--color-gold)]/50 transition-all duration-300"
+            >
+              {theCouncilCardImageUrl && (
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src={theCouncilCardImageUrl}
+                    alt="The Council"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#f8f7f5] dark:from-[#141414] to-transparent" />
+                </div>
+              )}
+              <div className={`relative z-10 p-10 md:p-14 ${theCouncilCardImageUrl ? 'pt-6 md:pt-8' : ''}`}>
+                {!theCouncilCardImageUrl && (
+                  pageContent?.theCouncilCard?.icon ? (
+                    <div
+                      className="w-16 h-16 mb-6 text-[var(--color-gold)]"
+                      dangerouslySetInnerHTML={{ __html: pageContent.theCouncilCard.icon }}
+                    />
+                  ) : (
+                    <div className="w-16 h-16 mb-6 text-[var(--color-gold)]">
+                      <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                  )
+                )}
+                <h2 className="text-2xl md:text-3xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-4">
+                  {pageContent?.theCouncilCard?.title || 'The Council'}
+                </h2>
+                <p className="text-[#6a6a6a] dark:text-gray-400 font-light mb-6 leading-relaxed">
+                  {pageContent?.theCouncilCard?.description ||
+                    "Christie's International Real Estate's invitation-only network of leading agents across North America."}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--color-gold)] text-sm font-light">
+                    {theCouncilCount} {theCouncilCount === 1 ? 'Member' : 'Members'}
                   </span>
                   <span className="inline-flex items-center gap-2 text-[#1a1a1a] dark:text-white text-sm font-light group-hover:text-[var(--color-gold)] transition-colors">
                     View All

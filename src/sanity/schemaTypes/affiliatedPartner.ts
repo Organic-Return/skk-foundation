@@ -15,6 +15,7 @@ export const affiliatedPartner = defineType({
         list: [
           { title: 'Ski Town', value: 'ski_town' },
           { title: 'Market Leader', value: 'market_leader' },
+          { title: 'The Council', value: 'the_council' },
         ],
         layout: 'radio',
       },

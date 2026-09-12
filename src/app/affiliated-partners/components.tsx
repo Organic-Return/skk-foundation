@@ -12,7 +12,7 @@ export const urlFor = (source: any) =>
 // Page content interface for CMS-driven page settings
 export interface PageContent {
   _id: string;
-  pageType: 'main' | 'ski_town' | 'market_leaders';
+  pageType: 'main' | 'ski_town' | 'market_leaders' | 'the_council';
   heroTitle?: string;
   heroDescription?: string;
   heroImage?: any;
@@ -29,6 +29,15 @@ export interface PageContent {
     image?: any;
     icon?: string;
   };
+  theCouncilCard?: {
+    title?: string;
+    description?: string;
+    image?: any;
+    icon?: string;
+  };
+  introTitle?: string;
+  introText?: string;
+  introImage?: any;
   featuredSectionTitle?: string;
   ctaTitle?: string;
   ctaDescription?: string;
@@ -47,7 +56,7 @@ export interface AgentData {
 
 export interface Partner {
   _id: string;
-  partnerType: 'ski_town' | 'market_leader';
+  partnerType: 'ski_town' | 'market_leader' | 'the_council';
   firstName: string;
   lastName: string;
   agentStaffId: string;
@@ -113,7 +122,8 @@ export async function enrichPartnerWithAgentData(partner: Partner): Promise<Enri
 
 // Helper to get partner detail URL
 export function getPartnerUrl(partner: Partner | EnrichedPartner): string {
-  const typeSlug = partner.partnerType === 'ski_town' ? 'ski-town' : 'market-leaders';
+  const typeSlug =
+    partner.partnerType === 'ski_town' ? 'ski-town' : partner.partnerType === 'the_council' ? 'the-council' : 'market-leaders';
   const nameSlug = partner.slug?.current || `${partner.firstName}-${partner.lastName}`.toLowerCase().replace(/\s+/g, '-');
   return `/affiliated-partners/${typeSlug}/${nameSlug}`;
 }
