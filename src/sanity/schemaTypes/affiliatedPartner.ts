@@ -10,7 +10,6 @@ export const affiliatedPartner = defineType({
       name: 'partnerType',
       title: 'Partner Type',
       type: 'string',
-      initialValue: 'the_council',
       description: 'Select the type of affiliated partner',
       options: {
         list: [
