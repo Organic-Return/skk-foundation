@@ -18,7 +18,7 @@ export const affiliatedPartner = defineType({
         layout: 'radio',
       },
       validation: (Rule) => Rule.required(),
-      initialValue: 'ski_town',
+      initialValue: 'the_council',
     }),
     defineField({
       name: 'agentStaffId',
