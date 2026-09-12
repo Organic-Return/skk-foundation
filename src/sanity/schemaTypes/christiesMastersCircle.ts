@@ -45,6 +45,14 @@ export const christiesMastersCircle = defineType({
     // Distinctions (how it sets her apart)
     defineField({ name: 'distinctionsHeading', title: 'Distinctions Heading', type: 'string' }),
     defineField({
+      name: 'sectionLogo',
+      title: 'Masters Circle Logo (beside the section copy)',
+      type: 'image',
+      description:
+        'Shown to the right of the "What the Masters Circle means" text. That section has a white background, so use the dark/black version of the badge. Leave empty to show no logo.',
+      options: { hotspot: false },
+    }),
+    defineField({
       name: 'distinctions',
       title: 'Distinctions',
       type: 'array',

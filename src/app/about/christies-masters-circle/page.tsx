@@ -2,6 +2,7 @@ import { type SanityDocument } from "next-sanity";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
+import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { Metadata } from "next";
 import { getBaseUrl } from '@/lib/settings';
@@ -12,6 +13,7 @@ const QUERY = `*[_type == "christiesMastersCircle"][0]{
   heroEyebrow, heroTitle, heroSubtitle, heroImage,
   introHeading, introParagraphs[]{ text },
   mastersCircleHeading, mastersCircleParagraphs[]{ text },
+  sectionLogo,
   distinctionsHeading, distinctions[]{ title, description },
   christieHeading, christieIntro, christieBenefits[]{ title, description },
   stats[]{ value, label },
@@ -43,6 +45,7 @@ const DEFAULT = {
     { text: "Each year, Christie's International Real Estate recognizes the very top of that network through its Masters Circle — an honor reserved for the advisors who consistently deliver extraordinary results for their clients. Stacey K. Kelly's induction places her among this distinguished group." },
   ],
   mastersCircleHeading: "What the Masters Circle means",
+  sectionLogo: null as any,
   mastersCircleParagraphs: [
     { text: "The Masters Circle is Christie's International Real Estate's recognition of its highest-performing advisors worldwide. Membership is based on proven achievement — sustained sales performance, exceptional client outcomes, and a command of the luxury market that few attain." },
     { text: "It is, by design, a small circle. For buyers and sellers, it is a simple signal of confidence: you are working with an advisor the world's preeminent luxury brand counts among its very best." },
@@ -90,6 +93,7 @@ function merge(data: SanityDocument | null) {
     introParagraphs: arr(data.introParagraphs, DEFAULT.introParagraphs),
     mastersCircleHeading: data.mastersCircleHeading || DEFAULT.mastersCircleHeading,
     mastersCircleParagraphs: arr(data.mastersCircleParagraphs, DEFAULT.mastersCircleParagraphs),
+    sectionLogo: data.sectionLogo || null,
     distinctionsHeading: data.distinctionsHeading || DEFAULT.distinctionsHeading,
     distinctions: arr(data.distinctions, DEFAULT.distinctions),
     christieHeading: data.christieHeading || DEFAULT.christieHeading,
@@ -138,6 +142,7 @@ export default async function ChristiesMastersCirclePage() {
   ]);
   const c = merge(data);
   const heroImageUrl = c.heroImage ? urlFor(c.heroImage)?.width(1920).height(900).url() : null;
+  const sectionLogoUrl = c.sectionLogo ? urlFor(c.sectionLogo)?.width(960).height(960).url() ?? null : null;
 
   const pageUrl = `${baseUrl}/about/christies-masters-circle`;
   const pageSchema = {
@@ -204,15 +209,31 @@ export default async function ChristiesMastersCirclePage() {
       {/* Masters Circle + distinctions */}
       <section className="py-16 md:py-24">
         <div className="max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
-          <div className="max-w-3xl mb-14 md:mb-20">
-            <h2 className="text-3xl md:text-4xl font-serif font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
-              {c.mastersCircleHeading}
-            </h2>
-            {c.mastersCircleParagraphs.map((p: any, i: number) => (
-              <p key={i} className="mb-6 text-[#4a4a4a] dark:text-gray-300 leading-[1.85] font-light text-[17px]">
-                {p.text}
-              </p>
-            ))}
+          {/* Copy on the left, the Masters Circle badge on the right (Studio >
+              Christie's Masters Circle > Masters Circle Logo). The badge is a
+              square, drawn at a fixed width and vertically centred on the copy. */}
+          <div className={`mb-14 md:mb-20 ${sectionLogoUrl ? "md:grid md:grid-cols-[minmax(0,1fr)_auto] md:gap-16 md:items-center" : ""}`}>
+            <div className="max-w-3xl">
+              <h2 className="text-3xl md:text-4xl font-serif font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
+                {c.mastersCircleHeading}
+              </h2>
+              {c.mastersCircleParagraphs.map((p: any, i: number) => (
+                <p key={i} className="mb-6 text-[#4a4a4a] dark:text-gray-300 leading-[1.85] font-light text-[17px]">
+                  {p.text}
+                </p>
+              ))}
+            </div>
+            {sectionLogoUrl && (
+              <div className="mt-10 md:mt-0 flex justify-center md:justify-end">
+                <Image
+                  src={sectionLogoUrl}
+                  alt="Christie's International Real Estate Masters Circle 2026"
+                  width={480}
+                  height={480}
+                  className="w-44 md:w-56 lg:w-64 h-auto"
+                />
+              </div>
+            )}
           </div>
 
           {c.distinctions.length > 0 && (
