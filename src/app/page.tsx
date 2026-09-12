@@ -4,6 +4,7 @@ import { client } from '@/sanity/client';
 import { getHomepageData, getAllCommunities } from '@/lib/homepage';
 import { getSettings, getBranding, getBaseUrl } from '@/lib/settings';
 import { getNewestHighPricedByCities, getNewestHighPricedByCity } from '@/lib/listings';
+import { getSalesTotals, formatUSD } from '@/lib/salesTotals';
 import StructuredData from '@/components/StructuredData';
 import { postalAddressSchema } from '@/lib/seo';
 import HomepageContent from '@/components/HomepageContent';
@@ -67,7 +68,23 @@ export default async function Home() {
 
   const hero = homepage?.hero;
   const teamSection = homepage?.teamSection;
-  const accolades = homepage?.accolades;
+  // Accolades flagged with a Live Value in Sanity show the same career totals
+  // as /sold, /buy, /sell and the team page instead of a typed-in number.
+  const wantsLiveTotals = (homepage?.accolades?.items || []).some(
+    (i) => i.liveValue === 'soldCount' || i.liveValue === 'salesVolume'
+  );
+  const totals = wantsLiveTotals ? await getSalesTotals().catch(() => null) : null;
+  const accolades = homepage?.accolades
+    ? {
+        ...homepage.accolades,
+        items: (homepage.accolades.items || []).map((item) => {
+          if (!totals) return item;
+          if (item.liveValue === 'soldCount') return { ...item, value: String(totals.totalSold) };
+          if (item.liveValue === 'salesVolume') return { ...item, value: formatUSD(totals.totalVolume) };
+          return item;
+        }),
+      }
+    : undefined;
   const featuredProperty = homepage?.featuredProperty;
   const featuredCommunitiesConfig = homepage?.featuredCommunities;
 

@@ -27,6 +27,22 @@ export const accolade = defineType({
       hidden: ({ parent }) => parent?.type === 'image',
     }),
     defineField({
+      name: 'liveValue',
+      title: 'Live Value',
+      type: 'string',
+      description:
+        'Replace the Value above with a live figure from the Sold Page baseline plus new MLS closings, so it matches /sold, /buy and /sell automatically.',
+      options: {
+        list: [
+          { title: 'None (use Value)', value: 'none' },
+          { title: 'Properties sold (career count)', value: 'soldCount' },
+          { title: 'Total sales volume', value: 'salesVolume' },
+        ],
+      },
+      initialValue: 'none',
+      hidden: ({ parent }) => parent?.type === 'image',
+    }),
+    defineField({
       name: 'prefix',
       title: 'Prefix',
       type: 'string',

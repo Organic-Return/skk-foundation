@@ -42,6 +42,7 @@ interface HomepageData {
     items?: Array<{
       type: 'number' | 'numberWithPrefix' | 'image';
       value?: string;
+      liveValue?: 'none' | 'soldCount' | 'salesVolume';
       prefix?: string;
       image?: any;
       label?: string;
@@ -175,6 +176,7 @@ const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
     items[] {
       type,
       value,
+      liveValue,
       prefix,
       image {
         asset-> {
