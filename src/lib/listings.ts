@@ -463,16 +463,21 @@ export async function getListings(
     query = query.lte('square_feet', filters.maxSqft);
   }
   if (filters.keyword) {
-    const kw = filters.keyword.trim();
+    // PostgREST parses commas/parens as filter syntax, so neutralise them.
+    const kw = filters.keyword.trim().replace(/[%,()]/g, ' ').trim();
     const isNumeric = /^\d+$/.test(kw);
     if (isNumeric) {
-      // Search mls_number (primary) and also description (fallback for rows
-      // where mls_number is empty but MLS# appears in PublicRemarks)
-      query = query.or(`mls_number.eq.${kw},description.ilike.%MLS# ${kw}%`);
-    } else {
-      // Search UnparsedAddress and street_name (fallback for rows where
-      // UnparsedAddress is NULL but street components exist)
-      query = query.or(`address.ilike.%${kw}%,street_name.ilike.%${kw}%`);
+      // MLS number (primary), a street number at the start of the address,
+      // and description (fallback for rows where mls_number is empty but
+      // MLS# appears in PublicRemarks)
+      query = query.or(`mls_number.eq.${kw},address.ilike.${kw} %,description.ilike.%MLS# ${kw}%`);
+    } else if (kw) {
+      // Match the way a visitor types: an address, a street name, a town, or
+      // a subdivision/neighbourhood ("Aspen", "West End", "Snowmass Village").
+      // street_name is the fallback for rows where UnparsedAddress is NULL.
+      query = query.or(
+        `address.ilike.%${kw}%,street_name.ilike.%${kw}%,city.ilike.%${kw}%,subdivision_name.ilike.%${kw}%`
+      );
     }
   }
 
