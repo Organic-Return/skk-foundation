@@ -5,6 +5,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getListingsByAgentId, getMlsNumbersWithSIRMedia } from "@/lib/listings";
+import { computeSalesTotals, formatUSD, type SalesBaseline } from "@/lib/salesTotals";
 import { getSiteTemplate, getBaseUrl, getSiteName } from '@/lib/settings';
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentHeroGallery from "@/components/AgentHeroGallery";
@@ -142,7 +143,12 @@ export default async function TeamMemberPage({ params }: Props) {
     { name: member.name, url: profileUrl },
   ]);
 
-  const agentListings = await getListingsByAgentId(member.mlsAgentId || null, member.mlsAgentIdSold, member.name);
+  const [agentListings, salesBaseline] = await Promise.all([
+    getListingsByAgentId(member.mlsAgentId || null, member.mlsAgentIdSold, member.name),
+    // Same verified baseline /sold, /buy and /sell use, so the career totals on
+    // this page can never disagree with theirs.
+    client.fetch<SalesBaseline>(`*[_type == "soldPage"][0].baseline{ soldCount, salesVolume, asOf }`, {}, { next: { revalidate: 300 } }),
+  ]);
 
   const hasListings = agentListings && (agentListings.activeListings.length > 0 || agentListings.soldListings.length > 0);
 
@@ -421,8 +427,7 @@ export default async function TeamMemberPage({ params }: Props) {
 
       {/* Agent Stats (non-RC only) */}
       {!isRC && agentListings && agentListings.soldListings.length > 0 && (() => {
-        const totalSold = agentListings.soldListings.length;
-        const totalVolume = agentListings.soldListings.reduce((sum, listing) => sum + (listing.sold_price || listing.list_price || 0), 0);
+        const { totalSold, totalVolume } = computeSalesTotals(agentListings.soldListings, salesBaseline);
         return (
           <section className="py-12 md:py-16 bg-[#f8f7f5] dark:bg-[#141414]">
             <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
@@ -437,7 +442,7 @@ export default async function TeamMemberPage({ params }: Props) {
                 </div>
                 <div>
                   <p className="text-4xl md:text-5xl font-light mb-2 font-serif text-[#1a1a1a] dark:text-white">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalVolume)}
+                    {formatUSD(totalVolume)}
                   </p>
                   <p className="text-sm uppercase tracking-[0.15em] font-light text-[#6a6a6a] dark:text-gray-400">
                     Total Sales Volume

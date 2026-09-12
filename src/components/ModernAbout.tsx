@@ -12,6 +12,18 @@ function urlFor(source: any) {
   return builder.image(source);
 }
 
+/** Strip inline styles/fonts from CMS bio HTML so site styles apply cleanly. */
+function sanitizeBioHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/\s*style="[^"]*"/gi, '')
+    .replace(/\s*style='[^']*'/gi, '')
+    .replace(/<font[^>]*>/gi, '')
+    .replace(/<\/font>/gi, '')
+    .replace(/\s*bgcolor="[^"]*"/gi, '')
+    .replace(/\s*color="[^"]*"/gi, '');
+}
+
 interface ModernAboutProps {
   title?: string;
   teamMember?: {
@@ -106,11 +118,14 @@ export default function ModernAbout({
               </div>
             )}
 
-            {/* Bio */}
+            {/* Bio — the CMS field holds HTML (paragraphs, links), the same
+                markup the team member page renders, so it is rendered as
+                HTML here too rather than shown as literal tags. */}
             {teamMember?.bio && (
-              <p className="text-[var(--modern-gray)] leading-relaxed mb-10 text-base md:text-lg font-light">
-                {teamMember.bio}
-              </p>
+              <div
+                className="text-[var(--modern-gray)] leading-relaxed mb-10 text-base md:text-lg font-light [&_p+p]:mt-4 [&_a]:text-[var(--modern-gold)] [&_a]:underline"
+                dangerouslySetInnerHTML={{ __html: sanitizeBioHtml(teamMember.bio) }}
+              />
             )}
 
             {/* CTA Button */}
