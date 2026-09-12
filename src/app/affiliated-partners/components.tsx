@@ -96,7 +96,13 @@ export async function fetchAgentData(agentStaffId: string): Promise<AgentData | 
       return null;
     }
 
-    return response.json();
+    // During prerender this URL can answer with an HTML page (a 404 or a
+    // deployment-protection screen). Treat anything that is not JSON as "no
+    // agent data". And await the parse — a returned, un-awaited promise
+    // rejected outside this try/catch and took the whole build down.
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return null;
+    return (await response.json()) as AgentData;
   } catch (error) {
     console.error(`Error fetching agent ${agentStaffId}:`, error);
     return null;
@@ -104,7 +110,9 @@ export async function fetchAgentData(agentStaffId: string): Promise<AgentData | 
 }
 
 export async function enrichPartnerWithAgentData(partner: Partner): Promise<EnrichedPartner> {
-  const agentData = await fetchAgentData(partner.agentStaffId);
+  // Partners entered directly in Sanity (e.g. The Council) carry no staff id,
+  // so there is nothing to look up — and no network call at build time.
+  const agentData = partner.agentStaffId ? await fetchAgentData(partner.agentStaffId) : null;
 
   // Use override values from Sanity if provided, otherwise use database values
   const photoUrl = partner.overridePhoto
