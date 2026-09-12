@@ -206,12 +206,18 @@ export default async function ExclusiveListingsPage() {
       {/* SEO content — properties currently for sale */}
       <section className="py-8 md:py-10 bg-white dark:bg-[#1a1a1a]">
         <div className="content-wide max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
-          {/* !mt-0 is load-bearing: the global `h1-h6 { margin-top: 1.5em }`
-              is unlayered, so it beats Tailwind mt-* and was adding ~66px on
-              top of this section's padding. */}
-          <h2 className="!mt-0 font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-6 tracking-wide">
-            {contentTitle}
-          </h2>
+          {/* Centred heading with the rule beneath, matching every other
+              full-width block on the site. The body copy below stays
+              left-aligned: centred prose is harder to read than a centred
+              heading over a ragged-right column. !mt-0 is load-bearing — the
+              global `h1-h6 { margin-top: 1.5em }` is unlayered and beats
+              Tailwind mt-*. */}
+          <div className="text-center mb-10">
+            <h2 className="!mt-0 font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-6 tracking-wide">
+              {contentTitle}
+            </h2>
+            <div className="w-16 h-[1px] bg-[var(--color-gold)] mx-auto" />
+          </div>
           {hasManagedContent ? (
             <PortableText value={contentBody as never} components={portableTextComponents} />
           ) : (
