@@ -35,7 +35,11 @@ export default function PageHero({ title, subtitle, eyebrow, image, children }: 
             {eyebrow}
           </p>
         )}
-        <h1 className="font-serif text-white text-4xl md:text-6xl font-light tracking-wide mb-5">
+        {/* Reserve two title lines (global h1 line-height is 1.3, so 2.6em) and
+            centre within them, so a one-line title ("Selling Real Estate") and
+            a two-line one ("Buying Property With Stacey K Kelly") produce heroes
+            of identical height — previously they differed by a full line. */}
+        <h1 className="font-serif text-white text-4xl md:text-6xl font-light tracking-wide mb-5 min-h-[2.6em] flex items-center justify-center">
           {title}
         </h1>
         {subtitle && (
