@@ -185,7 +185,7 @@ export const buyPage = defineType({
       name: 'stats',
       title: 'Stats Band',
       type: 'array',
-      description: 'Trust stats (e.g. years, sales volume). Leave empty to show placeholder examples — replace before relying on them.',
+      description: 'Manual override only. Leave EMPTY to auto-fill: Years of Experience (below), plus live Sales Volume and Homes Closed from Sold Page > Sales Totals Baseline — the same figures shown on /sold.',
       of: [
         {
           type: 'object',
@@ -198,6 +198,13 @@ export const buyPage = defineType({
       ],
       validation: (Rule) => Rule.max(4),
     }),
+    defineField({
+      name: 'yearsOfExperience',
+      title: 'Years of Experience',
+      type: 'number',
+      description: 'Shown in the stats band as "<n> Years of Experience". The other two stats are live.',
+      validation: (Rule) => Rule.min(0).integer(),
+    }),
 
     // Testimonials
     defineField({
@@ -209,7 +216,7 @@ export const buyPage = defineType({
       name: 'testimonials',
       title: 'Testimonials',
       type: 'array',
-      description: 'Real, attributed client quotes. Leave empty to show placeholder examples (placeholders are NOT added to search structured data).',
+      description: 'Page-specific override only. Leave EMPTY to pull from the Testimonials page (featured first), with a link to all testimonials.',
       of: [
         {
           type: 'object',

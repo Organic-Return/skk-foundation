@@ -10,7 +10,8 @@ import { getSettings, getBaseUrl } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
 import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema, reviewSchemas } from "@/lib/seo";
-import { DEFAULT_BUY_FAQS, DEFAULT_BUY_PROCESS, DEFAULT_BUY_STATS, DEFAULT_TESTIMONIALS, type Faq } from "@/lib/pageDefaults";
+import { DEFAULT_BUY_FAQS, DEFAULT_BUY_PROCESS, type Faq } from "@/lib/pageDefaults";
+import { getSalesTotals, formatUSD } from "@/lib/salesTotals";
 import StatsBand from "@/components/StatsBand";
 import TestimonialsSection from "@/components/TestimonialsSection";
 
@@ -49,6 +50,7 @@ const BUY_PAGE_QUERY = `*[_type == "buyPage"][0]{
     answer
   },
   stats[]{ value, label },
+  yearsOfExperience,
   testimonialsTitle,
   testimonials[]{ quote, author, location },
   ctaTitle,
@@ -58,6 +60,12 @@ const BUY_PAGE_QUERY = `*[_type == "buyPage"][0]{
   ctaImage,
   seo
 }`;
+
+const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
+  featuredTestimonial{ quote, author, role, location },
+  testimonials[]{ quote, author, role, location, featured }
+}`;
+type CmsTestimonial = { quote?: string; author?: string; role?: string; location?: string; featured?: boolean };
 
 const { projectId, dataset } = client.config();
 const urlFor = (source: any) =>
@@ -137,10 +145,11 @@ const portableTextComponents: PortableTextComponents = {
 };
 
 export default async function BuyPage() {
-  const [data, settings, agent] = await Promise.all([
+  const [data, settings, agent, tp] = await Promise.all([
     client.fetch<SanityDocument>(BUY_PAGE_QUERY, {}, options),
     getSettings(),
     getPrimaryAgent(),
+    client.fetch<{ featuredTestimonial?: CmsTestimonial; testimonials?: CmsTestimonial[] } | null>(TESTIMONIALS_QUERY, {}, options),
   ]);
   const baseUrl = await getBaseUrl();
 
@@ -174,17 +183,43 @@ export default async function BuyPage() {
   const processSteps =
     data.processSteps && data.processSteps.length > 0 ? data.processSteps : DEFAULT_BUY_PROCESS.steps;
 
-  // Stats + testimonials fall back to placeholders; only REAL CMS testimonials get Review schema.
-  const hasRealTestimonials = Array.isArray(data.testimonials) && data.testimonials.length > 0;
-  const stats = data.stats && data.stats.length > 0 ? data.stats : DEFAULT_BUY_STATS;
-  const testimonials = hasRealTestimonials ? data.testimonials : DEFAULT_TESTIMONIALS;
+  // Stats band: a manual override in the CMS wins; otherwise years of experience
+  // plus the live sales totals — the same baseline-driven figures as /sold, so
+  // the two pages can never disagree. No placeholders on a live page.
+  const totals = await getSalesTotals();
+  const years: number | undefined = typeof data.yearsOfExperience === "number" ? data.yearsOfExperience : undefined;
+  const stats =
+    data.stats && data.stats.length > 0
+      ? data.stats
+      : [
+          ...(years !== undefined ? [{ value: String(years), label: "Years of Experience" }] : []),
+          { value: formatUSD(totals.totalVolume), label: "Sales Volume" },
+          { value: String(totals.totalSold), label: "Homes Closed" },
+        ];
+
+  // Testimonials: a page-specific set in the CMS wins; otherwise pull from the
+  // Testimonials page — the featured one first, then the rest, featured before
+  // the others — and show three, with a link to all of them. Both sources are
+  // real, attributed quotes, so both earn Review structured data.
+  const fromPage: CmsTestimonial[] = [
+    ...(tp?.featuredTestimonial?.quote ? [tp.featuredTestimonial] : []),
+    ...((tp?.testimonials || []) as CmsTestimonial[]).slice().sort((a, b) => Number(!!b.featured) - Number(!!a.featured)),
+  ];
+  const seen = new Set<string>();
+  const pulled = fromPage
+    .filter((t) => t.quote && t.author && !seen.has(t.quote) && seen.add(t.quote))
+    .slice(0, 3)
+    .map((t) => ({ quote: t.quote, author: t.author, location: [t.role, t.location].filter(Boolean).join(" \u2014 ") }));
+  const testimonials =
+    Array.isArray(data.testimonials) && data.testimonials.length > 0 ? data.testimonials : pulled;
+  const hasRealTestimonials = testimonials.length > 0;
   const testimonialsTitle: string = data.testimonialsTitle || "What Clients Say";
 
   // SEO structured data (FAQ rich results, agent, breadcrumb, real reviews only).
   const agentFirstName = agent?.name?.split(" ")[0] || "our team";
   const schemas = [
     faqPageSchema(faqs),
-    ...(hasRealTestimonials ? reviewSchemas(data.testimonials, agent?.name) || [] : []),
+    ...(hasRealTestimonials ? reviewSchemas(testimonials, agent?.name) || [] : []),
     realEstateAgentSchema({
       name: agent?.name,
       url: `${baseUrl}/buy`,
@@ -345,7 +380,11 @@ export default async function BuyPage() {
       )}
 
       {/* Testimonials */}
-      <TestimonialsSection title={testimonialsTitle} testimonials={testimonials} />
+      <TestimonialsSection
+        title={testimonialsTitle}
+        testimonials={testimonials}
+        allLink={{ href: "/testimonials", label: "Read All Testimonials" }}
+      />
 
       {/* Buyer lead form */}
       <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a] border-t border-[#e8e6e3] dark:border-gray-800">
@@ -371,46 +410,6 @@ export default async function BuyPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      {data.ctaTitle && (
-        <section className="relative py-20 md:py-28">
-          {data.ctaImage ? (
-            <>
-              <Image
-                src={urlFor(data.ctaImage)?.width(1920).height(600).url() || ''}
-                alt="Contact Us"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-[var(--color-navy)]/80" />
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-[var(--color-navy)]" />
-          )}
-
-          <div className="relative max-w-4xl mx-auto px-6 md:px-12 text-center">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-white tracking-wide mb-6">
-              {data.ctaTitle}
-            </h2>
-            {data.ctaSubtitle && (
-              <p className="text-lg text-white/70 font-light mb-10 max-w-2xl mx-auto leading-relaxed">
-                {data.ctaSubtitle}
-              </p>
-            )}
-            {data.ctaButtonText && (
-              <Link
-                href={data.ctaButtonLink || '/contact-us'}
-                className="inline-flex items-center gap-3 px-10 py-4 bg-transparent border border-[var(--color-gold)] text-white hover:bg-[var(--color-gold)] hover:text-[var(--color-navy)] transition-all duration-300 text-sm uppercase tracking-[0.2em] font-light"
-              >
-                {data.ctaButtonText}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            )}
-          </div>
-        </section>
-      )}
     </main>
   );
 }

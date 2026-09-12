@@ -1,12 +1,17 @@
+import Link from "next/link";
+
 type Testimonial = { quote?: string; author?: string; location?: string };
 
 /** Client testimonials grid. Renders nothing when there are no testimonials. */
 export default function TestimonialsSection({
   title,
   testimonials,
+  allLink,
 }: {
   title?: string;
   testimonials?: Testimonial[];
+  /** Optional link under the grid, e.g. to the full testimonials page. */
+  allLink?: { href: string; label: string };
 }) {
   const items = (testimonials || []).filter((t) => t?.quote);
   if (items.length === 0) return null;
@@ -55,6 +60,16 @@ export default function TestimonialsSection({
             </figure>
           ))}
         </div>
+        {allLink && (
+          <div className="text-center mt-12">
+            <Link href={allLink.href} className="btn-modern-cta">
+              {allLink.label}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

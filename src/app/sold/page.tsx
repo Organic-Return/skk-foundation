@@ -4,6 +4,7 @@ import { PortableText, type PortableTextComponents } from "next-sanity";
 import { client } from "@/sanity/client";
 import { getListingsByAgentId, type MLSProperty } from "@/lib/listings";
 import { getBaseUrl } from '@/lib/settings';
+import { computeSalesTotals, formatUSD } from "@/lib/salesTotals";
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
@@ -60,14 +61,6 @@ const portableTextComponents: PortableTextComponents = {
 };
 
 const options = { next: { revalidate: 300 } };
-
-const formatUSD = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(n);
 
 async function getSoldData() {
   const [team, soldPage] = await Promise.all([
@@ -166,22 +159,8 @@ export default async function SoldPage() {
   const baseUrl = await getBaseUrl();
   const who = firstName ? `${firstName}'s` : "Our";
 
-  // Hero totals. With a baseline configured in Sanity, the figures are the
-  // verified totals as of a date plus every MLS sale closed after that date —
-  // so they move on their own as new closings land, and sales already inside
-  // the baseline are never counted twice. Without one, fall back to what the
-  // MLS feed alone can see.
-  const mlsSold = soldListings.length;
-  const mlsVolume = soldListings.reduce((sum, l) => sum + (l.sold_price || l.list_price || 0), 0);
-  const hasBaseline =
-    typeof baseline?.soldCount === "number" && typeof baseline?.salesVolume === "number" && !!baseline?.asOf;
-  const closedAfterBaseline = hasBaseline
-    ? soldListings.filter((l) => l.sold_date && new Date(l.sold_date) > new Date(`${baseline!.asOf}T23:59:59Z`))
-    : [];
-  const totalSold = hasBaseline ? baseline!.soldCount! + closedAfterBaseline.length : mlsSold;
-  const totalVolume = hasBaseline
-    ? baseline!.salesVolume! + closedAfterBaseline.reduce((sum, l) => sum + (l.sold_price || l.list_price || 0), 0)
-    : mlsVolume;
+  // Hero totals — baseline + closings after it (see lib/salesTotals.ts).
+  const { totalSold, totalVolume, hasBaseline } = computeSalesTotals(soldListings, baseline);
 
   // SEO content section — Sanity overrides the built-in default copy.
   const name = agentName || "Our team";
