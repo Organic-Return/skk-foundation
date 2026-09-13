@@ -231,11 +231,16 @@ export default async function PostPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <main className="container mx-auto min-h-screen flex flex-col gap-4">
-        <div className="max-w-3xl mx-auto w-full px-8 pt-8">
+      {/* Without an image the fixed header would cover the top of the page,
+          so keep the old spacer; with one the image runs under the header
+          like the blog index hero does, and the back link moves below it. */}
+      {!postImageUrl && (
+        <div className="max-w-3xl mx-auto w-full px-8 pt-28">
           <Link href="/blog" className="hover:underline">
             ← Back to posts
           </Link>
         </div>
+      )}
       {postImageUrl && (
         <div className="relative w-full max-w-[1200px] mx-auto aspect-video">
           <img
@@ -254,17 +259,22 @@ export default async function PostPage({
           </div>
         </div>
       )}
-      {postImageUrl && post.imageCredit && (
-        <div className="w-full max-w-[1200px] mx-auto px-8 -mt-2">
-          <p className="text-right text-[11px] tracking-wide text-[#8a8a8a] dark:text-gray-500">
-            {post.imageCreditUrl ? (
-              <a href={post.imageCreditUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                {post.imageCredit}
-              </a>
-            ) : (
-              post.imageCredit
-            )}
-          </p>
+      {postImageUrl && (
+        <div className="w-full max-w-[1200px] mx-auto px-8 -mt-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <Link href="/blog" className="text-sm hover:underline">
+            ← Back to posts
+          </Link>
+          {post.imageCredit && (
+            <p className="!my-0 text-[11px] tracking-wide text-[#8a8a8a] dark:text-gray-500">
+              {post.imageCreditUrl ? (
+                <a href={post.imageCreditUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  {post.imageCredit}
+                </a>
+              ) : (
+                post.imageCredit
+              )}
+            </p>
+          )}
         </div>
       )}
       <div className="max-w-3xl mx-auto w-full px-8 pb-8 pt-8">
