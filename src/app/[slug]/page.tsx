@@ -240,7 +240,7 @@ export default async function PostPage({
         <div className="relative w-full max-w-[1200px] mx-auto aspect-video">
           <img
             src={postImageUrl}
-            alt={post.title}
+            alt={post.image?.alt || post.title}
             className="w-full h-full object-cover"
             width="1200"
             height="675"
@@ -252,6 +252,19 @@ export default async function PostPage({
               </h1>
             </div>
           </div>
+        </div>
+      )}
+      {postImageUrl && post.imageCredit && (
+        <div className="w-full max-w-[1200px] mx-auto px-8 -mt-2">
+          <p className="text-right text-[11px] tracking-wide text-[#8a8a8a] dark:text-gray-500">
+            {post.imageCreditUrl ? (
+              <a href={post.imageCreditUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                {post.imageCredit}
+              </a>
+            ) : (
+              post.imageCredit
+            )}
+          </p>
         </div>
       )}
       <div className="max-w-3xl mx-auto w-full px-8 pb-8 pt-8">

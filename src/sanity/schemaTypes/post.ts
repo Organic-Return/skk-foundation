@@ -28,6 +28,27 @@ export const post = defineType({
       options: {
         hotspot: true,
       },
+      fields: [
+        {
+          name: 'alt',
+          type: 'string',
+          title: 'Alt text',
+          description: 'Describes the picture for screen readers and search engines.',
+        },
+      ],
+    }),
+    defineField({
+      name: 'imageCredit',
+      title: 'Image credit',
+      type: 'string',
+      description:
+        'Shown in small type under the main image, e.g. "Photo: Jane Doe via Wikimedia Commons, CC BY-SA 4.0". Required by most Creative Commons licences.',
+    }),
+    defineField({
+      name: 'imageCreditUrl',
+      title: 'Image credit link',
+      type: 'url',
+      description: 'Where the credit links to (the photo’s source page).',
     }),
     defineField({
       name: 'publishedAt',

@@ -123,7 +123,7 @@ export default async function BlogPage({
                   {featuredPost.image ? (
                     <Image
                       src={urlFor(featuredPost.image)?.width(800).height(600).url() || ''}
-                      alt={featuredPost.title}
+                      alt={featuredPost.image?.alt || featuredPost.title}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
@@ -198,7 +198,7 @@ export default async function BlogPage({
                     {post.image ? (
                       <Image
                         src={urlFor(post.image)?.width(600).height(375).url() || ''}
-                        alt={post.title}
+                        alt={post.image?.alt || post.title}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                       />
