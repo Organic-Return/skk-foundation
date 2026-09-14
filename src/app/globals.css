@@ -1323,3 +1323,12 @@ address {
     transform: none;
   }
 }
+
+/*
+ * Google Maps injects its own keyboard-focus ring around the map (an
+ * invisible div with a 2px Google-blue border that appears when the map is
+ * tabbed into). Recolour it so even that state stays inside the brand.
+ */
+.gm-style > div[style*="rgb(26, 115, 232)"] {
+  border-color: var(--color-gold) !important;
+}
