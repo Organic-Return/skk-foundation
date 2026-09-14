@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getUTMData } from './UTMCapture';
+import { getRecaptchaToken } from '@/lib/recaptchaClient';
 import { trackLeadSubmitted } from '@/lib/tracking';
 
 export default function ModernContactCTA({ backgroundImage }: { backgroundImage?: string }) {
@@ -70,10 +71,12 @@ export default function ModernContactCTA({ backgroundImage }: { backgroundImage?
 
     try {
       const utm = getUTMData();
+      const recaptchaToken = await getRecaptchaToken('submit_lead');
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          recaptchaToken,
           ...formState,
           source: 'Homepage Contact Form',
           leadType: 'contact',

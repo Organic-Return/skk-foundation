@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { getUTMData } from './UTMCapture';
+import { getRecaptchaToken } from '@/lib/recaptchaClient';
 import { trackLeadSubmitted } from '@/lib/tracking';
 
 interface AgentInfo {
@@ -73,10 +74,12 @@ export default function ContactModal({ isOpen, onClose, agent }: ContactModalPro
 
     try {
       const utm = getUTMData();
+      const recaptchaToken = await getRecaptchaToken('contact');
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          recaptchaToken,
           ...formData,
           sourceUrl: utm.source_url,
           referrer: utm.referrer,

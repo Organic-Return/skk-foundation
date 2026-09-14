@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createContact, addNote, createProject, isClozeConfigured } from '@/lib/cloze';
+import { verifyRecaptcha } from '@/lib/recaptcha';
+import { checkSpam } from '@/lib/spamFilter';
 
 interface PropertyInquiryData {
   firstName: string;
@@ -11,11 +13,37 @@ interface PropertyInquiryData {
   propertyMlsId?: string;
   propertyPrice?: number;
   inquiryType?: 'schedule_showing' | 'request_info' | 'make_offer' | 'general';
+  recaptchaToken?: string;
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json() as PropertyInquiryData;
+
+    // Spam gate — no-ops until reCAPTCHA env vars are set, then blocks bots.
+    const recaptcha = await verifyRecaptcha(body.recaptchaToken, 'property_inquiry');
+    if (!recaptcha.success) {
+      console.warn('[property-inquiry] reCAPTCHA rejected:', recaptcha.reason, recaptcha.score);
+      return NextResponse.json(
+        { error: 'Your submission looked automated. Please try again.' },
+        { status: 400 }
+      );
+    }
+
+    // Content spam filter (complements reCAPTCHA, which scores the visitor).
+    const spam = checkSpam({
+      name: `${body.firstName} ${body.lastName}`,
+      message: body.message,
+      email: body.email,
+    });
+    if (spam.spam) {
+      console.warn('[property-inquiry] spam content rejected:', spam.reason);
+      return NextResponse.json(
+        { error: 'Your submission looked like spam. Please try again.' },
+        { status: 400 }
+      );
+    }
+
 
     // Validate required fields
     if (!body.firstName || !body.lastName || !body.email || !body.propertyAddress) {
