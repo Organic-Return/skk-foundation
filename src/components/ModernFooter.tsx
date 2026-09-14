@@ -130,7 +130,7 @@ export default function ModernFooter({
     { label: 'Home', url: '/' },
     { label: 'Properties', url: '/listings' },
     { label: 'About', url: '/about/stacey-k-kelly' },
-    { label: 'Market Reports', url: '/market-reports' },
+    { label: 'Blog', url: '/blog' },
     { label: 'Communities', url: '/communities' },
     { label: 'Contact', url: '/contact-us' },
   ];

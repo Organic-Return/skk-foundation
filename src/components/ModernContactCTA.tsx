@@ -6,7 +6,7 @@ import { getRecaptchaToken } from '@/lib/recaptchaClient';
 import { trackLeadSubmitted } from '@/lib/tracking';
 
 export default function ModernContactCTA({ backgroundImage }: { backgroundImage?: string }) {
-  const bgUrl = backgroundImage || "/cta-bg.jpg";
+  const bgUrl = backgroundImage;
   const [isVisible, setIsVisible] = useState(false);
   const [parallaxY, setParallaxY] = useState(0);
   const [formState, setFormState] = useState({
@@ -121,7 +121,7 @@ export default function ModernContactCTA({ backgroundImage }: { backgroundImage?
         className="absolute inset-x-0 -top-[20%] -bottom-[20%] pointer-events-none"
         style={{
           backgroundColor: '#1f1f1f',
-          backgroundImage: `url(${bgUrl}), linear-gradient(180deg, #2a2a2a 0%, #141414 100%)`,
+          backgroundImage: `${bgUrl ? `url(${bgUrl}), ` : ''}linear-gradient(180deg, #2a2a2a 0%, #141414 100%)`,
           backgroundSize: 'cover, cover',
           backgroundPosition: 'center, center',
           transform: `translate3d(0, ${parallaxY}px, 0)`,

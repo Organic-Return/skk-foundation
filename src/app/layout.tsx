@@ -14,6 +14,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 import UTMCapture from "@/components/UTMCapture";
 import Analytics from "@/components/Analytics";
 import { getSettings, getBranding, getBaseUrl } from "@/lib/settings";
+import { createImageUrlBuilder } from '@sanity/image-url';
+import { client } from '@/sanity/client';
 import { getMainNavigation, getFooterNavigation, groupFooterLinks } from "@/lib/navigation";
 import { getAllCommunities } from "@/lib/homepage";
 
@@ -89,8 +91,29 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteName = settings?.title || 'Real Estate';
   const description = settings?.description;
 
+  // Favicon from Settings → Branding. The uploaded mark is white on
+  // transparent, so the Sanity image pipeline composes it onto the brand
+  // navy at each size; without that it would vanish on a light browser tab.
+  const favicon = settings?.branding?.favicon;
+  const iconUrl = (size: number, pad: number) =>
+    favicon
+      ? createImageUrlBuilder(client).image(favicon).width(size).height(size).fit('fill').bg('1a2332').pad(pad).format('png').url()
+      : null;
+  const icons: Metadata['icons'] | undefined = favicon
+    ? {
+        icon: [
+          { url: iconUrl(32, 3) as string, sizes: '32x32', type: 'image/png' },
+          { url: iconUrl(192, 20) as string, sizes: '192x192', type: 'image/png' },
+          { url: iconUrl(512, 54) as string, sizes: '512x512', type: 'image/png' },
+        ],
+        apple: [{ url: iconUrl(180, 20) as string, sizes: '180x180', type: 'image/png' }],
+        shortcut: [{ url: iconUrl(32, 3) as string }],
+      }
+    : undefined;
+
   return {
     metadataBase: new URL(baseUrl),
+    icons,
     // A bare default, not a template: most pages build fully-branded titles of
     // their own (often from Sanity `seo.metaTitle`), and a template would
     // double up the brand.

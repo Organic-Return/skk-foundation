@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
       // Stacey's profile lives at /about/stacey-k-kelly; the generic team
       // template URLs (she is the only agent) all resolve to it.
       { source: '/team/stacey-k-kelly', destination: '/about/stacey-k-kelly', permanent: true },
+      { source: '/about', destination: '/about/stacey-k-kelly', permanent: true },
+      // Template pages with no SKK content yet. Temporary redirects so they can
+      // be switched back on the day they are filled in.
+      { source: '/builders', destination: '/', permanent: true },
+      { source: '/about/careers', destination: '/contact-us', permanent: true },
+      { source: '/living-aspen', destination: '/blog', permanent: false },
+      { source: '/videos', destination: '/about/stacey-k-kelly', permanent: false },
+      { source: '/market-reports', destination: '/blog', permanent: false },
+      { source: '/open-houses', destination: '/exclusive-listings', permanent: false },
       { source: '/team', destination: '/about/stacey-k-kelly', permanent: true },
       { source: '/agents', destination: '/about/stacey-k-kelly', permanent: true },
       { source: '/the-council', destination: '/affiliated-partners/the-council', permanent: true },

@@ -47,18 +47,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/market-reports`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/living-aspen`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
       url: `${baseUrl}/testimonials`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -83,12 +71,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/open-houses`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.6,
-    },
-    {
       url: `${baseUrl}/about/stacey-k-kelly`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -105,12 +87,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/videos`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.5,
     },
   ];
 
@@ -139,9 +115,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (sellPage) {
     singletonPages.push({ url: `${baseUrl}/sell`, lastModified: new Date(sellPage._updatedAt), changeFrequency: 'monthly', priority: 0.8 });
   }
-  if (aboutPage) {
-    singletonPages.push({ url: `${baseUrl}/about`, lastModified: new Date(aboutPage._updatedAt), changeFrequency: 'monthly', priority: 0.7 });
-  }
+  // /about redirects to Stacey's profile, so it is not listed.
+  void aboutPage;
   if (resourcesPage) {
     singletonPages.push({ url: `${baseUrl}/resources`, lastModified: new Date(resourcesPage._updatedAt), changeFrequency: 'monthly', priority: 0.6 });
   }
