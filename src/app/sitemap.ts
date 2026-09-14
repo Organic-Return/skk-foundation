@@ -1,7 +1,14 @@
 import { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
 import { client } from '@/sanity/client';
+import { unstable_cache } from 'next/cache';
 import { getListings, getListingHref } from '@/lib/listings';
+import {
+  getMLSConfiguration,
+  getAllowedCities,
+  getExcludedPropertyTypes,
+  getExcludedPropertySubTypes,
+} from '@/lib/mlsConfiguration';
 import { getOffMarketListings } from '@/lib/offMarketListings';
 import { getBaseUrl } from '@/lib/settings';
 import { getCrawlBaseUrl } from '@/lib/crawlers';
@@ -18,6 +25,49 @@ const PARTNERS_QUERY = `*[_type == "affiliatedPartner" && active == true]{
   lastName,
   _updatedAt
 }`;
+
+// The listing URLs, selected with exactly the filters the /listings grid uses
+// (allowed towns, excluded property types, active-type statuses) so the
+// sitemap never advertises a rental, an expired listing or a Grand Junction
+// house the site itself does not show. Cached for an hour: gathering every
+// listing takes several seconds, too slow to do on each crawler fetch.
+const LISTINGS_PAGE_SIZE = 500;
+const MAX_LISTINGS = 25_000;
+const SITEMAP_STATUSES = ['Active', 'Active Under Contract', 'Active U/C W/ Bump', 'Pending', 'Pending Inspect/Feasib', 'To Be Built'];
+
+const getSitemapListings = unstable_cache(
+  async (): Promise<Array<{ href: string; lastModified: string }>> => {
+    const mlsConfig = await getMLSConfiguration();
+    const filters = {
+      excludedPropertyTypes: [...getExcludedPropertyTypes(mlsConfig), 'Commercial Sale'],
+      excludedPropertySubTypes: getExcludedPropertySubTypes(mlsConfig),
+      allowedCities: getAllowedCities(mlsConfig),
+      allowedStatuses: SITEMAP_STATUSES,
+      sort: 'newest' as const,
+    };
+    const seen = new Set<string>();
+    const out: Array<{ href: string; lastModified: string }> = [];
+    let page = 1;
+    let totalPages = 1;
+    do {
+      const result = await getListings(page, LISTINGS_PAGE_SIZE, filters);
+      for (const listing of result.listings) {
+        const href = getListingHref(listing);
+        if (seen.has(href)) continue;
+        seen.add(href);
+        out.push({ href, lastModified: listing.updated_at || new Date().toISOString() });
+      }
+      totalPages = result.totalPages || 1;
+      page += 1;
+    } while (page <= totalPages && out.length < MAX_LISTINGS);
+    if (out.length >= MAX_LISTINGS) {
+      console.warn(`sitemap: listing cap of ${MAX_LISTINGS} reached; some listings are not in the sitemap`);
+    }
+    return out;
+  },
+  ['sitemap-listings-v2'],
+  { revalidate: 3600, tags: ['sitemap-listings'] }
+);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // On staging, list staging URLs. settings.siteUrl points at the production
@@ -188,32 +238,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //
   // The sitemap spec allows 50,000 URLs; MAX_LISTINGS is a build-time guard, and
   // hitting it is logged rather than silently truncating.
-  const LISTINGS_PAGE_SIZE = 500;
-  const MAX_LISTINGS = 25_000;
   let listingPages: MetadataRoute.Sitemap = [];
   try {
-    const collected: Awaited<ReturnType<typeof getListings>>['listings'] = [];
-    let page = 1;
-    let totalPages = 1;
-
-    do {
-      const result = await getListings(page, LISTINGS_PAGE_SIZE, {
-        excludedStatuses: ['Closed'],
-      });
-      collected.push(...result.listings);
-      totalPages = result.totalPages || 1;
-      page += 1;
-    } while (page <= totalPages && collected.length < MAX_LISTINGS);
-
-    if (collected.length >= MAX_LISTINGS) {
-      console.warn(
-        `sitemap: listing cap of ${MAX_LISTINGS} reached; some listings are not in the sitemap`
-      );
-    }
-
-    listingPages = collected.map((listing) => ({
-      url: `${baseUrl}${getListingHref(listing)}`,
-      lastModified: listing.updated_at ? new Date(listing.updated_at) : new Date(),
+    const cached = await getSitemapListings();
+    listingPages = cached.map((l) => ({
+      url: `${baseUrl}${l.href}`,
+      lastModified: new Date(l.lastModified),
       changeFrequency: 'daily' as const,
       priority: 0.8,
     }));
