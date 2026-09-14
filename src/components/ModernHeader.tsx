@@ -141,6 +141,8 @@ export default function ModernHeader({
                     </Link>
                   ) : (
                     <button
+                      aria-haspopup="true"
+                      aria-expanded={activeDropdown === index}
                       className="modern-nav py-2 flex items-center gap-1.5 transition-colors duration-300 text-white hover:text-[var(--modern-gold)]"
                     >
                       {item.label}
@@ -158,8 +160,10 @@ export default function ModernHeader({
                   )}
 
                   {/* Dropdown Menu */}
-                  {(item.hasMegaMenu || item.simpleDropdown) && activeDropdown === index && (
-                    <div className="absolute top-full left-0 pt-2">
+                  {/* Rendered whether open or not, so the secondary pages are real
+                      links in the server HTML for crawlers; CSS hides them until hover. */}
+                  {(item.hasMegaMenu || item.simpleDropdown) && (
+                    <div className={`absolute top-full left-0 pt-2 ${activeDropdown === index ? 'block' : 'hidden'}`}>
                       <div className="bg-white shadow-2xl min-w-[280px]">
                         {item.simpleDropdown && (
                           <div className="py-4">
@@ -259,6 +263,8 @@ export default function ModernHeader({
                       </Link>
                     ) : (
                       <button
+                        aria-haspopup="true"
+                        aria-expanded={activeDropdown === actualIndex}
                         className="modern-nav py-2 flex items-center gap-1.5 transition-colors duration-300 text-white hover:text-[var(--modern-gold)]"
                       >
                         {item.label}
@@ -276,8 +282,8 @@ export default function ModernHeader({
                     )}
 
                     {/* Dropdown Menu */}
-                    {(item.hasMegaMenu || item.simpleDropdown) && activeDropdown === actualIndex && (
-                      <div className="absolute top-full right-0 pt-2">
+                    {(item.hasMegaMenu || item.simpleDropdown) && (
+                      <div className={`absolute top-full right-0 pt-2 ${activeDropdown === actualIndex ? 'block' : 'hidden'}`}>
                         <div className="bg-white shadow-2xl min-w-[280px]">
                           {item.simpleDropdown && (
                             <div className="py-4">

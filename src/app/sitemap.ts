@@ -95,6 +95,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
+      url: `${baseUrl}/contact-us`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/affiliated-partners/the-council`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
@@ -109,7 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Fetch dynamic content from Sanity
-  const [communities, marketReports, magazines, posts, partners, buyPage, sellPage, aboutPage, resourcesPage, whyKlugPage] = await Promise.all([
+  const [communities, marketReports, magazines, posts, partners, buyPage, sellPage, aboutPage, resourcesPage, whyKlugPage, teamMembers] = await Promise.all([
     client.fetch<Array<{ slug: string; _updatedAt: string }>>(COMMUNITIES_QUERY),
     client.fetch<Array<{ slug: string; _updatedAt: string; publishedAt: string }>>(MARKET_REPORTS_QUERY),
     client.fetch<Array<{ slug: string; _updatedAt: string; publishedAt: string }>>(MAGAZINES_QUERY),
@@ -120,6 +126,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     client.fetch<{ _updatedAt: string } | null>(`*[_type == "aboutPage"][0]{ _updatedAt }`),
     client.fetch<{ _updatedAt: string } | null>(`*[_type == "resourcesPage"][0]{ _updatedAt }`),
     client.fetch<{ _updatedAt: string } | null>(`*[_type == "whyKlugProperties"][0]{ _updatedAt }`),
+    client.fetch<Array<{ slug: string; _updatedAt: string }>>(
+      `*[_type == "teamMember" && inactive != true && defined(slug.current)]{ "slug": slug.current, _updatedAt }`
+    ),
   ]);
 
   // Conditionally add singleton content pages (only if they exist in this project's Sanity dataset)
@@ -175,6 +184,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(post._updatedAt || post.publishedAt),
     changeFrequency: 'monthly' as const,
     priority: 0.6,
+  }));
+
+  // Team member profile pages (the About menu's "Meet Stacey" is one of these)
+  const teamPages: MetadataRoute.Sitemap = (teamMembers || []).map((member) => ({
+    url: `${baseUrl}/team/${member.slug}`,
+    lastModified: new Date(member._updatedAt),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
   }));
 
   // Partner pages
@@ -249,6 +266,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...marketReportPages,
     ...magazinePages,
     ...postPages,
+    ...teamPages,
     ...partnerPages,
     ...listingPages,
     ...offMarketPages,
