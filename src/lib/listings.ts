@@ -408,9 +408,11 @@ export async function getListings(
 
   // Query the mls_properties table, scoped to active rows (matches the old
   // active_listings view behavior).
+  // An exact count: the planner's estimate over-reported the grid's total by
+  // hundreds (1,758 shown for 1,120 real listings) and drove sitemap paging.
   let query = supabase
     .from('mls_properties')
-    .select('*', { count: 'estimated' })
+    .select('*', { count: 'exact' })
     .eq('is_active', true);
 
   // Apply filters
