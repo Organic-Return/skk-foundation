@@ -261,7 +261,7 @@ export default function Header({
                   const isSkiTown = item.label.toLowerCase().includes('ski town') || item.label.toLowerCase().includes('affiliated');
                   return (
                   <div className="fixed left-1/2 -translate-x-1/2 top-20 pt-2 w-screen max-w-4xl px-4">
-                    <div className={`shadow-2xl p-8 border relative ${isSkiTown ? 'bg-[#00254a] border-[#00254a]' : 'bg-white border-gray-100'}`}>
+                    <div className={`shadow-2xl p-8 border relative ${isSkiTown ? 'bg-[#1a2332] border-[#1a2332]' : 'bg-white border-gray-100'}`}>
                       <button
                         onClick={() => setActiveDropdown(null)}
                         className={`absolute top-4 right-4 p-1 transition-colors ${isSkiTown ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
@@ -357,7 +357,7 @@ export default function Header({
                           href={link.url}
                           target={link.openInNewTab ? '_blank' : undefined}
                           rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[var(--color-gold)] transition-colors"
                           onClick={() => setActiveDropdown(null)}
                         >
                           {link.label}

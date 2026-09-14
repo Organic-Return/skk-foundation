@@ -60,7 +60,7 @@ function buildLeadEmailHtml(data: LeadEmailData): string {
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;">
-      <div style="background:#002349;padding:20px 24px;">
+      <div style="background:#1a2332;padding:20px 24px;">
         <h1 style="color:#fff;font-size:18px;margin:0;font-weight:500;">New Lead: ${typeLabel[data.leadType] || data.leadType}</h1>
       </div>
       <div style="padding:24px;">
@@ -72,14 +72,14 @@ function buildLeadEmailHtml(data: LeadEmailData): string {
           <tr>
             <td style="padding:8px 12px;color:#666;font-size:14px;border-bottom:1px solid #eee;">Email</td>
             <td style="padding:8px 12px;font-size:14px;border-bottom:1px solid #eee;">
-              <a href="mailto:${data.email}" style="color:#002349;">${data.email}</a>
+              <a href="mailto:${data.email}" style="color:#1a2332;">${data.email}</a>
             </td>
           </tr>
           ${data.phone ? `
           <tr>
             <td style="padding:8px 12px;color:#666;font-size:14px;border-bottom:1px solid #eee;">Phone</td>
             <td style="padding:8px 12px;font-size:14px;border-bottom:1px solid #eee;">
-              <a href="tel:${data.phone}" style="color:#002349;">${data.phone}</a>
+              <a href="tel:${data.phone}" style="color:#1a2332;">${data.phone}</a>
             </td>
           </tr>` : ''}
           ${data.inquiryType ? `
@@ -91,7 +91,7 @@ function buildLeadEmailHtml(data: LeadEmailData): string {
           ${utmSection}
         </table>
         ${data.message ? `
-        <div style="margin-top:20px;padding:16px;background:#f9fafb;border-left:3px solid #002349;">
+        <div style="margin-top:20px;padding:16px;background:#f9fafb;border-left:3px solid #1a2332;">
           <p style="margin:0 0 4px;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
           <p style="margin:0;font-size:14px;line-height:1.5;white-space:pre-wrap;">${data.message}</p>
         </div>` : ''}

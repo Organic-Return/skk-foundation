@@ -26,8 +26,8 @@ interface LeadSourcesWidgetProps {
 }
 
 const BUCKET_COLORS: Record<string, string> = {
-  'Paid Search': 'bg-blue-500',
-  'Paid Social': 'bg-indigo-500',
+  'Paid Search': 'bg-[var(--modern-black)]',
+  'Paid Social': 'bg-[var(--modern-black)]',
   'Organic Search': 'bg-green-500',
   'Referral': 'bg-purple-500',
   'Direct': 'bg-gray-500',

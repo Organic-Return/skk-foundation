@@ -7,7 +7,8 @@
   /* Christie's International Real Estate inspired palette */
   --color-navy: #1a1a1a;
   --color-navy-light: #2d2d2d;
-  --color-sothebys-blue: #00254a;
+  /* Retired blue kept as an alias of the brand dark so shared components stay on-brand. */
+  --color-sothebys-blue: var(--modern-black);
   --color-charcoal: #384249;
   --color-gold: #c9ac77;
   --color-gold-light: #d4bc92;
@@ -1118,14 +1119,15 @@ address {
    ======================================== */
 
 :root {
-  --rc-navy: #002349;
+  /* RC Sotheby's template tokens, aliased to this site's brand palette. */
+  --rc-navy: var(--modern-black);
   --rc-cream: #FFFFF8;
-  --rc-gold: #c19b5f;
-  --rc-gold-hover: #a8834d;
-  --rc-brown: #776954;
+  --rc-gold: var(--color-gold);
+  --rc-gold-hover: var(--color-gold-dark);
+  --rc-brown: var(--modern-gray);
   --rc-gray: #3D3D3D;
-  --rc-divider: #002349;
-  --rc-divider-inverted: #c19b5f;
+  --rc-divider: var(--modern-black);
+  --rc-divider-inverted: var(--color-gold);
 }
 
 .rcsothebys-template {

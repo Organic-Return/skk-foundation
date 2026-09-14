@@ -103,7 +103,7 @@ export default function TeamGrid({ members, isRC, totalCount }: TeamGridProps) {
             className={`w-full pl-10 pr-4 py-2.5 text-sm border outline-none transition-colors ${
               isRC
                 ? 'border-[var(--rc-brown)]/20 bg-white text-[var(--rc-navy)] placeholder:text-[var(--rc-brown)]/40 focus:border-[var(--rc-gold)]'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[#1a1a1a] dark:text-white placeholder:text-gray-400 focus:border-[var(--color-gold,#c19b5f)]'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[#1a1a1a] dark:text-white placeholder:text-gray-400 focus:border-[var(--color-gold,#c9ac77)]'
             }`}
           />
         </div>
@@ -113,7 +113,7 @@ export default function TeamGrid({ members, isRC, totalCount }: TeamGridProps) {
           className={`px-4 py-2.5 text-sm border outline-none cursor-pointer transition-colors ${
             isRC
               ? 'border-[var(--rc-brown)]/20 bg-white text-[var(--rc-navy)] focus:border-[var(--rc-gold)]'
-              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[#1a1a1a] dark:text-white focus:border-[var(--color-gold,#c19b5f)]'
+              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[#1a1a1a] dark:text-white focus:border-[var(--color-gold,#c9ac77)]'
           }`}
         >
           <option value="last-asc">Sort by Last Name</option>
@@ -129,7 +129,7 @@ export default function TeamGrid({ members, isRC, totalCount }: TeamGridProps) {
             activeLetter === null
               ? isRC
                 ? 'bg-[var(--rc-gold)] text-white'
-                : 'bg-[var(--color-gold,#c19b5f)] text-white'
+                : 'bg-[var(--color-gold,#c9ac77)] text-white'
               : isRC
                 ? 'text-[var(--rc-navy)] hover:bg-[var(--rc-gold)]/10'
                 : 'text-[#1a1a1a] dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -150,7 +150,7 @@ export default function TeamGrid({ members, isRC, totalCount }: TeamGridProps) {
                 isActive
                   ? isRC
                     ? 'bg-[var(--rc-gold)] text-white'
-                    : 'bg-[var(--color-gold,#c19b5f)] text-white'
+                    : 'bg-[var(--color-gold,#c9ac77)] text-white'
                   : hasMembers
                     ? isRC
                       ? 'text-[var(--rc-navy)] hover:bg-[var(--rc-gold)]/10'
@@ -196,7 +196,7 @@ export default function TeamGrid({ members, isRC, totalCount }: TeamGridProps) {
               className={
                 isRC
                   ? 'relative w-full overflow-hidden mb-4 bg-[var(--rc-navy)]/5 group-hover:shadow-lg transition-shadow duration-300'
-                  : `relative w-full aspect-square rounded-full overflow-hidden mx-auto mb-4 bg-[#f0f0f0] dark:bg-gray-800 border-2 border-[var(--color-gold,#c19b5f)]/20 group-hover:border-[var(--color-gold,#c19b5f)] transition-colors duration-300`
+                  : `relative w-full aspect-square rounded-full overflow-hidden mx-auto mb-4 bg-[#f0f0f0] dark:bg-gray-800 border-2 border-[var(--color-gold,#c9ac77)]/20 group-hover:border-[var(--color-gold,#c9ac77)] transition-colors duration-300`
               }
               style={isRC ? { aspectRatio: '450 / 560' } : undefined}
             >
@@ -227,7 +227,7 @@ export default function TeamGrid({ members, isRC, totalCount }: TeamGridProps) {
               className={`text-sm md:text-base font-medium transition-colors duration-200 ${
                 isRC
                   ? 'text-[var(--rc-navy)] group-hover:text-[var(--rc-gold)]'
-                  : 'text-[#1a1a1a] dark:text-white group-hover:text-[var(--color-gold,#c19b5f)]'
+                  : 'text-[#1a1a1a] dark:text-white group-hover:text-[var(--color-gold,#c9ac77)]'
               }`}
             >
               {isRC ? (

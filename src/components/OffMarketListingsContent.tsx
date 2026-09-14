@@ -164,7 +164,7 @@ export default function OffMarketListingsContent({ listings }: OffMarketListings
                       <span className={`px-2 py-1 text-xs font-semibold rounded ${
                         listing.status === 'Active' ? 'bg-green-500 text-white' :
                         listing.status === 'Pending' ? 'bg-yellow-500 text-white' :
-                        listing.status === 'Coming Soon' ? 'bg-blue-500 text-white' :
+                        listing.status === 'Coming Soon' ? 'bg-[var(--modern-black)] text-white' :
                         'bg-gray-500 text-white'
                       }`}>
                         {listing.status}

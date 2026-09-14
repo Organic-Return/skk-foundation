@@ -133,7 +133,7 @@ YOUTUBE_CHANNEL_ID=your_channel_id_here`}
                 </div>
               </div>
               <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-[var(--color-gold)] dark:group-hover:text-[var(--color-gold)] transition-colors">
                   {video.snippet.title}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">

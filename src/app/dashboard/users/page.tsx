@@ -169,7 +169,7 @@ export default function UsersPage() {
           </button>
           <button
             onClick={() => { setShowForm(!showForm); setFormError(''); }}
-            className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 text-sm text-white bg-[var(--modern-black)] rounded-md hover:bg-[var(--color-gold)] transition-colors"
           >
             {showForm ? 'Cancel' : 'Add User'}
           </button>
@@ -219,7 +219,7 @@ export default function UsersPage() {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Full name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)]"
               />
             </div>
             <div>
@@ -230,7 +230,7 @@ export default function UsersPage() {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)]"
               />
             </div>
             <div>
@@ -238,7 +238,7 @@ export default function UsersPage() {
               <select
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value as 'agent' | 'admin')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)]"
               >
                 <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
@@ -248,7 +248,7 @@ export default function UsersPage() {
               <button
                 type="submit"
                 disabled={creating}
-                className="px-5 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="px-5 py-2 text-sm text-white bg-[var(--modern-black)] rounded-md hover:bg-[var(--color-gold)] disabled:opacity-50 transition-colors"
               >
                 {creating ? 'Creating...' : 'Create User'}
               </button>
@@ -293,7 +293,7 @@ export default function UsersPage() {
                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                       user.role === 'admin'
                         ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
+                        : 'bg-[#f4f1ea] text-[var(--color-gold-dark)]'
                     }`}>
                       {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </span>

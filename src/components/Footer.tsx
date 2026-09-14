@@ -122,7 +122,7 @@ export default function Footer({
     <footer className="relative flex flex-col items-center w-full">
       {/* Top Section - Sotheby's Blue Background with Portrait and Tagline */}
       <div className="flex flex-col w-full relative mt-14">
-        <div className="relative bg-[#00254a] max-w-none w-full flex flex-col items-center p-0">
+        <div className="relative bg-[#1a2332] max-w-none w-full flex flex-col items-center p-0">
           <div className="flex flex-wrap xl:flex-nowrap w-full mx-0 px-6 pb-6 md:px-0 md:py-10 md:max-w-xl xl:max-w-screen-xl justify-center items-center">
             {/* Agent portrait */}
             {portraitUrl && (

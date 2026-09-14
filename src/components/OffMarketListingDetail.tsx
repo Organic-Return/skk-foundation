@@ -173,13 +173,13 @@ export default function OffMarketListingDetail({ listing }: OffMarketListingDeta
                   <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
                     listing.status === 'Active' ? 'bg-green-100 text-green-800' :
                     listing.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                    listing.status === 'Coming Soon' ? 'bg-blue-100 text-blue-800' :
+                    listing.status === 'Coming Soon' ? 'bg-[#f4f1ea] text-[var(--color-gold-dark)]' :
                     'bg-gray-100 text-gray-800'
                   }`}>
                     {listing.status}
                   </span>
                   {listing.propertyType && (
-                    <span className="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
+                    <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#f4f1ea] text-[var(--color-gold-dark)]">
                       {listing.propertyType}
                     </span>
                   )}
@@ -297,12 +297,12 @@ export default function OffMarketListingDetail({ listing }: OffMarketListingDeta
                       <p className="text-sm text-gray-500">{listing.officeName}</p>
                     )}
                     {listing.agentEmail && (
-                      <a href={`mailto:${listing.agentEmail}`} className="text-sm text-blue-600 hover:underline block">
+                      <a href={`mailto:${listing.agentEmail}`} className="text-sm text-[var(--color-gold-dark)] hover:underline block">
                         {listing.agentEmail}
                       </a>
                     )}
                     {listing.agentPhone && (
-                      <a href={`tel:${listing.agentPhone}`} className="text-sm text-blue-600 hover:underline block">
+                      <a href={`tel:${listing.agentPhone}`} className="text-sm text-[var(--color-gold-dark)] hover:underline block">
                         {listing.agentPhone}
                       </a>
                     )}

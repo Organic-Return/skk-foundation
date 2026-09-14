@@ -59,7 +59,7 @@ export default function KeywordSearch({ defaultValue = '' }: KeywordSearchProps)
       placeholder="Search MLS# or address..."
       value={value}
       onChange={handleChange}
-      className="w-48 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+      className="w-48 px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)]"
     />
   );
 }

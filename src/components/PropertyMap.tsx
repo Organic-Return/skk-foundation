@@ -12,7 +12,7 @@ interface PropertyMapProps {
 }
 
 // Sotheby's blue color
-const SOTHEBYS_BLUE = '#00254a';
+const SOTHEBYS_BLUE = '#1a2332';
 
 // Format price for map markers (e.g., $4.9M, $799K)
 function formatPriceShort(price: number | null | undefined): string {

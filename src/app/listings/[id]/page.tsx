@@ -626,7 +626,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                         ? 'bg-amber-50 text-amber-700 border border-amber-200'
                         : listing.status === 'Closed'
                         ? 'bg-gray-100 text-gray-600 border border-gray-200'
-                        : 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-[#f4f1ea] text-[var(--color-gold-dark)] border border-[var(--color-gold)]'
                     }`}
                   >
                     {listing.status}

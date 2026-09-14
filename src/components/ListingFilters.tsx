@@ -327,7 +327,7 @@ export default function ListingFilters({
 
   // Shared dropdown button style
   const dropdownBtnClass = "h-[42px] px-4 border border-gray-200 bg-white text-sm text-gray-700 flex items-center justify-between gap-2 hover:border-gray-300 transition-colors whitespace-nowrap cursor-pointer";
-  const dropdownActiveClass = "border-[var(--rc-navy,#002349)] ring-1 ring-[var(--rc-navy,#002349)]";
+  const dropdownActiveClass = "border-[var(--rc-navy,#1a2332)] ring-1 ring-[var(--rc-navy,#1a2332)]";
 
   return (
     <>
@@ -344,7 +344,7 @@ export default function ListingFilters({
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               placeholder="Search by address, MLS#, or keyword..."
-              className="w-full h-[42px] pl-10 pr-4 border border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 placeholder:italic focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none transition-colors"
+              className="w-full h-[42px] pl-10 pr-4 border border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 placeholder:italic focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none transition-colors"
             />
           </div>
 
@@ -359,7 +359,7 @@ export default function ListingFilters({
                 setBathsDropdownOpen(false);
                 if (!cityDropdownOpen) setCitySearch('');
               }}
-              className={`${dropdownBtnClass} min-w-[150px] ${cityDropdownOpen ? dropdownActiveClass : ''} ${selectedCities.length > 0 ? 'font-medium text-[var(--rc-navy,#002349)]' : ''}`}
+              className={`${dropdownBtnClass} min-w-[150px] ${cityDropdownOpen ? dropdownActiveClass : ''} ${selectedCities.length > 0 ? 'font-medium text-[var(--rc-navy,#1a2332)]' : ''}`}
             >
               <span className="truncate">{cityButtonLabel}</span>
               <svg className={`w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,7 +375,7 @@ export default function ListingFilters({
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
                     placeholder="Search cities..."
-                    className="w-full px-3 py-2 border border-gray-200 text-sm focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none"
+                    className="w-full px-3 py-2 border border-gray-200 text-sm focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none"
                     autoFocus
                   />
                 </div>
@@ -385,7 +385,7 @@ export default function ListingFilters({
                     <button
                       type="button"
                       onClick={() => { setSelectedCities([]); setSelectedNeighborhood(''); }}
-                      className="text-xs text-[var(--rc-navy,#002349)] hover:underline font-medium"
+                      className="text-xs text-[var(--rc-navy,#1a2332)] hover:underline font-medium"
                     >
                       Clear all
                     </button>
@@ -401,7 +401,7 @@ export default function ListingFilters({
                         type="checkbox"
                         checked={selectedCities.includes(city)}
                         onChange={() => handleCityToggle(city)}
-                        className="w-4 h-4 rounded border-gray-300 text-[var(--rc-navy,#002349)] focus:ring-[var(--rc-navy,#002349)]"
+                        className="w-4 h-4 rounded border-gray-300 text-[var(--rc-navy,#1a2332)] focus:ring-[var(--rc-navy,#1a2332)]"
                       />
                       <span className="text-gray-700">{city}</span>
                     </label>
@@ -424,7 +424,7 @@ export default function ListingFilters({
                 setBedsDropdownOpen(false);
                 setBathsDropdownOpen(false);
               }}
-              className={`${dropdownBtnClass} min-w-[130px] ${priceDropdownOpen ? dropdownActiveClass : ''} ${minPrice || maxPrice ? 'font-medium text-[var(--rc-navy,#002349)]' : ''}`}
+              className={`${dropdownBtnClass} min-w-[130px] ${priceDropdownOpen ? dropdownActiveClass : ''} ${minPrice || maxPrice ? 'font-medium text-[var(--rc-navy,#1a2332)]' : ''}`}
             >
               <span className="truncate">{priceLabel}</span>
               <svg className={`w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform ${priceDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -440,7 +440,7 @@ export default function ListingFilters({
                     <select
                       value={minPrice}
                       onChange={(e) => setMinPrice(e.target.value)}
-                      className="w-full h-[38px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none"
+                      className="w-full h-[38px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none"
                     >
                       {PRICE_OPTIONS.map(opt => (
                         <option key={`min-${opt.value}`} value={opt.value}>{opt.value ? opt.label : 'No Min'}</option>
@@ -453,7 +453,7 @@ export default function ListingFilters({
                     <select
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
-                      className="w-full h-[38px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none"
+                      className="w-full h-[38px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none"
                     >
                       {PRICE_OPTIONS.map(opt => (
                         <option key={`max-${opt.value}`} value={opt.value}>{opt.value ? opt.label : 'No Max'}</option>
@@ -465,7 +465,7 @@ export default function ListingFilters({
                   <button
                     type="button"
                     onClick={() => { setMinPrice(''); setMaxPrice(''); }}
-                    className="mt-3 text-xs text-[var(--rc-navy,#002349)] hover:underline font-medium"
+                    className="mt-3 text-xs text-[var(--rc-navy,#1a2332)] hover:underline font-medium"
                   >
                     Clear price
                   </button>
@@ -484,7 +484,7 @@ export default function ListingFilters({
                 setPriceDropdownOpen(false);
                 setBathsDropdownOpen(false);
               }}
-              className={`${dropdownBtnClass} min-w-[100px] ${bedsDropdownOpen ? dropdownActiveClass : ''} ${beds ? 'font-medium text-[var(--rc-navy,#002349)]' : ''}`}
+              className={`${dropdownBtnClass} min-w-[100px] ${bedsDropdownOpen ? dropdownActiveClass : ''} ${beds ? 'font-medium text-[var(--rc-navy,#1a2332)]' : ''}`}
             >
               <span>{bedsLabel}</span>
               <svg className={`w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform ${bedsDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -506,7 +506,7 @@ export default function ListingFilters({
                     key={opt.value}
                     type="button"
                     onClick={() => { setBeds(opt.value); setBedsDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 ${beds === opt.value ? 'bg-gray-50 font-medium text-[var(--rc-navy,#002349)]' : 'text-gray-700'}`}
+                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 ${beds === opt.value ? 'bg-gray-50 font-medium text-[var(--rc-navy,#1a2332)]' : 'text-gray-700'}`}
                   >
                     {opt.label}
                   </button>
@@ -525,7 +525,7 @@ export default function ListingFilters({
                 setPriceDropdownOpen(false);
                 setBedsDropdownOpen(false);
               }}
-              className={`${dropdownBtnClass} min-w-[100px] ${bathsDropdownOpen ? dropdownActiveClass : ''} ${baths ? 'font-medium text-[var(--rc-navy,#002349)]' : ''}`}
+              className={`${dropdownBtnClass} min-w-[100px] ${bathsDropdownOpen ? dropdownActiveClass : ''} ${baths ? 'font-medium text-[var(--rc-navy,#1a2332)]' : ''}`}
             >
               <span>{bathsLabel}</span>
               <svg className={`w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform ${bathsDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -546,7 +546,7 @@ export default function ListingFilters({
                     key={opt.value}
                     type="button"
                     onClick={() => { setBaths(opt.value); setBathsDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 ${baths === opt.value ? 'bg-gray-50 font-medium text-[var(--rc-navy,#002349)]' : 'text-gray-700'}`}
+                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 ${baths === opt.value ? 'bg-gray-50 font-medium text-[var(--rc-navy,#1a2332)]' : 'text-gray-700'}`}
                   >
                     {opt.label}
                   </button>
@@ -559,14 +559,14 @@ export default function ListingFilters({
           <button
             type="button"
             onClick={() => setAdvancedModalOpen(true)}
-            className="h-[42px] px-5 bg-[var(--rc-navy,#002349)] text-white text-sm font-medium tracking-wide uppercase flex items-center gap-2 hover:bg-[var(--rc-navy,#002349)]/90 transition-colors flex-shrink-0"
+            className="h-[42px] px-5 bg-[var(--rc-navy,#1a2332)] text-white text-sm font-medium tracking-wide uppercase flex items-center gap-2 hover:bg-[var(--rc-navy,#1a2332)]/90 transition-colors flex-shrink-0"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
             More Filters
             {advancedFilterCount > 0 && (
-              <span className="ml-0.5 w-5 h-5 bg-white text-[var(--rc-navy,#002349)] rounded-full text-xs font-bold flex items-center justify-center">
+              <span className="ml-0.5 w-5 h-5 bg-white text-[var(--rc-navy,#1a2332)] rounded-full text-xs font-bold flex items-center justify-center">
                 {advancedFilterCount}
               </span>
             )}
@@ -615,7 +615,7 @@ export default function ListingFilters({
           {/* Modal */}
           <div className="relative bg-white w-full max-w-lg mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="sticky top-0 bg-[var(--rc-navy,#002349)] text-white px-6 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[var(--rc-navy,#1a2332)] text-white px-6 py-4 flex items-center justify-between z-10">
               <h2 className="text-lg font-light uppercase tracking-[0.08em]" style={{ fontFamily: 'var(--font-figtree), Figtree, sans-serif' }}>
                 Advanced Search
               </h2>
@@ -638,7 +638,7 @@ export default function ListingFilters({
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none"
+                  className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none"
                 >
                   <option value="">All Statuses</option>
                   {statuses.map((s) => (
@@ -653,7 +653,7 @@ export default function ListingFilters({
                 <select
                   value={propertyType}
                   onChange={(e) => setPropertyType(e.target.value)}
-                  className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none"
+                  className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none"
                 >
                   <option value="">All Types</option>
                   {propertyTypes.map((t) => (
@@ -668,7 +668,7 @@ export default function ListingFilters({
                 <select
                   value={propertySubType}
                   onChange={(e) => setPropertySubType(e.target.value)}
-                  className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none"
+                  className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none"
                 >
                   <option value="">All Subtypes</option>
                   {propertySubTypes.map((t) => (
@@ -685,7 +685,7 @@ export default function ListingFilters({
                     value={selectedNeighborhood}
                     onChange={(e) => setSelectedNeighborhood(e.target.value)}
                     disabled={loadingNeighborhoods}
-                    className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none disabled:bg-gray-50"
+                    className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none disabled:bg-gray-50"
                   >
                     <option value="">{neighborhoodPlaceholder}</option>
                     {neighborhoods.map((n) => (
@@ -698,7 +698,7 @@ export default function ListingFilters({
                     value={selectedNeighborhood}
                     onChange={(e) => setSelectedNeighborhood(e.target.value)}
                     placeholder={selectedCities.length > 0 ? `Search in ${selectedCities.length === 1 ? selectedCities[0] : selectedCities.length + ' cities'}...` : 'Select a city first to see neighborhoods'}
-                    className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white placeholder:text-gray-400 focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none"
+                    className="w-full h-[42px] px-3 border border-gray-200 text-sm bg-white placeholder:text-gray-400 focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none"
                   />
                 )}
                 {selectedCities.length === 0 && neighborhoods.length === 0 && (
@@ -718,7 +718,7 @@ export default function ListingFilters({
                     role="switch"
                     aria-checked={ourTeam}
                     onClick={() => setOurTeam(!ourTeam)}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${ourTeam ? 'bg-[var(--rc-navy,#002349)]' : 'bg-gray-200'}`}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${ourTeam ? 'bg-[var(--rc-navy,#1a2332)]' : 'bg-gray-200'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${ourTeam ? 'translate-x-5' : ''}`} />
                   </button>
@@ -744,7 +744,7 @@ export default function ListingFilters({
               <button
                 type="button"
                 onClick={() => setAdvancedModalOpen(false)}
-                className="h-[42px] px-8 bg-[var(--rc-navy,#002349)] text-white text-sm font-medium uppercase tracking-wide hover:bg-[var(--rc-navy,#002349)]/90 transition-colors"
+                className="h-[42px] px-8 bg-[var(--rc-navy,#1a2332)] text-white text-sm font-medium uppercase tracking-wide hover:bg-[var(--rc-navy,#1a2332)]/90 transition-colors"
               >
                 Apply Filters
               </button>

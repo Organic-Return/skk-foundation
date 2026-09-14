@@ -186,12 +186,12 @@ function PropertyCard({ listing, template = 'classic', hasVideo = false, hasMatt
               const daysDiff = Math.floor((Date.now() - new Date(listing.listing_date).getTime()) / (1000 * 60 * 60 * 24));
               return daysDiff <= 14;
             })() && (
-              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,var(--color-gold,#c19b5f))] text-white">
+              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,var(--color-gold,#c9ac77))] text-white">
                 New Listing
               </span>
             )}
             {listing.open_house_date && new Date(listing.open_house_date + 'T23:59:59') >= new Date() && (
-              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#002349)] text-white">
+              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#1a2332)] text-white">
                 Open House {new Date(listing.open_house_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
             )}
@@ -201,7 +201,7 @@ function PropertyCard({ listing, template = 'classic', hasVideo = false, hasMatt
           {(hasVideo || hasMatterport) && (
             <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
               {hasVideo && (
-                <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#002349)] text-white flex items-center gap-1.5">
+                <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#1a2332)] text-white flex items-center gap-1.5">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
                   </svg>
@@ -209,7 +209,7 @@ function PropertyCard({ listing, template = 'classic', hasVideo = false, hasMatt
                 </span>
               )}
               {hasMatterport && (
-                <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,#c19b5f)] text-white flex items-center gap-1.5">
+                <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,#c9ac77)] text-white flex items-center gap-1.5">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
@@ -430,7 +430,7 @@ export default function ListingsContent({
           <select
             value={currentSort}
             onChange={(e) => handleSortChange(e.target.value as SortOption)}
-            className="h-[34px] px-3 text-sm border border-gray-200 bg-white text-gray-700 focus:border-[var(--rc-navy,#002349)] focus:ring-1 focus:ring-[var(--rc-navy,#002349)] focus:outline-none cursor-pointer"
+            className="h-[34px] px-3 text-sm border border-gray-200 bg-white text-gray-700 focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none cursor-pointer"
           >
             <option value="newest">Newest</option>
             <option value="price_low">Price: Low to High</option>
@@ -441,7 +441,7 @@ export default function ListingsContent({
           {areaFilteredListings !== null && (
             <button
               onClick={handleDrawClear}
-              className="flex items-center gap-1 text-sm text-[var(--rc-navy,#002349)] hover:underline font-medium"
+              className="flex items-center gap-1 text-sm text-[var(--rc-navy,#1a2332)] hover:underline font-medium"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -457,7 +457,7 @@ export default function ListingsContent({
             onClick={() => setViewMode('list')}
             className={`h-[34px] px-4 text-sm font-medium border flex items-center gap-2 transition-colors ${
               viewMode === 'list'
-                ? 'bg-[var(--rc-navy,#002349)] text-white border-[var(--rc-navy,#002349)]'
+                ? 'bg-[var(--rc-navy,#1a2332)] text-white border-[var(--rc-navy,#1a2332)]'
                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -471,7 +471,7 @@ export default function ListingsContent({
             onClick={() => setViewMode('map')}
             className={`h-[34px] px-4 text-sm font-medium border-t border-r border-b flex items-center gap-2 transition-colors ${
               viewMode === 'map'
-                ? 'bg-[var(--rc-navy,#002349)] text-white border-[var(--rc-navy,#002349)]'
+                ? 'bg-[var(--rc-navy,#1a2332)] text-white border-[var(--rc-navy,#1a2332)]'
                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -519,7 +519,7 @@ export default function ListingsContent({
                     <div className="flex justify-center mt-10">
                       <button
                         onClick={onLoadMore}
-                        className="px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] border border-[var(--rc-navy,#002349)] text-[var(--rc-navy,#002349)] hover:bg-[var(--rc-navy,#002349)] hover:text-white transition-colors duration-200"
+                        className="px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] border border-[var(--rc-navy,#1a2332)] text-[var(--rc-navy,#1a2332)] hover:bg-[var(--rc-navy,#1a2332)] hover:text-white transition-colors duration-200"
                       >
                         Load More
                       </button>
@@ -564,7 +564,7 @@ export default function ListingsContent({
                     <div className="flex justify-center mt-10">
                       <button
                         onClick={onLoadMore}
-                        className="px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] border border-[var(--rc-navy,#002349)] text-[var(--rc-navy,#002349)] hover:bg-[var(--rc-navy,#002349)] hover:text-white transition-colors duration-200"
+                        className="px-8 py-3 text-xs font-bold uppercase tracking-[0.15em] border border-[var(--rc-navy,#1a2332)] text-[var(--rc-navy,#1a2332)] hover:bg-[var(--rc-navy,#1a2332)] hover:text-white transition-colors duration-200"
                       >
                         Load More
                       </button>

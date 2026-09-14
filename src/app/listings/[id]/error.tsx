@@ -24,7 +24,7 @@ export default function ListingError({
         </p>
         <button
           onClick={reset}
-          className="px-6 py-2 bg-[var(--rc-navy,#002349)] text-white text-sm uppercase tracking-wider hover:opacity-90 transition-opacity"
+          className="px-6 py-2 bg-[var(--rc-navy,#1a2332)] text-white text-sm uppercase tracking-wider hover:opacity-90 transition-opacity"
         >
           Try Again
         </button>

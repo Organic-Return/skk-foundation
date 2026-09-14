@@ -117,8 +117,8 @@ export default function AnalyticsPage() {
             To view analytics data, set up the following environment variables in your Vercel project:
           </p>
           <div className="text-left max-w-md mx-auto bg-gray-50 rounded-lg p-4 text-sm font-mono">
-            <p className="mb-2"><span className="text-blue-600">GA_PROPERTY_ID</span>=<span className="text-gray-500">your-numeric-property-id</span></p>
-            <p><span className="text-blue-600">GOOGLE_SERVICE_ACCOUNT_KEY</span>=<span className="text-gray-500">base64-encoded-service-account-json</span></p>
+            <p className="mb-2"><span className="text-[var(--color-gold-dark)]">GA_PROPERTY_ID</span>=<span className="text-gray-500">your-numeric-property-id</span></p>
+            <p><span className="text-[var(--color-gold-dark)]">GOOGLE_SERVICE_ACCOUNT_KEY</span>=<span className="text-gray-500">base64-encoded-service-account-json</span></p>
           </div>
           <div className="mt-6 text-left max-w-lg mx-auto text-sm text-gray-500 space-y-2">
             <p><strong>Step 1:</strong> Create a service account in Google Cloud Console</p>
@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
                 onClick={() => setPeriod(p.value)}
                 className={`px-4 py-2 text-sm rounded-md transition-colors ${
                   period === p.value
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-[var(--modern-black)] text-white'
                     : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                 }`}
               >

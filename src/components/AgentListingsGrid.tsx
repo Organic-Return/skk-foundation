@@ -113,7 +113,7 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
         {!isSold && (hasVideo || hasMatterport) && (
           <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5">
             {hasVideo && (
-              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#002349)] text-white flex items-center gap-1.5">
+              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#1a2332)] text-white flex items-center gap-1.5">
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
@@ -121,7 +121,7 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
               </span>
             )}
             {hasMatterport && (
-              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,#c19b5f)] text-white flex items-center gap-1.5">
+              <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,#c9ac77)] text-white flex items-center gap-1.5">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
@@ -165,12 +165,12 @@ function PropertyCard({ listing, isSold, hasVideo = false, hasMatterport = false
             const daysDiff = Math.floor((Date.now() - new Date(listing.listing_date).getTime()) / (1000 * 60 * 60 * 24));
             return daysDiff <= 14;
           })() && (
-            <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,#c19b5f)] text-white">
+            <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-gold,#c9ac77)] text-white">
               New Listing
             </span>
           )}
           {!isSold && listing.open_house_date && new Date(listing.open_house_date + 'T23:59:59') >= new Date() && (
-            <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#002349)] text-white">
+            <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--rc-navy,#1a2332)] text-white">
               Open House {new Date(listing.open_house_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           )}

@@ -38,7 +38,7 @@ function formatPriceShort(price: number | null): string {
 }
 
 // Sotheby's blue color
-const SOTHEBYS_BLUE = '#00254a';
+const SOTHEBYS_BLUE = '#1a2332';
 
 // Price flag marker component
 interface PriceMarkerProps {
@@ -330,7 +330,7 @@ export default function ListingsMap({ listings, onDrawComplete, onDrawClear, has
 
         {isDrawing && (
           <>
-            <div className="px-4 py-2 bg-blue-600 rounded-md shadow-md text-sm font-medium text-white">
+            <div className="px-4 py-2 bg-[var(--modern-black)] rounded-md shadow-md text-sm font-medium text-white">
               Click on map to draw area
             </div>
             <div className="flex gap-2">
@@ -460,7 +460,7 @@ export default function ListingsMap({ listings, onDrawComplete, onDrawClear, has
               </p>
               <a
                 href={getListingHref(selectedListing)}
-                className="mt-2 inline-block text-sm text-[#00254a] hover:underline font-medium"
+                className="mt-2 inline-block text-sm text-[#1a2332] hover:underline font-medium"
               >
                 View Details
               </a>

@@ -69,7 +69,7 @@ export default function CommunityFeaturedListings({
                   </div>
                 )}
                 <div className="absolute top-3 left-3">
-                  <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--color-navy,#002349)] text-white">
+                  <span className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium bg-[var(--color-navy,#1a2332)] text-white">
                     For Sale
                   </span>
                 </div>

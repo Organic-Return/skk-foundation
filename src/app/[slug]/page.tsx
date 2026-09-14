@@ -126,7 +126,7 @@ const components: PortableTextComponents = {
     code: ({ children }: { children?: ReactNode }) => <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{children}</code>,
     link: ({ children, value }: { children?: ReactNode; value?: { href?: string } }) => {
       const href = value?.href || '';
-      return <a href={href} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>;
+      return <a href={href} className="text-[var(--color-gold-dark)] hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>;
     },
   },
   list: {
