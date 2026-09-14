@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: '/christies-masters-circle', destination: '/about/christies-masters-circle', permanent: true },
+      // Stacey's profile lives at /about/stacey-k-kelly; the generic team
+      // template URLs (she is the only agent) all resolve to it.
+      { source: '/team/stacey-k-kelly', destination: '/about/stacey-k-kelly', permanent: true },
+      { source: '/team', destination: '/about/stacey-k-kelly', permanent: true },
+      { source: '/agents', destination: '/about/stacey-k-kelly', permanent: true },
       { source: '/the-council', destination: '/affiliated-partners/the-council', permanent: true },
       { source: '/about/the-council', destination: '/affiliated-partners/the-council', permanent: true },
       // The Council is the only partner group on this site; the index and the

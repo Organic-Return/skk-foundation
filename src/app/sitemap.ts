@@ -89,10 +89,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/team`,
+      url: `${baseUrl}/about/stacey-k-kelly`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/contact-us`,
@@ -187,7 +187,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Team member profile pages (the About menu's "Meet Stacey" is one of these)
-  const teamPages: MetadataRoute.Sitemap = (teamMembers || []).map((member) => ({
+  // Stacey's profile is the editorial page above, not the team template.
+  const teamPages: MetadataRoute.Sitemap = (teamMembers || []).filter((m) => m.slug !== 'stacey-k-kelly').map((member) => ({
     url: `${baseUrl}/team/${member.slug}`,
     lastModified: new Date(member._updatedAt),
     changeFrequency: 'monthly' as const,

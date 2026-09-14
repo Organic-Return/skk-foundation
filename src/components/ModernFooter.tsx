@@ -129,7 +129,7 @@ export default function ModernFooter({
   const defaultLinks: FooterLink[] = [
     { label: 'Home', url: '/' },
     { label: 'Properties', url: '/listings' },
-    { label: 'About', url: '/team/stacey-k-kelly' },
+    { label: 'About', url: '/about/stacey-k-kelly' },
     { label: 'Market Reports', url: '/market-reports' },
     { label: 'Communities', url: '/communities' },
     { label: 'Contact', url: '/contact-us' },
