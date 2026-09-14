@@ -31,7 +31,7 @@ export default function PageHero({ title, subtitle, eyebrow, image, children }: 
       )}
       <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-16 text-center">
         {eyebrow && (
-          <p className="text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
+          <p className="mx-auto text-[var(--color-gold)] text-xs md:text-sm uppercase tracking-[0.25em] mb-5">
             {eyebrow}
           </p>
         )}
