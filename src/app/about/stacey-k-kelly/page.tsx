@@ -245,9 +245,9 @@ export default async function AboutStaceyPage() {
 
               <dl className="grid grid-cols-3 gap-6 md:gap-10 border-t border-white/15 pt-8 mb-10 max-w-2xl">
                 {stats.map((s) => (
-                  <div key={s.label}>
-                    <dt className="order-2 text-[10px] md:text-xs uppercase tracking-[0.2em] text-white/55">{s.label}</dt>
-                    <dd className="font-serif text-2xl md:text-4xl font-light text-white mb-1 whitespace-nowrap">{s.value}</dd>
+                  <div key={s.label} className="flex flex-col">
+                    <dt className="order-2 text-[10px] md:text-xs uppercase tracking-[0.2em] text-white/55 mt-2">{s.label}</dt>
+                    <dd className="order-1 font-serif text-2xl md:text-4xl font-light text-white whitespace-nowrap leading-none">{s.value}</dd>
                   </div>
                 ))}
               </dl>
