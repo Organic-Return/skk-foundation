@@ -238,7 +238,13 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
 
   // Filter dropdown options based on MLS configuration
   const filteredCities = allowedCities.length > 0 ? allowedCities : cities;
-  const filteredPropertyTypes = propertyTypes.filter((t) => !excludedPropertyTypes.includes(t));
+  // Every type is offered in the filter, hidden ones last, so rentals and
+  // commercial can be chosen deliberately even though the default results
+  // leave them out.
+  const filteredPropertyTypes = [
+    ...propertyTypes.filter((t) => !excludedPropertyTypes.includes(t)),
+    ...propertyTypes.filter((t) => excludedPropertyTypes.includes(t)),
+  ];
   const filteredPropertySubTypes = propertySubTypes.filter((t) => !excludedPropertySubTypes.includes(t));
   const filteredStatuses = statuses.filter(
     (s) => allowedStatusList.includes(s) && !excludedStatuses.includes(s)

@@ -6,7 +6,6 @@ import { getListings, getListingHref } from '@/lib/listings';
 import {
   getMLSConfiguration,
   getAllowedCities,
-  getExcludedPropertyTypes,
   getExcludedPropertySubTypes,
 } from '@/lib/mlsConfiguration';
 import { getOffMarketListings } from '@/lib/offMarketListings';
@@ -26,10 +25,9 @@ const PARTNERS_QUERY = `*[_type == "affiliatedPartner" && active == true]{
   _updatedAt
 }`;
 
-// The listing URLs, selected with exactly the filters the /listings grid uses
-// (allowed towns, excluded property types, active-type statuses) so the
-// sitemap never advertises a rental, an expired listing or a Grand Junction
-// house the site itself does not show. Cached for an hour: gathering every
+// The listing URLs: the allowed towns and active-type statuses the /listings
+// grid uses, plus the rental and commercial types the grid hides by default
+// (their pages are reachable through the type filter and are indexable). Cached for an hour: gathering every
 // listing takes several seconds, too slow to do on each crawler fetch.
 const LISTINGS_PAGE_SIZE = 500;
 const MAX_LISTINGS = 25_000;
@@ -38,8 +36,10 @@ const SITEMAP_STATUSES = ['Active', 'Active Under Contract', 'Active U/C W/ Bump
 const getSitemapListings = unstable_cache(
   async (): Promise<Array<{ href: string; lastModified: string }>> => {
     const mlsConfig = await getMLSConfiguration();
+    // Rentals and commercial are hidden from the default listing results but
+    // their pages are indexable, so the sitemap keeps every type; only the
+    // town and status filters apply.
     const filters = {
-      excludedPropertyTypes: [...getExcludedPropertyTypes(mlsConfig), 'Commercial Sale'],
       excludedPropertySubTypes: getExcludedPropertySubTypes(mlsConfig),
       allowedCities: getAllowedCities(mlsConfig),
       allowedStatuses: SITEMAP_STATUSES,
@@ -65,7 +65,7 @@ const getSitemapListings = unstable_cache(
     }
     return out;
   },
-  ['sitemap-listings-v2'],
+  ['sitemap-listings-v3'],
   { revalidate: 3600, tags: ['sitemap-listings'] }
 );
 

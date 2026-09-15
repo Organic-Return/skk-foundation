@@ -499,8 +499,10 @@ export async function getListings(
   }
 
   // Apply filters from MLS Configuration
-  // Skip type exclusions for keyword searches — user is looking for a specific listing
-  if (filters.excludedPropertyTypes && filters.excludedPropertyTypes.length > 0 && !filters.keyword) {
+  // Skip type exclusions for keyword searches — user is looking for a specific
+  // listing — and when a property type was chosen explicitly: rentals and
+  // commercial are hidden from the default results but reachable on request.
+  if (filters.excludedPropertyTypes && filters.excludedPropertyTypes.length > 0 && !filters.keyword && !filters.propertyType) {
     // Use or() to also include rows where property_type is NULL
     query = query.or(`property_type.not.in.(${filters.excludedPropertyTypes.join(',')}),property_type.is.null`);
   }
