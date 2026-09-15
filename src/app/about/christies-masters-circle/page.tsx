@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { getBaseUrl } from '@/lib/settings';
 import StructuredData from '@/components/StructuredData';
 import { breadcrumbSchema } from '@/lib/seo';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 const QUERY = `*[_type == "christiesMastersCircle"][0]{
   heroEyebrow, heroTitle, heroSubtitle, heroImage,
@@ -119,7 +120,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.seo.ogImage)?.width(1200).height(630).url()
     : c.heroImage
     ? urlFor(c.heroImage)?.width(1200).height(630).url()
-    : null;
+    : (await getDefaultShareImage())?.url ?? null;
 
   return {
     title: metaTitle,
