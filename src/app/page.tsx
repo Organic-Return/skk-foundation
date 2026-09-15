@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
-import { getHomepageData, getAllCommunities } from '@/lib/homepage';
+import { getHomepageData, getAllCommunities, getDefaultShareImage } from '@/lib/homepage';
 import { getSettings, getBranding, getBaseUrl } from '@/lib/settings';
 import { getNewestHighPricedByCities, getNewestHighPricedByCity } from '@/lib/listings';
 import { getSalesTotals, formatUSD } from '@/lib/salesTotals';
@@ -24,21 +24,34 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = homepage?.seo;
   const siteTitle = settings?.title || 'Real Estate';
   const baseUrl = await getBaseUrl();
+  const title = seo?.metaTitle || siteTitle;
+  const description = seo?.metaDescription || settings?.description;
+  // Share image: the homepage's own SEO image, else the hero still. Facebook
+  // and LinkedIn refuse to build a preview without og:image and og:type.
+  const images = seo?.metaImage?.asset
+    ? [{ url: urlFor(seo.metaImage).width(1200).height(630).fit('crop').url(), width: 1200, height: 630 }]
+    : (await getDefaultShareImage().then((i) => (i ? [i] : [])));
 
   return {
-    title: seo?.metaTitle || siteTitle,
-    description: seo?.metaDescription || settings?.description,
+    title,
+    description,
     keywords: seo?.keywords,
     alternates: {
       canonical: baseUrl,
     },
     openGraph: {
-      title: seo?.metaTitle || siteTitle,
-      description: seo?.metaDescription || settings?.description,
+      type: 'website',
+      siteName: siteTitle,
+      title,
+      description,
       url: baseUrl,
-      images: seo?.metaImage?.asset?.url
-        ? [{ url: urlFor(seo.metaImage).width(1200).url() }]
-        : undefined,
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: images.map((i) => i.url),
     },
   };
 }

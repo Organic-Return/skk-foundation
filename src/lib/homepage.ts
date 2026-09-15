@@ -310,3 +310,18 @@ export async function getAllCommunities(limit: number = 12) {
     return [];
   }
 }
+
+
+/**
+ * The image to use for social shares when a page has none of its own: the
+ * homepage hero's fallback still, cropped to the 1200×630 Open Graph frame.
+ */
+export async function getDefaultShareImage(): Promise<{ url: string; width: number; height: number } | null> {
+  const homepage = await getHomepageData();
+  const image = homepage?.hero?.fallbackImage;
+  if (!image?.asset) return null;
+  const { createImageUrlBuilder } = await import('@sanity/image-url');
+  const { client } = await import('@/sanity/client');
+  const url = createImageUrlBuilder(client).image(image).width(1200).height(630).fit('crop').url();
+  return { url, width: 1200, height: 630 };
+}

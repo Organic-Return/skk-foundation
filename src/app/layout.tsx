@@ -14,6 +14,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import UTMCapture from "@/components/UTMCapture";
 import Analytics from "@/components/Analytics";
 import { getSettings, getBranding, getBaseUrl } from "@/lib/settings";
+import { getDefaultShareImage } from "@/lib/homepage";
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import { getMainNavigation, getFooterNavigation, groupFooterLinks } from "@/lib/navigation";
@@ -87,7 +88,7 @@ const notoSerifDisplay = Noto_Serif_Display({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [settings, baseUrl] = await Promise.all([getSettings(), getBaseUrl()]);
+  const [settings, baseUrl, shareImage] = await Promise.all([getSettings(), getBaseUrl(), getDefaultShareImage()]);
   const siteName = settings?.title || 'Real Estate';
   const description = settings?.description;
 
@@ -126,8 +127,9 @@ export async function generateMetadata(): Promise<Metadata> {
       url: baseUrl,
       title: siteName,
       description,
+      images: shareImage ? [shareImage] : [],
     },
-    twitter: { card: 'summary_large_image', title: siteName, description },
+    twitter: { card: 'summary_large_image', title: siteName, description, images: shareImage ? [shareImage.url] : [] },
   };
 }
 

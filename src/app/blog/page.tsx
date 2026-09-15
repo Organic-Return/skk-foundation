@@ -8,6 +8,7 @@ import PageHero from "@/components/PageHero";
 import { getBaseUrl, getSiteName } from '@/lib/settings';
 import StructuredData from "@/components/StructuredData";
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 const POSTS_COUNT_QUERY = `count(*[_type == "post"])`;
 
@@ -35,10 +36,11 @@ export async function generateMetadata({
 }: {
   searchParams: Promise<{ page?: string }>;
 }): Promise<Metadata> {
-  const [baseUrl, siteName, params] = await Promise.all([
+  const [baseUrl, siteName, params, shareImage] = await Promise.all([
     getBaseUrl(),
     getSiteName(),
     searchParams,
+    getDefaultShareImage(),
   ]);
   const page = Math.max(1, parseInt(params.page || '1', 10) || 1);
 
@@ -55,7 +57,8 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical },
-    openGraph: { title, description, type: 'website', url: canonical },
+    openGraph: { title, description, type: 'website', url: canonical, siteName, images: shareImage ? [shareImage] : [] },
+    twitter: { card: 'summary_large_image', title, description, images: shareImage ? [shareImage.url] : [] },
   };
 }
 
