@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Partner, enrichPartnerWithAgentData } from "../../components";
 import { getBaseUrl, getSiteName } from '@/lib/settings';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 // Query by slug or by generated slug from firstName-lastName
 const PARTNER_BY_SLUG_QUERY = `*[_type == "affiliatedPartner" && active == true && partnerType == "the_council" && (slug.current == $slug || lower(firstName + "-" + lastName) == $slug)][0] {
@@ -45,6 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const canonicalUrl = `${baseUrl}/affiliated-partners/the-council/${slug}`;
 
+  const shareImage = await getDefaultShareImage();
   return {
     title: `${partner.firstName} ${partner.lastName} | The Council | ${siteName}`,
     description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
@@ -52,6 +54,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: canonicalUrl,
     },
     openGraph: {
+      type: 'website',
+      images: shareImage ? [shareImage] : [],
       title: `${partner.firstName} ${partner.lastName} | The Council | ${siteName}`,
       description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
       url: canonicalUrl,

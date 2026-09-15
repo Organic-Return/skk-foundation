@@ -5,6 +5,7 @@ import StructuredData from '@/components/StructuredData';
 import { client } from '@/sanity/client';
 import { getBaseUrl, getSettings, getSiteName } from '@/lib/settings';
 import { breadcrumbSchema } from '@/lib/seo';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 export const revalidate = 300;
 
@@ -24,12 +25,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const description =
     'Get in touch about buying or selling in Aspen, Snowmass Village, and the Roaring Fork Valley. Call, email, or send a message and we will be in touch shortly.';
 
+  const shareImage = await getDefaultShareImage();
   return {
     title,
     description,
     alternates: { canonical: `${baseUrl}/contact-us` },
-    openGraph: { title, description, type: 'website', url: `${baseUrl}/contact-us` },
-    twitter: { card: 'summary_large_image', title, description },
+    openGraph: { title, description, type: 'website', url: `${baseUrl}/contact-us`, images: shareImage ? [shareImage] : [] },
+    twitter: { card: 'summary_large_image', title, description, images: shareImage ? [shareImage.url] : [] },
   };
 }
 

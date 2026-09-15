@@ -4,6 +4,7 @@ import { getSiteTemplate, getBaseUrl } from '@/lib/settings';
 import RCSitePage from "@/components/RCSitePage";
 import PageHero from "@/components/PageHero";
 import Link from "next/link";
+import { getDefaultShareImage } from '@/lib/homepage';
 
 const QUERY = `*[_type == "sitePage" && slug.current == "privacy-policy"][0]{
   title,
@@ -18,11 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const data = await client.fetch(QUERY, {}, options);
   const baseUrl = await getBaseUrl();
 
+  const shareImage = await getDefaultShareImage();
   return {
     title: data?.seo?.metaTitle || data?.title || 'Privacy Policy',
     description: data?.seo?.metaDescription || 'Privacy policy',
     alternates: { canonical: `${baseUrl}/privacy-policy` },
     openGraph: {
+      images: shareImage ? [shareImage] : [],
       title: data?.seo?.metaTitle || data?.title || 'Privacy Policy',
       description: data?.seo?.metaDescription || '',
       type: 'website',

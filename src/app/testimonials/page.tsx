@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
 import TestimonialVideoGallery from "@/components/TestimonialVideoGallery";
 import { getBaseUrl } from '@/lib/settings';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
   heroTitle,
@@ -79,7 +80,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? urlFor(data.seo.ogImage)?.width(1200).height(630).url()
     : data.heroImage
     ? urlFor(data.heroImage)?.width(1200).height(630).url()
-    : null;
+    : (await getDefaultShareImage())?.url ?? null;
 
   const baseUrl = await getBaseUrl();
 

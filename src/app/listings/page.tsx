@@ -24,6 +24,7 @@ import { getSettings, getGoogleMapsApiKey, getBaseUrl } from '@/lib/settings';
 import { client } from '@/sanity/client';
 import ListingsSearchClient from '@/components/ListingsSearchClient';
 import StructuredData from '@/components/StructuredData';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 // Generate ItemList schema for listings
 function generateListingsSchema(listings: MLSProperty[], baseUrl: string, total: number) {
@@ -124,11 +125,12 @@ export async function generateMetadata({ searchParams }: ListingsPageProps): Pro
       ? `Page ${page} of homes, condos, and land for sale across Aspen, Snowmass Village, Basalt, and Carbondale, Colorado.`
       : 'Browse every home, condo, and land listing for sale across Aspen, Snowmass Village, Basalt, and Carbondale, Colorado. Search by price, beds, and neighborhood.';
 
+  const shareImage = await getDefaultShareImage();
   return {
     title,
     description,
     alternates: { canonical },
-    openGraph: { title, description, url: canonical },
+    openGraph: { title, description, url: canonical, type: 'website', images: shareImage ? [shareImage] : [] },
   };
 }
 

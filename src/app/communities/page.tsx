@@ -7,6 +7,7 @@ import PageHero from '@/components/PageHero';
 import StructuredData from '@/components/StructuredData';
 import { getBaseUrl, getSiteName } from '@/lib/settings';
 import { collectionPageSchema, breadcrumbSchema } from '@/lib/seo';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 export const revalidate = 300;
 
@@ -43,12 +44,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const description =
     'Explore the neighborhoods and communities of Aspen, Snowmass Village, and the Roaring Fork Valley — from Red Mountain and the West End to Old Snowmass, Basalt, and Carbondale.';
 
+  const shareImage = await getDefaultShareImage();
   return {
     title,
     description,
     alternates: { canonical: `${baseUrl}/communities` },
-    openGraph: { title, description, type: 'website', url: `${baseUrl}/communities` },
-    twitter: { card: 'summary_large_image', title, description },
+    openGraph: { title, description, type: 'website', url: `${baseUrl}/communities`, images: shareImage ? [shareImage] : [] },
+    twitter: { card: 'summary_large_image', title, description, images: shareImage ? [shareImage.url] : [] },
   };
 }
 

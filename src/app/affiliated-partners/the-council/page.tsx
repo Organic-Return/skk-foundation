@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Partner, enrichPartnerWithAgentData, PartnerCard, PageContent, urlFor } from "../components";
 import CTASection from "../CTASection";
 import { getBaseUrl, getSiteName } from '@/lib/settings';
+import { getDefaultShareImage } from '@/lib/homepage';
 
 const COUNCIL_QUERY = `*[_type == "affiliatedPartner" && active == true && partnerType == "the_council"] | order(sortOrder asc, lastName asc) {
   _id,
@@ -48,6 +49,7 @@ const options = { next: { revalidate: 60 } };
 export async function generateMetadata(): Promise<Metadata> {
   const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
 
+  const shareImage = await getDefaultShareImage();
   return {
     title: `The Council | ${siteName}`,
     description: "Members of The Council, Christie's International Real Estate's network of leading agents across North America.",
@@ -55,6 +57,8 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: `${baseUrl}/affiliated-partners/the-council`,
     },
     openGraph: {
+      type: 'website',
+      images: shareImage ? [shareImage] : [],
       title: `The Council | ${siteName}`,
       description: "Members of The Council, Christie's International Real Estate's network of leading agents across North America.",
       url: `${baseUrl}/affiliated-partners/the-council`,
