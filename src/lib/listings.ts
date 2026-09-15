@@ -809,11 +809,17 @@ export function getDistinctCities(): Promise<string[]> {
 
 // Main property types from database (property_type column)
 // Hardcoded to avoid Supabase 1000 row limit issues
+// The property_type values the Aspen Glenwood MLS feed actually carries, in
+// the order the filter should offer them. The listings page moves any type
+// hidden by MLS Configuration (rentals, commercial) to the end.
 const PROPERTY_TYPES = [
-  'Farm',
-  'Land',
   'Residential',
-  'Residential Income',
+  'Fractional',
+  'RES Vacant Land',
+  'Commercial Land',
+  'Commercial Sale',
+  'Residential Lease',
+  'Commercial Lease',
 ];
 
 // Property subtypes from database (property_sub_type column)
