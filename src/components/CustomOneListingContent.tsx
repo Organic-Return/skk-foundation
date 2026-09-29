@@ -29,6 +29,10 @@ interface CustomOneListingContentProps {
   listing: MLSProperty;
   agent: ListingAgentInfo | null;
   documents?: DocumentInfo[];
+  /** Google Maps key from Sanity settings. The map loader is a process-wide
+   *  singleton that throws if it is ever called with different options, so
+   *  this layout must use the same key as the standard listing page. */
+  googleMapsApiKey?: string | null;
 }
 
 function formatPrice(price: number | null): string {
@@ -465,8 +469,7 @@ function ScrollableGalleryModal({
 export default function CustomOneListingContent({
   listing,
   agent,
-  documents,
-}: CustomOneListingContentProps) {
+  documents, googleMapsApiKey }: CustomOneListingContentProps) {
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
 
   const heroPhoto = listing.photos?.[0];
@@ -1003,6 +1006,7 @@ export default function CustomOneListingContent({
                   longitude={listing.longitude!}
                   address={listing.address || undefined}
                   price={listing.list_price}
+                  googleMapsApiKey={googleMapsApiKey || undefined}
                 />
               </div>
             </div>

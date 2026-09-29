@@ -508,6 +508,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             mobile: listingAgent.mobile,
           } : null}
           documents={propertyEnhancement?.documents}
+          googleMapsApiKey={googleMapsApiKey}
         />
       </>
     );
