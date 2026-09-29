@@ -142,13 +142,14 @@ export function agentProfileSchema(opts: {
   sameAs?: Array<string | undefined | null>;
   areaServed?: string[];
 }) {
-  if (!opts.name) return null;
+  const name = opts.name?.trim();
+  if (!name) return null;
   const sameAs = (opts.sameAs || []).filter(Boolean);
   return {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
     "@id": `${opts.url}#agent`,
-    name: opts.name,
+    name,
     url: opts.url,
     ...(opts.jobTitle ? { jobTitle: opts.jobTitle } : {}),
     ...(opts.image ? { image: opts.image } : {}),

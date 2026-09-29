@@ -169,11 +169,17 @@ export default async function Home() {
   const postalAddress = postalAddressSchema(settings?.contactInfo?.address);
   const logoUrl = branding?.logo ? urlFor(branding.logo).width(600).url() : undefined;
 
+  // The business entity is named after the agent, exactly as the About, Contact
+  // and Sold pages name it, so every page emits one identical NAP. Sanity's
+  // `title` is the SEO title tag ("Stacey K Kelly | Christies …"), which is
+  // the right name for the WebSite and WebPage nodes but not for the business.
+  const businessName = primaryAgent?.name?.trim() || settings?.title || 'Real Estate';
+
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     '@id': `${baseUrl}#organization`,
-    name: settings?.title || 'Real Estate',
+    name: businessName,
     description: settings?.description,
     url: baseUrl,
     ...(logoUrl ? { logo: logoUrl } : {}),
@@ -189,7 +195,7 @@ export default async function Home() {
     '@context': 'https://schema.org',
     '@type': 'RealEstateAgent',
     '@id': `${baseUrl}#localbusiness`,
-    name: settings?.title || 'Real Estate',
+    name: businessName,
     url: baseUrl,
     ...(logoUrl ? { image: logoUrl } : {}),
     ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
@@ -206,12 +212,16 @@ export default async function Home() {
         '@context': 'https://schema.org',
         '@type': 'Person',
         '@id': `${baseUrl}#agent`,
-        name: primaryAgent.name,
+        name: primaryAgent.name.trim(),
         url: `${baseUrl}/team/${primaryAgent.slug}`,
         ...(primaryAgent.title ? { jobTitle: primaryAgent.title } : {}),
         ...(primaryAgent.imageUrl ? { image: primaryAgent.imageUrl } : {}),
         ...(primaryAgent.email ? { email: primaryAgent.email } : {}),
-        ...(primaryAgent.phone ? { telephone: primaryAgent.phone } : {}),
+        // The office line, not the agent's own field, so the phone is written
+        // the same way here as in every other block on the site.
+        ...(settings?.contactInfo?.phone || primaryAgent.phone
+          ? { telephone: settings?.contactInfo?.phone || primaryAgent.phone }
+          : {}),
         ...(postalAddress ? { address: postalAddress } : {}),
         worksFor: { '@id': `${baseUrl}#organization` },
         knowsAbout: [
