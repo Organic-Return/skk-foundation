@@ -4,6 +4,7 @@ interface SiteSettings {
   template?: 'classic' | 'luxury' | 'modern' | 'custom-one' | 'rcsothebys-custom';
   listingsPerRow?: 2 | 3;
   title?: string;
+  siteName?: string;
   description?: string;
   siteUrl?: string;
   branding?: {
@@ -63,6 +64,7 @@ const SETTINGS_QUERY = `*[_type == "settings" && _id == "settings"][0]{
   template,
   listingsPerRow,
   title,
+  siteName,
   description,
   siteUrl,
   apiKeys,
@@ -146,12 +148,23 @@ export async function getBaseUrl(): Promise<string> {
 }
 
 /**
- * Display name for this tenant, used as the brand suffix in page titles.
- * Set this in Sanity Studio under Settings → Title.
+ * Brand suffix for page titles ("Contact | <site name>"). Settings → Site Name
+ * when set, else the site title. The title is the homepage's own <title> and
+ * can be long; the site name is meant to stay short enough that
+ * "<page> | <site name>" fits in a search result.
  */
 export async function getSiteName(): Promise<string> {
   const settings = await getSettings();
-  return settings?.title || 'Real Estate';
+  return settings?.siteName?.trim() || settings?.title || 'Real Estate';
+}
+
+/**
+ * The brand as a name for prose and short titles ("Contact Stacey K. Kelly"):
+ * the first segment of the site name, before any "|".
+ */
+export async function getBrandName(): Promise<string> {
+  const siteName = await getSiteName();
+  return siteName.split('|')[0].trim() || siteName;
 }
 
 /**

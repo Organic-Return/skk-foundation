@@ -71,6 +71,7 @@ interface HomepageContentProps {
   heroMuxPlaybackId?: string;
   fallbackImageUrl?: string;
   heroMobileImageUrl?: string;
+  heroTagline?: string;
   heroTitle?: string;
   heroSubtitle?: string;
   showSearch?: boolean;
@@ -177,6 +178,7 @@ export default function HomepageContent({
   heroMuxPlaybackId,
   fallbackImageUrl,
   heroMobileImageUrl,
+  heroTagline,
   heroTitle,
   heroSubtitle,
   showSearch,
@@ -211,6 +213,7 @@ export default function HomepageContent({
           videoUrl={videoUrl}
           fallbackImageUrl={fallbackImageUrl}
           mobileImageUrl={heroMobileImageUrl}
+          tagline={heroTagline}
           title={heroTitle || 'Exceptional Properties'}
           subtitle={heroSubtitle || 'Discover a curated collection of the world\'s finest residences'}
         />

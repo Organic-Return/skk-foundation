@@ -8,7 +8,8 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
 import TestimonialVideoGallery from "@/components/TestimonialVideoGallery";
-import { getBaseUrl } from '@/lib/settings';
+import { getBaseUrl, getSettings } from '@/lib/settings';
+import { realEstateAgentSchema } from '@/lib/seo';
 import { getDefaultShareImage } from '@/lib/homepage';
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
@@ -144,7 +145,15 @@ const TransactionBadge = ({ type }: { type?: string }) => {
 
 export default async function TestimonialsPage() {
   const data = await client.fetch<SanityDocument>(TESTIMONIALS_QUERY, {}, options);
-  const baseUrl = await getBaseUrl();
+  const [baseUrl, settings, agent] = await Promise.all([
+    getBaseUrl(),
+    getSettings(),
+    client.fetch<{ name?: string } | null>(
+      `*[_type == "teamMember" && inactive != true && defined(name)] | order(featured desc)[0]{ name }`,
+      {},
+      options
+    ),
+  ]);
 
   if (!data) {
     return (
@@ -172,45 +181,15 @@ export default async function TestimonialsPage() {
   const regularTestimonials = data.testimonials?.filter((t: any) => !t.featured) || [];
   const allTestimonials = [...(data.testimonials || [])];
 
-  // Generate Review schema for each testimonial
-  const reviewSchemas = allTestimonials.map((testimonial: any, index: number) => ({
-    '@type': 'Review',
-    '@id': `${baseUrl}/testimonials#review-${index}`,
-    reviewBody: testimonial.quote,
-    author: {
-      '@type': 'Person',
-      name: testimonial.author,
-      ...(testimonial.role && { jobTitle: testimonial.role }),
-    },
-    ...(testimonial.year && { datePublished: `${testimonial.year}-01-01` }),
-    reviewRating: {
-      '@type': 'Rating',
-      ratingValue: 5,
-      bestRating: 5,
-      worstRating: 1,
-    },
-  }));
-
-  // AggregateRating schema
-  const aggregateRatingSchema = allTestimonials.length > 0 ? {
-    '@type': 'AggregateRating',
-    ratingValue: 5,
-    bestRating: 5,
-    worstRating: 1,
-    ratingCount: allTestimonials.length,
-    reviewCount: allTestimonials.length,
-  } : undefined;
-
-  // Main LocalBusiness/RealEstateAgent schema with reviews
-  const businessWithReviewsSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateAgent',
-    '@id': `${baseUrl}#organization`,
-    name: 'Real Estate Agency',
-    url: baseUrl,
-    ...(aggregateRatingSchema && { aggregateRating: aggregateRatingSchema }),
-    review: reviewSchemas,
-  };
+  // Business entity for this page. Testimonials are shown as content only:
+  // review markup a business hosts about itself is not eligible for rich
+  // results, and the ratings it carried were invented (every quote was 5/5).
+  const businessSchema = realEstateAgentSchema({
+    name: agent?.name,
+    url: `${baseUrl}/testimonials`,
+    telephone: settings?.contactInfo?.phone,
+    address: settings?.contactInfo?.address,
+  });
 
   // BreadcrumbList schema
   const breadcrumbSchema = {
@@ -234,7 +213,7 @@ export default async function TestimonialsPage() {
 
   return (
     <>
-      <StructuredData data={businessWithReviewsSchema} />
+      {businessSchema && <StructuredData data={businessSchema} />}
       <StructuredData data={breadcrumbSchema} />
       <main className="min-h-screen">
       {/* Hero Section */}

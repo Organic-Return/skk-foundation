@@ -1,7 +1,7 @@
 import { client } from "@/sanity/client";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import type { Metadata } from "next";
-import { getBaseUrl, getSiteName, getSiteTemplate } from '@/lib/settings';
+import { getBaseUrl, getBrandName, getSiteTemplate } from '@/lib/settings';
 import TeamGrid from "@/components/TeamGrid";
 import PageHero from "@/components/PageHero";
 import StructuredData from "@/components/StructuredData";
@@ -43,7 +43,7 @@ const options = { next: { revalidate: 60 } };
 export async function generateMetadata(): Promise<Metadata> {
   const [baseUrl, siteName, template] = await Promise.all([
     getBaseUrl(),
-    getSiteName(),
+    getBrandName(),
     getSiteTemplate(),
   ]);
   const path = template === 'rcsothebys-custom' ? 'agents' : 'team';

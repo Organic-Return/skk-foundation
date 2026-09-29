@@ -2,16 +2,16 @@ import type { Metadata } from 'next';
 import { getOpenHouseListings, getListingHref } from '@/lib/listings';
 import OpenHouseGrid from '@/components/OpenHouseGrid';
 import PageHero from '@/components/PageHero';
-import { getBaseUrl, getSiteName } from '@/lib/settings';
+import { getBaseUrl, getBrandName, getSiteName } from '@/lib/settings';
 import StructuredData from '@/components/StructuredData';
 import { collectionPageSchema, breadcrumbSchema } from '@/lib/seo';
 
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
+  const [baseUrl, siteName, brandName] = await Promise.all([getBaseUrl(), getSiteName(), getBrandName()]);
   const title = `Open Houses | ${siteName}`;
-  const description = `Browse upcoming open houses with ${siteName}.`;
+  const description = `Browse upcoming open houses with ${brandName}.`;
 
   return {
     title,

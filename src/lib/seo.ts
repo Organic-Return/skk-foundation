@@ -151,14 +151,22 @@ export function agentProfileSchema(opts: {
     "@id": `${opts.url}#agent`,
     name,
     url: opts.url,
-    ...(opts.jobTitle ? { jobTitle: opts.jobTitle } : {}),
     ...(opts.image ? { image: opts.image } : {}),
     ...(opts.description ? { description: opts.description } : {}),
     ...(opts.email ? { email: opts.email } : {}),
     ...(opts.telephone ? { telephone: opts.telephone } : {}),
     ...(postalAddressSchema(opts.address) ? { address: postalAddressSchema(opts.address) } : {}),
-    ...(opts.worksFor
-      ? { worksFor: { "@type": "Organization", name: opts.worksFor } }
+    // jobTitle and worksFor belong to a Person, not to the RealEstateAgent
+    // business type; the agent as a person hangs off the business.
+    ...(opts.jobTitle || opts.worksFor
+      ? {
+          employee: {
+            "@type": "Person",
+            name,
+            ...(opts.jobTitle ? { jobTitle: opts.jobTitle } : {}),
+            ...(opts.worksFor ? { worksFor: { "@type": "Organization", name: opts.worksFor } } : {}),
+          },
+        }
       : {}),
     ...(sameAs.length > 0 ? { sameAs } : {}),
     areaServed: opts.areaServed || DEFAULT_AREA_SERVED,
@@ -226,7 +234,7 @@ export function communitySeo(opts: {
     opts.communityType === 'complex' ? place : `${place} Real Estate`;
 
   let title: string;
-  if (opts.communityType === 'city') {
+  if (opts.communityType === 'city' && place.length <= 20) {
     title = `${place} Real Estate | Homes for Sale in ${place}, CO`;
   } else if (opts.communityType === 'complex') {
     title = `${place} | Condos & Homes for Sale`;

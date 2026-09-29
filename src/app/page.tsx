@@ -196,6 +196,7 @@ export default async function Home() {
     '@type': 'RealEstateAgent',
     '@id': `${baseUrl}#localbusiness`,
     name: businessName,
+    description: 'Aspen real estate agent serving Aspen and Snowmass Village, Colorado.',
     url: baseUrl,
     ...(logoUrl ? { image: logoUrl } : {}),
     ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
@@ -289,6 +290,7 @@ export default async function Home() {
         heroMuxPlaybackId={heroMuxPlaybackId}
         fallbackImageUrl={fallbackImageUrl}
         heroMobileImageUrl={heroMobileImageUrl}
+        heroTagline={hero?.tagline}
         heroTitle={hero?.title}
         heroSubtitle={hero?.subtitle}
         showSearch={hero?.showSearch !== false}

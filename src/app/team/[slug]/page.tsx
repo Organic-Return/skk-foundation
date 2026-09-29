@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getListingsByAgentId, getMlsNumbersWithSIRMedia } from "@/lib/listings";
 import { computeSalesTotals, formatUSD, type SalesBaseline } from "@/lib/salesTotals";
-import { getSiteTemplate, getBaseUrl, getSiteName } from '@/lib/settings';
+import { getSiteTemplate, getBaseUrl, getBrandName } from '@/lib/settings';
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentHeroGallery from "@/components/AgentHeroGallery";
 import AgentContactForm from "@/components/AgentContactForm";
@@ -83,7 +83,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Team Member Not Found' };
   }
 
-  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
+  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getBrandName()]);
   const isRCTemplate = process.env.NEXT_PUBLIC_SITE_TEMPLATE === 'rcsothebys-custom';
   const canonicalUrl = `${baseUrl}/${isRCTemplate ? 'agents' : 'team'}/${slug}`;
 
@@ -105,7 +105,7 @@ export default async function TeamMemberPage({ params }: Props) {
     client.fetch<TeamMember | null>(TEAM_MEMBER_QUERY, { slug }, options),
     getSiteTemplate(),
     getBaseUrl(),
-    getSiteName(),
+    getBrandName(),
   ]);
 
   if (!member) {

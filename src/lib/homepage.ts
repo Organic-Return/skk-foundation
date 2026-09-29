@@ -3,6 +3,7 @@ import { client } from '@/sanity/client';
 interface HomepageData {
   title?: string;
   hero?: {
+    tagline?: string;
     title?: string;
     subtitle?: string;
     videoUrl?: string;
@@ -116,6 +117,7 @@ interface HomepageData {
 const HOMEPAGE_QUERY = `*[_type == "homepage" && _id == "homepage"][0]{
   title,
   hero {
+    tagline,
     title,
     subtitle,
     videoUrl,

@@ -8,6 +8,8 @@ interface ModernHeroProps {
   fallbackImageUrl?: string;
   /** Narrower rendition of fallbackImageUrl for phone-width viewports. */
   mobileImageUrl?: string;
+  /** Display line shown large above the H1; when set, the H1 takes the small uppercase style. */
+  tagline?: string;
   title?: string;
   subtitle?: string;
 }
@@ -31,6 +33,7 @@ export default function ModernHero({
   videoUrl,
   fallbackImageUrl,
   mobileImageUrl,
+  tagline,
   title = 'Exceptional Properties',
   subtitle = 'Discover a curated collection of the world\'s finest residences',
 }: ModernHeroProps) {
@@ -175,18 +178,45 @@ export default function ModernHero({
 
       {/* Content - Omega/Rolex inspired centered layout */}
       <div className="relative z-10 h-full flex flex-col justify-end items-center text-center px-6 pb-24 md:pb-32">
-        {/* Title - Patek Philippe inspired typography */}
-        <h1 className="modern-hero-title text-white mb-6 max-w-4xl hero-rise" style={{ animationDelay: '0.1s' }}>
-          {title}
-        </h1>
+        {tagline ? (
+          <>
+            {/* The tagline keeps the large display treatment; the H1 beneath it
+                carries the search phrase in the small uppercase style so the
+                page's main heading says what the page is about. */}
+            <p className="modern-hero-title text-white mb-6 max-w-4xl hero-rise" style={{ animationDelay: '0.1s' }}>
+              {tagline}
+            </p>
+            <h1
+              className="text-white/90 text-sm md:text-base font-light tracking-[0.15em] uppercase max-w-xl mb-3 hero-rise"
+              style={{ animationDelay: '0.2s' }}
+            >
+              {title}
+            </h1>
+            {subtitle && (
+              <p
+                className="text-white/60 text-xs md:text-sm font-light tracking-[0.15em] uppercase max-w-xl mb-12 hero-rise"
+                style={{ animationDelay: '0.25s' }}
+              >
+                {subtitle}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Title - Patek Philippe inspired typography */}
+            <h1 className="modern-hero-title text-white mb-6 max-w-4xl hero-rise" style={{ animationDelay: '0.1s' }}>
+              {title}
+            </h1>
 
-        {/* Subtitle - Clean, minimal */}
-        <p
-          className="text-white/70 text-sm md:text-base font-light tracking-[0.15em] uppercase max-w-xl mb-12 hero-rise"
-          style={{ animationDelay: '0.2s' }}
-        >
-          {subtitle}
-        </p>
+            {/* Subtitle - Clean, minimal */}
+            <p
+              className="text-white/70 text-sm md:text-base font-light tracking-[0.15em] uppercase max-w-xl mb-12 hero-rise"
+              style={{ animationDelay: '0.2s' }}
+            >
+              {subtitle}
+            </p>
+          </>
+        )}
 
         {/* Search Box - Modern minimal style */}
         <form onSubmit={handleSearch} className="w-full max-w-xl hero-rise" style={{ animationDelay: '0.3s' }}>

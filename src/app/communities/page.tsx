@@ -5,7 +5,7 @@ import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import PageHero from '@/components/PageHero';
 import StructuredData from '@/components/StructuredData';
-import { getBaseUrl, getSiteName } from '@/lib/settings';
+import { getBaseUrl, getBrandName } from '@/lib/settings';
 import { collectionPageSchema, breadcrumbSchema } from '@/lib/seo';
 import { getDefaultShareImage } from '@/lib/homepage';
 
@@ -39,7 +39,7 @@ const urlFor = (source: unknown) =>
     : null;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
+  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getBrandName()]);
   const title = `Aspen & Snowmass Communities | ${siteName}`;
   const description =
     'Explore the neighborhoods and communities of Aspen, Snowmass Village, and the Roaring Fork Valley — from Red Mountain and the West End to Old Snowmass, Basalt, and Carbondale.';

@@ -207,8 +207,9 @@ function generateRealEstateSchema(listing: MLSProperty, baseUrl: string) {
     }),
   };
 
-  // Product schema (for Google rich results)
-  const productSchema = {
+  // Product schema (for Google rich results). Merchant listing markup requires
+  // an image, so it is emitted only when the feed has photos.
+  const productSchema = listing.photos && listing.photos.length > 0 ? {
     '@context': 'https://schema.org',
     '@type': 'Product',
     '@id': `${listingUrl}#product`,
@@ -244,7 +245,7 @@ function generateRealEstateSchema(listing: MLSProperty, baseUrl: string) {
         },
       },
     }),
-  };
+  } : null;
 
   // BreadcrumbList schema
   const breadcrumbSchema = {
@@ -272,7 +273,7 @@ function generateRealEstateSchema(listing: MLSProperty, baseUrl: string) {
     ],
   };
 
-  return [realEstateSchema, propertySchema, productSchema, breadcrumbSchema];
+  return [realEstateSchema, propertySchema, productSchema, breadcrumbSchema].filter(Boolean);
 }
 
 export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
@@ -299,7 +300,9 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
       .filter(Boolean)
       .join(' — ');
 
-  const title = `${addressLabel} | ${formatPrice(listing.list_price)} | ${listing.city}, ${listing.state}`;
+  // The address already names the city; repeating it pushed every title past
+  // 70 characters and Google truncated the price.
+  const title = `${addressLabel} | ${formatPrice(listing.list_price)}`;
   const rawDescription = listing.description
     || `${listing.bedrooms || 0} bed, ${listing.bathrooms || 0} bath ${listing.property_type || 'property'} for ${listing.status === 'Closed' ? 'sale (sold)' : 'sale'} in ${listing.city}, ${listing.state}. ${listing.square_feet ? `${listing.square_feet.toLocaleString()} sq ft.` : ''} MLS# ${listing.mls_number}`;
   const description = rawDescription.length > 300 ? rawDescription.slice(0, 297) + '...' : rawDescription;

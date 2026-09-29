@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import { getSettings, getBaseUrl } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
-import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema, reviewSchemas } from "@/lib/seo";
+import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema } from "@/lib/seo";
 import { DEFAULT_BUY_FAQS, DEFAULT_BUY_PROCESS, type Faq } from "@/lib/pageDefaults";
 import { getSalesTotals, formatUSD } from "@/lib/salesTotals";
 import StatsBand from "@/components/StatsBand";
@@ -219,7 +219,6 @@ export default async function BuyPage() {
   const agentFirstName = agent?.name?.split(" ")[0] || "our team";
   const schemas = [
     faqPageSchema(faqs),
-    ...(hasRealTestimonials ? reviewSchemas(testimonials, agent?.name) || [] : []),
     realEstateAgentSchema({
       name: agent?.name,
       url: `${baseUrl}/buy`,

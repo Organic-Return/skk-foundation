@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Partner, enrichPartnerWithAgentData } from "../../components";
-import { getBaseUrl, getSiteName } from '@/lib/settings';
+import { getBaseUrl, getBrandName } from '@/lib/settings';
 import { getDefaultShareImage } from '@/lib/homepage';
 
 // Query by slug or by generated slug from firstName-lastName
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [partner, baseUrl, siteName] = await Promise.all([
     client.fetch<Partner | null>(PARTNER_BY_SLUG_QUERY, { slug }, options),
     getBaseUrl(),
-    getSiteName(),
+    getBrandName(),
   ]);
 
   if (!partner) {

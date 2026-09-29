@@ -4,7 +4,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { Partner, enrichPartnerWithAgentData, PartnerCard, PageContent, urlFor } from "../components";
 import CTASection from "../CTASection";
-import { getBaseUrl, getSiteName } from '@/lib/settings';
+import { getBaseUrl, getBrandName } from '@/lib/settings';
 import { getDefaultShareImage } from '@/lib/homepage';
 
 const COUNCIL_QUERY = `*[_type == "affiliatedPartner" && active == true && partnerType == "the_council"] | order(sortOrder asc, lastName asc) {
@@ -47,7 +47,7 @@ const PAGE_CONTENT_QUERY = `*[_type == "affiliatedPartnersPage" && pageType == "
 const options = { next: { revalidate: 60 } };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getSiteName()]);
+  const [baseUrl, siteName] = await Promise.all([getBaseUrl(), getBrandName()]);
 
   const shareImage = await getDefaultShareImage();
   return {

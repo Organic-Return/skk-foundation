@@ -30,6 +30,13 @@ export const settings = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'siteName',
+      title: 'Site Name (title suffix)',
+      type: 'string',
+      description:
+        'Short brand appended to page titles, e.g. "Stacey K. Kelly | Aspen Snowmass Real Estate". Keep it under 45 characters so "Page | Site Name" fits in a search result. Falls back to the Site Title when empty.',
+    }),
+    defineField({
       name: 'description',
       title: 'Site Description',
       type: 'text',

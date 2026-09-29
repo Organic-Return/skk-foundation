@@ -24,6 +24,13 @@ export const homepage = defineType({
       },
       fields: [
         {
+          name: 'tagline',
+          title: 'Hero Tagline',
+          type: 'string',
+          description:
+            'Optional display line shown large above the headline (e.g. "When The Mountains Are Calling..."). When set, the Hero Title below becomes the page\'s H1 in the smaller uppercase style, so the H1 can carry the search phrase while the tagline keeps the look.',
+        },
+        {
           name: 'title',
           title: 'Hero Title',
           type: 'string',

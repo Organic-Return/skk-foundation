@@ -3,7 +3,7 @@ import PageHero from '@/components/PageHero';
 import AgentContactForm from '@/components/AgentContactForm';
 import StructuredData from '@/components/StructuredData';
 import { client } from '@/sanity/client';
-import { getBaseUrl, getSettings, getSiteName } from '@/lib/settings';
+import { getBaseUrl, getBrandName, getSettings, getSiteName } from '@/lib/settings';
 import { breadcrumbSchema, realEstateAgentSchema } from '@/lib/seo';
 import { getDefaultShareImage } from '@/lib/homepage';
 
@@ -36,11 +36,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactUsPage() {
-  const [agent, settings, baseUrl, siteName] = await Promise.all([
+  const [agent, settings, baseUrl, brandName] = await Promise.all([
     client.fetch<PrimaryAgent>(PRIMARY_AGENT_QUERY, {}, { next: { revalidate: 300 } }),
     getSettings(),
     getBaseUrl(),
-    getSiteName(),
+    getBrandName(),
   ]);
 
   const { email, phone, address } = settings?.contactInfo || {};
@@ -75,7 +75,7 @@ export default async function ContactUsPage() {
             {/* Contact details */}
             <div>
               <h2 className="font-serif text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white mb-8 tracking-wide">
-                Contact {siteName}
+                Contact {brandName}
               </h2>
 
               <dl className="space-y-8">
@@ -130,7 +130,7 @@ export default async function ContactUsPage() {
                 Send a Message
               </h2>
               <AgentContactForm
-                agentName={agent?.name || siteName}
+                agentName={agent?.name || brandName}
                 agentEmail={agent?.email || email}
                 interest="General inquiry"
                 messagePlaceholder="How can we help?"

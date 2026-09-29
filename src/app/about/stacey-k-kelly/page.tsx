@@ -7,7 +7,7 @@ import { createImageUrlBuilder } from '@sanity/image-url';
 import { getListingsByAgentId, getListingHref, type MLSProperty } from '@/lib/listings';
 import { computeSalesTotals, formatUSD, type SalesBaseline } from '@/lib/salesTotals';
 import { getBaseUrl, getSettings, getSiteName } from '@/lib/settings';
-import { agentProfileSchema, breadcrumbSchema, reviewSchemas } from '@/lib/seo';
+import { agentProfileSchema, breadcrumbSchema } from '@/lib/seo';
 import StructuredData from '@/components/StructuredData';
 import VideoFeatureCarousel from '@/components/VideoFeatureCarousel';
 import TestimonialsSection from '@/components/TestimonialsSection';
@@ -217,7 +217,6 @@ export default async function AboutStaceyPage() {
       { name: 'About', url: `${baseUrl}/about` },
       { name, url: pageUrl },
     ]),
-    ...(reviewSchemas(testimonials, name) || []),
   ].filter(Boolean);
 
   const stats = [

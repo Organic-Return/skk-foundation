@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getSiteTemplate, getBaseUrl, getSiteName, getSettings } from '@/lib/settings';
+import { getSiteTemplate, getBaseUrl, getBrandName, getSettings } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
 
 const BUILDER_QUERY = `*[_type == "builder" && slug.current == $slug][0]{
@@ -104,7 +104,7 @@ export default async function BuilderDetailPage({ params }: Props) {
   const [builder, template, siteName, settings] = await Promise.all([
     client.fetch<Builder | null>(BUILDER_QUERY, { slug }, options),
     getSiteTemplate(),
-    getSiteName(),
+    getBrandName(),
     getSettings(),
   ]);
   const contactEmail = settings?.contactInfo?.email;

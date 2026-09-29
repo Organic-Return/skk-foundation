@@ -6,7 +6,7 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { getBaseUrl, getSettings, getSiteName } from '@/lib/settings';
+import { getBaseUrl, getSettings, getBrandName } from '@/lib/settings';
 import StructuredData from '@/components/StructuredData';
 import { breadcrumbSchema, postalAddressSchema } from '@/lib/seo';
 
@@ -98,7 +98,7 @@ export default async function AboutPage() {
   const [data, baseUrl, siteName, settings] = await Promise.all([
     client.fetch<SanityDocument>(ABOUT_PAGE_QUERY, {}, options),
     getBaseUrl(),
-    getSiteName(),
+    getBrandName(),
     getSettings(),
   ]);
 
