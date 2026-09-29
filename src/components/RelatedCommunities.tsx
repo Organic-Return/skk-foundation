@@ -71,8 +71,8 @@ export default function RelatedCommunities({ currentSlug, communities, variant =
                   <h3
                     className={
                       isLuxury
-                        ? '!mt-5 mb-0 font-luxury text-xl md:text-2xl font-light text-[var(--color-charcoal)] tracking-wide group-hover:text-[var(--color-gold)] transition-colors'
-                        : '!mt-5 mb-0 font-serif text-xl md:text-2xl font-light text-[#1a1a1a] dark:text-white tracking-wide group-hover:text-[var(--color-gold)] transition-colors'
+                        ? '!mt-5 !mb-0 font-luxury !text-xl md:!text-2xl !font-light text-[var(--color-charcoal)] tracking-wide group-hover:text-[var(--color-gold)] transition-colors'
+                        : '!mt-5 !mb-0 font-serif !text-xl md:!text-2xl !font-light text-[#1a1a1a] dark:text-white tracking-wide group-hover:text-[var(--color-gold)] transition-colors'
                     }
                   >
                     {community.title}

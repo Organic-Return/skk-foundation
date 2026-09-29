@@ -93,7 +93,7 @@ export default async function RelatedPosts({ currentSlug }: RelatedPostsProps) {
                       />
                     )}
                   </div>
-                  <h3 className="!mt-4 mb-1 font-serif text-lg md:text-xl font-light text-[#1a1a1a] dark:text-white leading-snug group-hover:text-[var(--color-gold)] transition-colors">
+                  <h3 className="!mt-4 !mb-1 font-serif !text-lg md:!text-xl !font-light !leading-snug text-[#1a1a1a] dark:text-white group-hover:text-[var(--color-gold)] transition-colors">
                     {post.title}
                   </h3>
                   {post.publishedAt && (
