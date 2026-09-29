@@ -4,6 +4,8 @@ import { PortableText, type PortableTextComponents } from "next-sanity";
 import { client } from "@/sanity/client";
 import { getListingsByAgentId, type MLSProperty } from "@/lib/listings";
 import { getBaseUrl } from '@/lib/settings';
+import Link from "next/link";
+import { breadcrumbSchema } from "@/lib/seo";
 import { computeSalesTotals, formatUSD } from "@/lib/salesTotals";
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentContactForm from "@/components/AgentContactForm";
@@ -196,9 +198,15 @@ export default async function SoldPage() {
           { value: formatUSD(totalVolume), label: "Total Sales Volume" },
         ];
 
+  const crumbs = breadcrumbSchema([
+    { name: "Home", url: baseUrl },
+    { name: "Sold", url: `${baseUrl}/sold` },
+  ]);
+
   return (
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
       {agentSchema && <StructuredData data={agentSchema} />}
+      <StructuredData data={crumbs} />
       {/* Hero */}
       <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
         {heroImage && (
@@ -243,6 +251,19 @@ export default async function SoldPage() {
           )}
         </div>
       </section>
+
+      {/* Visible breadcrumb trail; the BreadcrumbList schema above mirrors it. */}
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 pt-6">
+        <nav aria-label="Breadcrumb">
+          <ol className="flex flex-wrap items-center gap-x-2 text-sm">
+            <li>
+              <Link href="/" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Home</Link>
+            </li>
+            <li className="text-gray-400" aria-hidden="true">/</li>
+            <li className="text-gray-900 dark:text-white font-medium" aria-current="page">Sold</li>
+          </ol>
+        </nav>
+      </div>
 
       {/* SEO content — what makes the agent great at selling Aspen & Snowmass real estate */}
       <section className="py-8 md:py-10 bg-white dark:bg-[#1a1a1a]">

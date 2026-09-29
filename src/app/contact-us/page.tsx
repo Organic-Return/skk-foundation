@@ -4,7 +4,7 @@ import AgentContactForm from '@/components/AgentContactForm';
 import StructuredData from '@/components/StructuredData';
 import { client } from '@/sanity/client';
 import { getBaseUrl, getSettings, getSiteName } from '@/lib/settings';
-import { breadcrumbSchema } from '@/lib/seo';
+import { breadcrumbSchema, realEstateAgentSchema } from '@/lib/seo';
 import { getDefaultShareImage } from '@/lib/homepage';
 
 export const revalidate = 300;
@@ -48,10 +48,21 @@ export default async function ContactUsPage() {
     { name: 'Home', url: baseUrl },
     { name: 'Contact', url: `${baseUrl}/contact-us` },
   ]);
+  // The contact page is where a local-business entity is expected; carry the
+  // same RealEstateAgent block as the About page, with the office address.
+  const agentName = agent?.name?.trim();
+  const agentSchema = realEstateAgentSchema({
+    name: agentName,
+    url: `${baseUrl}/contact-us`,
+    telephone: phone,
+    address,
+    description: `Contact ${agentName} about buying or selling real estate in Aspen, Snowmass Village, and the Roaring Fork Valley.`,
+  });
 
   return (
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
       <StructuredData data={crumbs} />
+      {agentSchema && <StructuredData data={agentSchema} />}
 
       <PageHero
         title="Get in Touch"

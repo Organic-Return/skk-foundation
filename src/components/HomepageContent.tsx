@@ -70,6 +70,7 @@ interface HomepageContentProps {
   videoUrl?: string;
   heroMuxPlaybackId?: string;
   fallbackImageUrl?: string;
+  heroMobileImageUrl?: string;
   heroTitle?: string;
   heroSubtitle?: string;
   showSearch?: boolean;
@@ -175,6 +176,7 @@ export default function HomepageContent({
   videoUrl,
   heroMuxPlaybackId,
   fallbackImageUrl,
+  heroMobileImageUrl,
   heroTitle,
   heroSubtitle,
   showSearch,
@@ -208,6 +210,7 @@ export default function HomepageContent({
         <ModernHero
           videoUrl={videoUrl}
           fallbackImageUrl={fallbackImageUrl}
+          mobileImageUrl={heroMobileImageUrl}
           title={heroTitle || 'Exceptional Properties'}
           subtitle={heroSubtitle || 'Discover a curated collection of the world\'s finest residences'}
         />

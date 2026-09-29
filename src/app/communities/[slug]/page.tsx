@@ -22,6 +22,15 @@ import { fetchDemographicData, formatCurrency, formatNumber } from "@/lib/census
 import { getCommunityPriceRange, getNewestHighPricedByCity, type MLSProperty } from "@/lib/listings";
 import { getSettings, getBaseUrl } from '@/lib/settings';
 import { communitySeo } from '@/lib/seo';
+import RelatedCommunities from '@/components/RelatedCommunities';
+import type { CommunitySummary } from '@/lib/communityArea';
+
+const ALL_COMMUNITIES_QUERY = `*[_type == "community" && defined(slug.current)]{
+  title,
+  "slug": slug.current,
+  communityType,
+  featuredImage
+}`;
 
 const COMMUNITY_QUERY = `*[_type == "community" && slug.current == $slug][0]{
   ...,
@@ -62,6 +71,14 @@ const urlFor = (source: any) =>
 const options = { next: { revalidate: 30 } };
 
 // Generate metadata for SEO, Open Graph, and Twitter Cards
+/** Cut to at most `max` characters on a word boundary, with an ellipsis. */
+function truncateAtWord(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const atSpace = cut.lastIndexOf(' ');
+  return `${(atSpace > max / 2 ? cut.slice(0, atSpace) : cut).replace(/[,;:\s]+$/, '')}…`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -92,17 +109,28 @@ export async function generateMetadata({
   });
   const metaTitle = community.seo?.metaTitle || generated.title;
 
-  let metaDescription =
-    community.seo?.metaDescription || community.description || generated.description;
-  if (!community.seo?.metaDescription && !community.description && Array.isArray(community.body)) {
-    const firstTextBlock = community.body.find((block: any) => block._type === 'block' && block.children);
-    if (firstTextBlock) {
-      metaDescription = firstTextBlock.children
-        .map((child: any) => child.text)
-        .join('')
-        .slice(0, 160);
-    }
-  }
+  // Editor copy wins; otherwise the first real paragraph of the body; otherwise
+  // the keyword-targeted default. Several docs keep a heading and the opening
+  // paragraph in one block separated by newlines, which used to ship verbatim
+  // (newlines included) and get chopped mid-word at 160 characters.
+  const firstBlockText: string = Array.isArray(community.body)
+    ? community.body
+        .find((block: any) => block._type === 'block' && Array.isArray(block.children))
+        ?.children.map((child: any) => child.text ?? '')
+        .join('') ?? ''
+    : '';
+  const paragraphs = firstBlockText
+    .split(/\n+/)
+    .map((line: string) => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+  // Headings are short and unpunctuated; a paragraph reads like a sentence.
+  const isParagraph = (line: string) => line.length >= 100 || /[.!?]$/.test(line);
+  const bodyText = truncateAtWord(paragraphs.find(isParagraph) || paragraphs.join(' '), 160);
+  const metaDescription =
+    community.seo?.metaDescription?.trim() ||
+    community.description?.trim() ||
+    bodyText ||
+    generated.description;
 
   // Get the base URL from environment or use a default
   const baseUrl = await getBaseUrl();
@@ -155,8 +183,10 @@ const components: PortableTextComponents = {
     normal: ({ children }: { children?: ReactNode }) => (
       <p className="mb-6 text-[#4a4a4a] dark:text-gray-300 leading-[1.8] font-light text-[17px]">{children}</p>
     ),
+    // The hero owns the page's only <h1>; an editor "Heading 1" in the body
+    // renders as an <h2> so the page does not carry two H1s.
     h1: ({ children }: { children?: ReactNode }) => (
-      <h1 className="font-serif text-[#1a1a1a] dark:text-white mt-12 mb-6">{children}</h1>
+      <h2 className="font-serif text-[#1a1a1a] dark:text-white mt-12 mb-6">{children}</h2>
     ),
     h2: ({ children }: { children?: ReactNode }) => (
       <h2 className="text-2xl md:text-3xl font-serif font-light text-[#1a1a1a] dark:text-white mt-10 mb-5 tracking-wide">{children}</h2>
@@ -252,7 +282,7 @@ const luxuryComponents: PortableTextComponents = {
       <p className="mb-6 text-[var(--color-warm-gray)] leading-[1.8] font-luxury-body font-light text-[17px]">{children}</p>
     ),
     h1: ({ children }: { children?: ReactNode }) => (
-      <h1 className="font-luxury text-[var(--color-charcoal)] mt-12 mb-6 font-light tracking-wide">{children}</h1>
+      <h2 className="font-luxury text-[var(--color-charcoal)] mt-12 mb-6 font-light tracking-wide">{children}</h2>
     ),
     h2: ({ children }: { children?: ReactNode }) => (
       <h2 className="text-2xl md:text-3xl font-luxury font-light text-[var(--color-charcoal)] mt-10 mb-5 tracking-wide">{children}</h2>
@@ -449,7 +479,10 @@ export default async function CommunityPage({
   }
 
   // Get the base URL
-  const baseUrl = await getBaseUrl();
+  const [baseUrl, allCommunities] = await Promise.all([
+    getBaseUrl(),
+    client.fetch<CommunitySummary[]>(ALL_COMMUNITIES_QUERY, {}, { next: { revalidate: 300 } }),
+  ]);
   const communityUrl = `${baseUrl}/communities/${community.slug.current}`;
 
   // Generate JSON-LD structured data for SEO - Place schema
@@ -565,6 +598,27 @@ export default async function CommunityPage({
             </div>
           </div>
         )}
+
+        {/* Visible breadcrumb trail; the BreadcrumbList schema above mirrors it. */}
+        <div className={isLuxury ? 'bg-white' : 'bg-white dark:bg-[#1a1a1a]'}>
+          <div className={isLuxury ? 'max-w-[1440px] mx-auto px-8 lg:px-12 pt-8' : 'max-w-7xl mx-auto px-6 md:px-12 lg:px-16 pt-6'}>
+            <nav aria-label="Breadcrumb">
+              <ol className={`flex flex-wrap items-center gap-x-2 text-sm ${isLuxury ? 'font-luxury-body tracking-wide' : ''}`}>
+                <li>
+                  <Link href="/" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Home</Link>
+                </li>
+                <li className="text-gray-400" aria-hidden="true">/</li>
+                <li>
+                  <Link href="/communities" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Communities</Link>
+                </li>
+                <li className="text-gray-400" aria-hidden="true">/</li>
+                <li className="text-gray-900 dark:text-white font-medium" aria-current="page">
+                  {community.title}
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
 
         {/* Content Sections - Sotheby's Inspired Design */}
         <div className="flex flex-col">
@@ -1020,6 +1074,9 @@ export default async function CommunityPage({
               </div>
             </section>
           )}
+
+          {/* Lateral links to sibling communities */}
+          <RelatedCommunities currentSlug={community.slug.current} communities={allCommunities} variant={variant} />
 
           {/* Contact CTA Section */}
           {isCustomOne ? (

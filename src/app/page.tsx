@@ -111,6 +111,11 @@ export default async function Home() {
   const fallbackImageUrl = hero?.fallbackImage?.asset?.url
     ? urlFor(hero.fallbackImage).width(1920).url()
     : undefined;
+  // Phones get the image instead of the video (see ModernHero), so give
+  // them a rendition sized for a phone rather than the 1920px desktop one.
+  const heroMobileImageUrl = hero?.fallbackImage?.asset?.url
+    ? urlFor(hero.fallbackImage).width(1080).url()
+    : undefined;
 
   // Resolve communities: use showAll query or referenced communities
   const rawCommunities = featuredCommunitiesConfig?.showAll
@@ -273,6 +278,7 @@ export default async function Home() {
         videoUrl={videoUrl}
         heroMuxPlaybackId={heroMuxPlaybackId}
         fallbackImageUrl={fallbackImageUrl}
+        heroMobileImageUrl={heroMobileImageUrl}
         heroTitle={hero?.title}
         heroSubtitle={hero?.subtitle}
         showSearch={hero?.showSearch !== false}

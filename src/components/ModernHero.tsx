@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 interface ModernHeroProps {
   videoUrl?: string;
   fallbackImageUrl?: string;
+  /** Narrower rendition of fallbackImageUrl for phone-width viewports. */
+  mobileImageUrl?: string;
   title?: string;
   subtitle?: string;
 }
@@ -28,6 +30,7 @@ const EMPTY: Suggestions = { areas: [], properties: [] };
 export default function ModernHero({
   videoUrl,
   fallbackImageUrl,
+  mobileImageUrl,
   title = 'Exceptional Properties',
   subtitle = 'Discover a curated collection of the world\'s finest residences',
 }: ModernHeroProps) {
@@ -37,6 +40,22 @@ export default function ModernHero({
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Phones get the still image instead of the video. The hero MP4 is tens of
+  // megabytes and dominated mobile load time, so the video element is only
+  // mounted on viewports of md width and up. The decision is made after
+  // hydration (the server always renders the image), which means a phone never
+  // requests a single byte of video and desktop shows the poster until the
+  // video mounts a frame later.
+  const [showVideo, setShowVideo] = useState(false);
+  useEffect(() => {
+    if (!videoUrl) return;
+    const mq = window.matchMedia('(min-width: 768px)');
+    const update = () => setShowVideo(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [videoUrl]);
 
   // Type-ahead: matching areas plus a few active listings whose address,
   // town or MLS number contains the term. Debounced, and stale requests are
@@ -121,7 +140,7 @@ export default function ModernHero({
     <section className="relative w-full h-screen min-h-[700px] overflow-hidden bg-[var(--modern-black)]">
       {/* Background Media - Rolex-style cinematic presentation */}
       <div className="absolute inset-0">
-        {videoUrl ? (
+        {videoUrl && showVideo ? (
           <video
             autoPlay
             loop
@@ -134,15 +153,20 @@ export default function ModernHero({
           >
             <source src={videoUrl} type="video/mp4" />
           </video>
-        ) : (
-          <div
-            className="w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${fallbackImageUrl})`,
-              filter: 'brightness(0.85) contrast(1.1)'
-            }}
+        ) : fallbackImageUrl ? (
+          // Full-bleed background; next/image's wrapper fights object-cover here.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={fallbackImageUrl}
+            srcSet={mobileImageUrl ? `${mobileImageUrl} 1080w, ${fallbackImageUrl} 1920w` : undefined}
+            sizes="100vw"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="w-full h-full object-cover"
+            style={{ filter: 'brightness(0.85) contrast(1.1)' }}
           />
-        )}
+        ) : null}
 
         {/* Modern gradient overlay - Rolex/Patek style */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--modern-black)] via-transparent to-[var(--modern-black)]/40" />

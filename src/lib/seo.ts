@@ -83,12 +83,13 @@ export function realEstateAgentSchema(opts: {
   areaServed?: string[];
   knowsAbout?: string[];
 }) {
-  if (!opts.name) return null;
+  const name = opts.name?.trim();
+  if (!name) return null;
   const address = postalAddressSchema(opts.address);
   return {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
-    name: opts.name,
+    name,
     url: opts.url,
     ...(opts.image ? { image: opts.image } : {}),
     ...(opts.telephone ? { telephone: opts.telephone } : {}),
