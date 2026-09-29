@@ -554,6 +554,47 @@ export default function CustomOneListingContent({
   const hasDocuments = documents && documents.length > 0;
   const hasMap = listing.latitude && listing.longitude;
 
+  // MLS facts and features, in the order the standard listing page uses.
+  const isSold = listing.status === 'Closed' || listing.status === 'Sold';
+  const fmtDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const bathBreakdown = [
+    listing.bathrooms_full ? `${listing.bathrooms_full} full` : null,
+    listing.bathrooms_three_quarter ? `${listing.bathrooms_three_quarter} three-quarter` : null,
+    listing.bathrooms_half ? `${listing.bathrooms_half} half` : null,
+  ].filter(Boolean).join(', ');
+  const detailRows: Array<{ label: string; value: string }> = [
+    { label: 'MLS #', value: listing.mls_number },
+    listing.status ? { label: 'Status', value: listing.status } : null,
+    listing.property_type ? { label: 'Type', value: listing.property_type } : null,
+    listing.subdivision_name ? { label: 'Subdivision', value: listing.subdivision_name } : null,
+    listing.mls_area_minor ? { label: 'Area', value: listing.mls_area_minor } : null,
+    listing.neighborhood ? { label: 'Neighborhood', value: listing.neighborhood } : null,
+    bathBreakdown ? { label: 'Bathrooms', value: bathBreakdown } : null,
+    listing.listing_date ? { label: 'Listed', value: fmtDate(listing.listing_date) } : null,
+    // Days on market only means something while the listing is active; a
+    // 2009 sale otherwise shows a five-digit count.
+    listing.days_on_market !== null && listing.days_on_market !== undefined && !isSold
+      ? { label: 'Days on Market', value: String(listing.days_on_market) }
+      : null,
+    listing.furnished ? { label: 'Furnished', value: listing.furnished } : null,
+    listing.list_office_name ? { label: 'Listing Office', value: listing.list_office_name } : null,
+  ].filter((r): r is { label: string; value: string } => r !== null);
+
+  const featureRows: Array<{ label: string; value: string }> = [
+    listing.fireplace_yn
+      ? { label: 'Fireplace', value: listing.fireplace_total ? String(listing.fireplace_total) : 'Yes' }
+      : null,
+    listing.cooling?.length ? { label: 'Cooling', value: listing.cooling.join(', ') } : null,
+    listing.heating?.length ? { label: 'Heating', value: listing.heating.join(', ') } : null,
+    listing.laundry_features?.length ? { label: 'Laundry', value: listing.laundry_features.join(', ') } : null,
+    listing.attached_garage_yn !== null && listing.attached_garage_yn !== undefined
+      ? { label: 'Attached Garage', value: listing.attached_garage_yn ? 'Yes' : 'No' }
+      : null,
+    listing.parking_features?.length ? { label: 'Parking', value: listing.parking_features.join(', ') } : null,
+  ].filter((r): r is { label: string; value: string } => r !== null);
+  const amenities: string[] = listing.association_amenities || [];
+
   return (
     <div className="-mt-20 min-h-screen bg-[var(--modern-black)]">
       {/* ═══ HERO ═══ */}
@@ -708,6 +749,73 @@ export default function CustomOneListingContent({
           </div>
         </div>
       </section>
+
+      {/* ═══ DETAILS & FEATURES ═══
+          The MLS facts the standard listing page shows (Property Details and
+          Features & Amenities). This editorial layout only carried the
+          description and four headline stats, so Stacey's own listings had
+          less detail than the general feed's. */}
+      {(detailRows.length > 0 || featureRows.length > 0 || amenities.length > 0) && (
+        <section id="details" className="py-24 lg:py-32 bg-[var(--modern-gray-lighter)]">
+          <div className="max-w-7xl mx-auto px-6 lg:px-12">
+            <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+              {detailRows.length > 0 && (
+                <div>
+                  <span className="text-sm tracking-[0.3em] uppercase text-[var(--modern-gold)]">
+                    The Facts
+                  </span>
+                  <h2 className="!text-3xl md:!text-4xl font-light mt-4 mb-8 tracking-wide text-[var(--modern-black)] font-serif">
+                    Property Details
+                  </h2>
+                  <dl className="divide-y divide-[var(--modern-black)]/10 border-t border-b border-[var(--modern-black)]/10">
+                    {detailRows.map((row) => (
+                      <div key={row.label} className="flex justify-between items-baseline gap-6 py-3">
+                        <dt className="text-sm text-[var(--modern-gray)]">{row.label}</dt>
+                        <dd className="text-right text-[var(--modern-black)]">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              )}
+
+              {(featureRows.length > 0 || amenities.length > 0) && (
+                <div>
+                  <span className="text-sm tracking-[0.3em] uppercase text-[var(--modern-gold)]">
+                    Comfort & Convenience
+                  </span>
+                  <h2 className="!text-3xl md:!text-4xl font-light mt-4 mb-8 tracking-wide text-[var(--modern-black)] font-serif">
+                    Features &amp; Amenities
+                  </h2>
+                  {featureRows.length > 0 && (
+                    <dl className="divide-y divide-[var(--modern-black)]/10 border-t border-b border-[var(--modern-black)]/10">
+                      {featureRows.map((row) => (
+                        <div key={row.label} className="flex justify-between items-baseline gap-6 py-3">
+                          <dt className="text-sm text-[var(--modern-gray)]">{row.label}</dt>
+                          <dd className="text-right text-[var(--modern-black)]">{row.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                  {amenities.length > 0 && (
+                    <div className="mt-8">
+                      <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--modern-gray)] block mb-3">
+                        Community Amenities
+                      </span>
+                      <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
+                        {amenities.map((amenity) => (
+                          <li key={amenity} className="px-3 py-1.5 bg-white border border-[var(--modern-black)]/10 text-[var(--modern-black)] text-xs">
+                            {amenity}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══ PHOTO GALLERY ═══ */}
       <PhotoGallery photos={listing.photos || []} address={streetAddress} />
