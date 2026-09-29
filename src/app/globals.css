@@ -1021,6 +1021,29 @@ address {
   font-size: clamp(2.5rem, 5.5vw, 4.5rem);
 }
 
+/* The homepage hero's H1 when a tagline carries the display treatment. It
+   takes the subtitle's small uppercase style; without this the unlayered
+   heading rules above would render it as a second display line. Selectors
+   include the template prefixes so they outrank the template h1 rules. */
+h1.modern-hero-kicker,
+.modern-template h1.modern-hero-kicker,
+.custom-one-template h1.modern-hero-kicker {
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  margin: 0 0 0.75rem;
+}
+@media (min-width: 768px) {
+  h1.modern-hero-kicker,
+  .modern-template h1.modern-hero-kicker,
+  .custom-one-template h1.modern-hero-kicker {
+    font-size: 1rem;
+  }
+}
+
 .custom-one-template h2 {
   font-weight: 400;
   letter-spacing: 0.01em;

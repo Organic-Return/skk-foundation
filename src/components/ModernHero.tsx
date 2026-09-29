@@ -186,10 +186,7 @@ export default function ModernHero({
             <p className="modern-hero-title text-white mb-6 max-w-4xl hero-rise" style={{ animationDelay: '0.1s' }}>
               {tagline}
             </p>
-            <h1
-              className="text-white/90 text-sm md:text-base font-light tracking-[0.15em] uppercase max-w-xl mb-3 hero-rise"
-              style={{ animationDelay: '0.2s' }}
-            >
+            <h1 className="modern-hero-kicker text-white/90 max-w-xl hero-rise" style={{ animationDelay: '0.2s' }}>
               {title}
             </h1>
             {subtitle && (
