@@ -475,7 +475,10 @@ export default function ModernHeader({
         <div className="h-[120px] lg:h-[120px]" />
       )}
 
-      {/* Contact Modal */}
+      {/* Contact Modal. Mounted only while open: the header precedes <main>,
+          so a permanently mounted modal put its two <h2>s ahead of every
+          page's <h1> in the document outline. */}
+      {contactModalOpen && (
       <ContactModal
         isOpen={contactModalOpen}
         onClose={() => setContactModalOpen(false)}
@@ -484,6 +487,7 @@ export default function ModernHeader({
           email: email,
         }}
       />
+      )}
 
       {/* Site Search Modal */}
       <SiteSearchModal

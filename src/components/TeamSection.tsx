@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { profileHref } from '@/lib/profiles';
 import Image from 'next/image';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
@@ -46,7 +47,7 @@ export default function TeamSection({
   }
 
   const isImageLeft = imagePosition === 'left';
-  const teamMemberUrl = teamMember.slug?.current ? `/team/${teamMember.slug.current}` : null;
+  const teamMemberUrl = profileHref(teamMember.slug?.current);
 
   return (
     <section className="w-full py-16 md:py-24 lg:py-32" itemScope itemType="https://schema.org/Person">

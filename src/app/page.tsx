@@ -8,6 +8,7 @@ import { getSalesTotals, formatUSD } from '@/lib/salesTotals';
 import StructuredData from '@/components/StructuredData';
 import { postalAddressSchema } from '@/lib/seo';
 import HomepageContent from '@/components/HomepageContent';
+import { profileHref } from '@/lib/profiles';
 
 const builder = createImageUrlBuilder(client);
 
@@ -214,7 +215,7 @@ export default async function Home() {
         '@type': 'Person',
         '@id': `${baseUrl}#agent`,
         name: primaryAgent.name.trim(),
-        url: `${baseUrl}/team/${primaryAgent.slug}`,
+        url: `${baseUrl}${profileHref(primaryAgent.slug) ?? ''}`,
         ...(primaryAgent.title ? { jobTitle: primaryAgent.title } : {}),
         ...(primaryAgent.imageUrl ? { image: primaryAgent.imageUrl } : {}),
         ...(primaryAgent.email ? { email: primaryAgent.email } : {}),

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { profileHref } from '@/lib/profiles';
 import type { MLSProperty } from '@/lib/listings';
 import PropertyMap from '@/components/PropertyMap';
 
@@ -239,7 +240,7 @@ function ContactSection({ listing, agent }: { listing: MLSProperty; agent: Listi
                       Listing Agent
                     </p>
                     <Link
-                      href={`/team/${agent.slug.current}`}
+                      href={profileHref(agent.slug.current)!}
                       className="text-[var(--modern-black)] font-serif text-lg hover:text-[var(--modern-gold)] transition-colors"
                     >
                       {agent.name}

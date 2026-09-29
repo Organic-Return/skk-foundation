@@ -197,9 +197,9 @@ export default function ModernFooter({
 
           {/* Links Column */}
           <div>
-            <h4 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
+            <h3 className="!mt-0 text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
               Navigate
-            </h4>
+            </h3>
             <ul className="space-y-3">
               {footerLinks.map((link, index) => (
                 <li key={index}>
@@ -218,9 +218,9 @@ export default function ModernFooter({
 
           {/* Legal Column */}
           <div>
-            <h4 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
+            <h3 className="!mt-0 text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
               Legal
-            </h4>
+            </h3>
             {/* /privacy and /terms-of-service were both 404s. Only routes that
                 exist are linked; add a Terms page and restore its link here. */}
             <ul className="space-y-3">
@@ -237,9 +237,9 @@ export default function ModernFooter({
 
           {/* Newsletter Column */}
           <div>
-            <h4 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
+            <h3 className="!mt-0 text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
               Stay Informed
-            </h4>
+            </h3>
             <p className="text-white/40 text-sm font-light mb-5">
               Receive exclusive property updates and market insights.
             </p>

@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { profileHref } from '@/lib/profiles';
 import { notFound } from 'next/navigation';
 import {
   getListingBySlug,
@@ -755,14 +756,14 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     {/* Description */}
                     {listing.description && (
                       <div>
-                        <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">About This Property</h3>
+                        <h2 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">About This Property</h2>
                         <p className="text-gray-600 leading-relaxed whitespace-pre-wrap text-base">{listing.description}</p>
                       </div>
                     )}
 
                     {/* Overview Grid */}
                     <div>
-                      <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">Property Details</h3>
+                      <h2 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">Property Details</h2>
                       <div className="grid grid-cols-2 gap-x-6 gap-y-1">
                         <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
                           <span className="text-gray-500 text-sm">MLS #</span>
@@ -810,7 +811,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     {/* Features & Amenities */}
                     {(listing.fireplace_yn || listing.cooling?.length || listing.heating?.length || listing.laundry_features?.length || listing.attached_garage_yn !== null || listing.parking_features?.length || listing.association_amenities?.length) && (
                       <div>
-                        <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">Features & Amenities</h3>
+                        <h2 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">Features & Amenities</h2>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-1">
                           {listing.fireplace_yn && (
                             <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
@@ -889,7 +890,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                       <div className="mb-6 pb-6 border-b border-white/20">
                         <div className="flex items-center gap-4">
                           {listingAgent.image ? (
-                            <Link href={`/team/${listingAgent.slug.current}`}>
+                            <Link href={profileHref(listingAgent.slug.current)!}>
                               <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[var(--modern-gold)]/30 flex-shrink-0">
                                 <Image
                                   src={urlFor(listingAgent.image).width(112).height(112).url()}
@@ -907,7 +908,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                             </div>
                           )}
                           <div className="min-w-0">
-                            <Link href={`/team/${listingAgent.slug.current}`} className="text-white font-serif text-base hover:text-[var(--modern-gold)] transition-colors">
+                            <Link href={profileHref(listingAgent.slug.current)!} className="text-white font-serif text-base hover:text-[var(--modern-gold)] transition-colors">
                               {listingAgent.name}
                             </Link>
                             {listingAgent.title && (
@@ -1166,7 +1167,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     <div className="mb-6 pb-6 border-b border-white/20">
                       <div className="flex items-center gap-4">
                         {listingAgent.image ? (
-                          <Link href={`/team/${listingAgent.slug.current}`}>
+                          <Link href={profileHref(listingAgent.slug.current)!}>
                             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[var(--color-gold)]/30 flex-shrink-0">
                               <Image
                                 src={urlFor(listingAgent.image).width(128).height(128).url()}
@@ -1184,7 +1185,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                           </div>
                         )}
                         <div className="min-w-0">
-                          <Link href={`/team/${listingAgent.slug.current}`} className="text-white font-serif text-base hover:text-[var(--color-gold)] transition-colors">
+                          <Link href={profileHref(listingAgent.slug.current)!} className="text-white font-serif text-base hover:text-[var(--color-gold)] transition-colors">
                             {listingAgent.name}
                           </Link>
                           {listingAgent.title && (
@@ -1227,7 +1228,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                       <p className="text-white/40 text-xs uppercase tracking-wider mb-3">Co-Listing Agent</p>
                       <div className="flex items-center gap-4">
                         {coListingAgent.image ? (
-                          <Link href={`/team/${coListingAgent.slug.current}`}>
+                          <Link href={profileHref(coListingAgent.slug.current)!}>
                             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[var(--color-gold)]/30 flex-shrink-0">
                               <Image
                                 src={urlFor(coListingAgent.image).width(128).height(128).url()}
@@ -1245,7 +1246,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                           </div>
                         )}
                         <div className="min-w-0">
-                          <Link href={`/team/${coListingAgent.slug.current}`} className="text-white font-serif text-base hover:text-[var(--color-gold)] transition-colors">
+                          <Link href={profileHref(coListingAgent.slug.current)!} className="text-white font-serif text-base hover:text-[var(--color-gold)] transition-colors">
                             {coListingAgent.name}
                           </Link>
                           {coListingAgent.title && (
