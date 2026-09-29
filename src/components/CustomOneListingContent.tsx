@@ -558,24 +558,36 @@ export default function CustomOneListingContent({
   const isSold = listing.status === 'Closed' || listing.status === 'Sold';
   const fmtDate = (d: string) =>
     new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  const bathBreakdown = [
-    listing.bathrooms_full ? `${listing.bathrooms_full} full` : null,
-    listing.bathrooms_three_quarter ? `${listing.bathrooms_three_quarter} three-quarter` : null,
-    listing.bathrooms_half ? `${listing.bathrooms_half} half` : null,
-  ].filter(Boolean).join(', ');
+  // The feed stores lot size in acres; show it that way at any size.
+  const lotSize = listing.lot_size ? `${listing.lot_size.toFixed(2)} Acres` : null;
+  const bathCount = (n: number | null) => (n === null || n === undefined ? null : String(n));
   const detailRows: Array<{ label: string; value: string }> = [
+    {
+      label: isSold ? 'Sold Price' : 'Listing Price',
+      value: formatPrice(isSold ? listing.sold_price ?? listing.list_price : listing.list_price),
+    },
     { label: 'MLS #', value: listing.mls_number },
     listing.status ? { label: 'Status', value: listing.status } : null,
-    listing.property_type ? { label: 'Type', value: listing.property_type } : null,
-    listing.subdivision_name ? { label: 'Subdivision', value: listing.subdivision_name } : null,
-    listing.mls_area_minor ? { label: 'Area', value: listing.mls_area_minor } : null,
-    listing.neighborhood ? { label: 'Neighborhood', value: listing.neighborhood } : null,
-    bathBreakdown ? { label: 'Bathrooms', value: bathBreakdown } : null,
     listing.listing_date ? { label: 'Listed', value: fmtDate(listing.listing_date) } : null,
+    isSold && listing.sold_date ? { label: 'Sold', value: fmtDate(listing.sold_date) } : null,
     // Days on market only means something while the listing is active; a
     // 2009 sale otherwise shows a five-digit count.
     listing.days_on_market !== null && listing.days_on_market !== undefined && !isSold
       ? { label: 'Days on Market', value: String(listing.days_on_market) }
+      : null,
+    listing.property_type ? { label: 'Property Type', value: listing.property_type } : null,
+    listing.bedrooms !== null ? { label: 'Bedrooms', value: String(listing.bedrooms) } : null,
+    listing.bathrooms !== null ? { label: 'Bathrooms', value: String(listing.bathrooms) } : null,
+    bathCount(listing.bathrooms_full) !== null ? { label: 'Full Baths', value: bathCount(listing.bathrooms_full)! } : null,
+    bathCount(listing.bathrooms_three_quarter) !== null ? { label: '3/4 Baths', value: bathCount(listing.bathrooms_three_quarter)! } : null,
+    bathCount(listing.bathrooms_half) !== null ? { label: 'Half Baths', value: bathCount(listing.bathrooms_half)! } : null,
+    listing.square_feet ? { label: 'Sq. Ft.', value: listing.square_feet.toLocaleString() } : null,
+    lotSize ? { label: 'Lot Size', value: lotSize } : null,
+    listing.year_built ? { label: 'Year Built', value: String(listing.year_built) } : null,
+    listing.subdivision_name ? { label: 'Subdivision', value: listing.subdivision_name } : null,
+    listing.mls_area_minor ? { label: 'Area', value: listing.mls_area_minor } : null,
+    listing.neighborhood && listing.neighborhood !== listing.subdivision_name
+      ? { label: 'Neighborhood', value: listing.neighborhood }
       : null,
     listing.furnished ? { label: 'Furnished', value: listing.furnished } : null,
     listing.list_office_name ? { label: 'Listing Office', value: listing.list_office_name } : null,

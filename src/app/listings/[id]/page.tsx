@@ -766,13 +766,71 @@ export default async function ListingPage({ params }: ListingPageProps) {
                       <h2 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">Property Details</h2>
                       <div className="grid grid-cols-2 gap-x-6 gap-y-1">
                         <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                          <span className="text-gray-500 text-sm">{listing.status === 'Closed' ? 'Sold Price' : 'Listing Price'}</span>
+                          <span className="font-medium text-gray-900">{formatPrice(listing.status === 'Closed' ? listing.sold_price ?? listing.list_price : listing.list_price)}</span>
+                        </div>
+                        <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
                           <span className="text-gray-500 text-sm">MLS #</span>
                           <span className="font-medium text-gray-900">{listing.mls_number}</span>
                         </div>
+                        {listing.status && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Status</span>
+                            <span className="font-medium text-gray-900">{listing.status}</span>
+                          </div>
+                        )}
                         {listing.property_type && (
                           <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
-                            <span className="text-gray-500 text-sm">Type</span>
+                            <span className="text-gray-500 text-sm">Property Type</span>
                             <span className="font-medium text-gray-900">{listing.property_type}</span>
+                          </div>
+                        )}
+                        {listing.bedrooms !== null && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Bedrooms</span>
+                            <span className="font-medium text-gray-900">{listing.bedrooms}</span>
+                          </div>
+                        )}
+                        {listing.bathrooms !== null && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Bathrooms</span>
+                            <span className="font-medium text-gray-900">{listing.bathrooms}</span>
+                          </div>
+                        )}
+                        {listing.bathrooms_full !== null && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Full Baths</span>
+                            <span className="font-medium text-gray-900">{listing.bathrooms_full}</span>
+                          </div>
+                        )}
+                        {listing.bathrooms_three_quarter !== null && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">3/4 Baths</span>
+                            <span className="font-medium text-gray-900">{listing.bathrooms_three_quarter}</span>
+                          </div>
+                        )}
+                        {listing.bathrooms_half !== null && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Half Baths</span>
+                            <span className="font-medium text-gray-900">{listing.bathrooms_half}</span>
+                          </div>
+                        )}
+                        {listing.square_feet && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Sq. Ft.</span>
+                            <span className="font-medium text-gray-900">{listing.square_feet.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {listing.lot_size && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Lot Size</span>
+                            <span className="font-medium text-gray-900">{`${listing.lot_size.toFixed(2)} Acres`}</span>
+                          </div>
+                        )}
+                        {listing.year_built && (
+                          <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
+                            <span className="text-gray-500 text-sm">Year Built</span>
+                            <span className="font-medium text-gray-900">{listing.year_built}</span>
                           </div>
                         )}
                         {listing.subdivision_name && (
