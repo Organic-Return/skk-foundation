@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
       // template URLs (she is the only agent) all resolve to it.
       { source: '/team/stacey-k-kelly', destination: '/about/stacey-k-kelly', permanent: true },
       { source: '/about', destination: '/about/stacey-k-kelly', permanent: true },
+      // The contact page is /contact-us; editor-entered links and old inbound
+      // links use the shorter form.
+      { source: '/contact', destination: '/contact-us', permanent: true },
       // Template pages with no SKK content yet. Temporary redirects so they can
       // be switched back on the day they are filled in.
       { source: '/builders', destination: '/', permanent: true },
