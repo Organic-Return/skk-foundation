@@ -1,5 +1,4 @@
 import { MetadataRoute } from 'next';
-import { headers } from 'next/headers';
 import { client } from '@/sanity/client';
 import { unstable_cache } from 'next/cache';
 import { getListings, getListingHref } from '@/lib/listings';
@@ -69,12 +68,23 @@ const getSitemapListings = unstable_cache(
   { revalidate: 3600, tags: ['sitemap-listings'] }
 );
 
+// Served from the cache and regenerated in the background. Gathering every
+// listing takes several seconds cold; Search Console and Semrush both reported
+// the sitemap unreachable at the same minute on 2026-09-25, which is what a
+// cold rebuild hitting the function timeout looks like.
+export const revalidate = 3600;
+export const maxDuration = 60;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // On staging, list staging URLs. settings.siteUrl points at the production
   // domain, so emitting it here would send an auditing crawler off this build
   // and onto the live site.
-  const host = (await headers()).get('host');
-  const baseUrl = getCrawlBaseUrl(host, await getBaseUrl());
+  // Staging (preview) deployments list their own URLs, from the environment
+  // rather than the request host: reading headers() would make this route
+  // dynamic, and the whole point of the cache below is that a crawler never
+  // waits on the listing rebuild.
+  const previewHost = process.env.VERCEL_ENV === 'preview' ? process.env.VERCEL_URL : undefined;
+  const baseUrl = getCrawlBaseUrl(previewHost, await getBaseUrl());
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
