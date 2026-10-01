@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
+import BrowseByPropertyType from './BrowseByPropertyType';
 
 const builder = createImageUrlBuilder(client);
 
@@ -261,6 +262,10 @@ export default function ModernFooter({
             </form>
           </div>
         </div>
+
+        {/* Property-type views, off-market and resources: pages that were in
+            the sitemap but on no link path. */}
+        <BrowseByPropertyType variant="footer" />
 
         {/* Social + Brokerage Row */}
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-8">

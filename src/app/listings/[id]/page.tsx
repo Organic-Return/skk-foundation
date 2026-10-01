@@ -25,6 +25,8 @@ import CustomOneListingContent from '@/components/CustomOneListingContent';
 import RCSothebysListingContent from '@/components/RCSothebysListingContent';
 import StickyRequestInfo from '@/components/StickyRequestInfo';
 import ListingContactForm from '@/components/ListingContactForm';
+import { findNewerDuplicateListing } from '@/lib/listings';
+import SimilarListings from '@/components/SimilarListings';
 
 export const revalidate = 60;
 
@@ -304,9 +306,21 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   // The address already names the city; repeating it pushed every title past
   // 70 characters and Google truncated the price.
   const title = `${addressLabel} | ${formatPrice(listing.list_price)}`;
-  const rawDescription = listing.description
-    || `${listing.bedrooms || 0} bed, ${listing.bathrooms || 0} bath ${listing.property_type || 'property'} for ${listing.status === 'Closed' ? 'sale (sold)' : 'sale'} in ${listing.city}, ${listing.state}. ${listing.square_feet ? `${listing.square_feet.toLocaleString()} sq ft.` : ''} MLS# ${listing.mls_number}`;
-  const description = rawDescription.length > 300 ? rawDescription.slice(0, 297) + '...' : rawDescription;
+  // Lead with the facts that differ between units before the MLS remarks:
+  // every unit in a building shares the same remarks, so remarks-only
+  // descriptions were identical across dozens of pages.
+  const facts = [
+    listing.bedrooms ? `${listing.bedrooms} bed` : null,
+    listing.bathrooms ? `${listing.bathrooms} bath` : null,
+    listing.square_feet ? `${listing.square_feet.toLocaleString()} sq ft` : null,
+  ].filter(Boolean).join(', ');
+  const lead = `${addressLabel}: ${[facts, listing.property_type].filter(Boolean).join(' ')}${listing.status === 'Closed' ? ' sold for ' : ' listed at '}${formatPrice(listing.list_price)}.`;
+  const remarks = (listing.description || '').replace(/\s+/g, ' ').trim();
+  const fullDescription = remarks ? `${lead} ${remarks}` : `${lead} MLS# ${listing.mls_number}.`;
+  const description = fullDescription.length > 300 ? fullDescription.slice(0, 297).replace(/\s+\S*$/, '') + '...' : fullDescription;
+  // A property the feed lists twice canonicalises to its newer record.
+  const newer = await findNewerDuplicateListing(listing);
+  const canonicalUrl = newer ? `${baseUrl}${getListingHref(newer)}` : listingUrl;
   const images = listing.photos && listing.photos.length > 0 ? listing.photos : [];
   const primaryImage = images[0] || `${baseUrl}/og-default.jpg`;
 
@@ -316,7 +330,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
     // Canonical URL
     alternates: {
-      canonical: listingUrl,
+      canonical: canonicalUrl,
     },
 
     // Keywords
@@ -510,6 +524,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
           documents={propertyEnhancement?.documents}
           googleMapsApiKey={googleMapsApiKey}
         />
+        <SimilarListings listing={listing} template={template} />
       </>
     );
   }
@@ -1423,6 +1438,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
           </div>
         </section>
       </div>
+      <SimilarListings listing={listing} template={template} />
     </>
   );
 }

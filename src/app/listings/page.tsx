@@ -25,6 +25,18 @@ import { client } from '@/sanity/client';
 import ListingsSearchClient from '@/components/ListingsSearchClient';
 import StructuredData from '@/components/StructuredData';
 import { getDefaultShareImage } from '@/lib/homepage';
+import BrowseByPropertyType from '@/components/BrowseByPropertyType';
+import { PROPERTY_TYPE_VIEWS } from '@/lib/propertyTypes';
+
+const TYPE_VIEW_COPY: Record<string, { noun: string; description: string }> = {
+  'Residential': { noun: 'Homes for Sale', description: 'every home and condo for sale' },
+  'Fractional': { noun: 'Fractional Ownership for Sale', description: 'fractional ownership and shared residences for sale' },
+  'RES Vacant Land': { noun: 'Land for Sale', description: 'residential lots and acreage for sale' },
+  'Residential Lease': { noun: 'Homes & Condos for Rent', description: 'homes and condos for rent' },
+  'Commercial Sale': { noun: 'Commercial Property for Sale', description: 'commercial property for sale' },
+  'Commercial Lease': { noun: 'Commercial Space for Lease', description: 'commercial space for lease' },
+  'Commercial Land': { noun: 'Commercial Land for Sale', description: 'commercial land for sale' },
+};
 
 // Generate ItemList schema for listings
 function generateListingsSchema(listings: MLSProperty[], baseUrl: string, total: number) {
@@ -114,14 +126,29 @@ export async function generateMetadata({ searchParams }: ListingsPageProps): Pro
   // Filter params (city, price, beds…) are deliberately excluded from the
   // canonical: they generate unbounded combinations, and every filtered view
   // should consolidate onto the plain paginated URL rather than be indexed.
-  const canonical = page > 1 ? `${baseUrl}/listings?page=${page}` : `${baseUrl}/listings`;
+  //
+  // The exception is the property-type view: seven bounded, linked hubs
+  // (rentals, land, commercial...) that are the only link path to those
+  // listings. Each describes itself and canonicalises to itself, so Semrush
+  // does not file them as duplicates of /listings.
+  const typeView = PROPERTY_TYPE_VIEWS.find((v) => v.type === params.type);
+  // Spelled with %20 like the links that point here, so the canonical and
+  // the crawled URL compare equal byte for byte.
+  const qs = [
+    typeView ? `type=${encodeURIComponent(typeView.type)}` : null,
+    page > 1 ? `page=${page}` : null,
+  ].filter(Boolean).join('&');
+  const canonical = `${baseUrl}/listings${qs ? `?${qs}` : ''}`;
+  const pageSuffix = page > 1 ? ` — Page ${page}` : '';
 
-  const title =
-    page > 1
-      ? `Aspen & Snowmass Homes for Sale — Page ${page}`
+  const title = typeView
+    ? `Aspen & Snowmass ${typeView.label} | ${TYPE_VIEW_COPY[typeView.type]?.noun ?? 'MLS Listings'}${pageSuffix}`
+    : page > 1
+      ? `Aspen & Snowmass Homes for Sale${pageSuffix}`
       : 'Aspen & Snowmass Homes for Sale | Current MLS Listings';
-  const description =
-    page > 1
+  const description = typeView
+    ? `${page > 1 ? `Page ${page} of ` : 'Browse '}${TYPE_VIEW_COPY[typeView.type]?.description ?? `${typeView.label.toLowerCase()} listings`} across Aspen, Snowmass Village, Basalt, and Carbondale, Colorado.`
+    : page > 1
       ? `Page ${page} of homes, condos, and land for sale across Aspen, Snowmass Village, Basalt, and Carbondale, Colorado.`
       : 'Browse every home, condo, and land listing for sale across Aspen, Snowmass Village, Basalt, and Carbondale, Colorado. Search by price, beds, and neighborhood.';
 
@@ -353,6 +380,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           </ul>
         </nav>
       )}
+      <BrowseByPropertyType feedTypes={filteredPropertyTypes} />
     </>
   );
 }

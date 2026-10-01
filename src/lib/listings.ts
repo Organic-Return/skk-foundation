@@ -102,6 +102,11 @@ export interface MLSProperty {
   lot_size: number | null;
   year_built: number | null;
   property_type: string | null;
+  /**
+   * The feed's coarse type (Residential, Residential Lease, RES Vacant Land...)
+   * when `property_type` carries the finer subtype; queries filter on it.
+   */
+  feed_property_type?: string | null;
   listing_date: string | null;
   sold_date: string | null;
   /**
@@ -155,6 +160,11 @@ export function getListingHref(listing: { id: string; mls_number?: string }): st
 // Resolve listing by slug — tries MLS number first, then database ID, then Realogy listing
 export async function getListingBySlug(slug: string): Promise<MLSProperty | null> {
   return await getListingByMlsNumber(slug) || await getListingById(slug) || await getRealogyListingBySlug(slug);
+}
+
+const DOCUMENT_URL = /\.(pdf|docx?|xlsx?|pptx?|txt)(\?|#|$)/i;
+function isImageUrl(url: string): boolean {
+  return !DOCUMENT_URL.test(url);
 }
 
 // Transform graphql_listings row to MLSProperty format
@@ -310,6 +320,7 @@ function transformListing(row: GraphQLListing): MLSProperty {
     lot_size: row.lot_size_acres,
     year_built: row.year_built ? parseInt(row.year_built, 10) : null,
     property_type: row.property_sub_type || row.property_type,
+    feed_property_type: row.property_type,
     listing_date: row.listing_date,
     // Was `row.close_date` alone. mls_properties has no close_date column, so
     // every Supabase-sourced sold listing carried a null sold_date and the
@@ -321,7 +332,9 @@ function transformListing(row: GraphQLListing): MLSProperty {
     features: {},
     agent_name: row.list_office_name,
     agent_email: null,
-    photos,
+    // A feed occasionally files a PDF (a plat, a floor plan) among the photos;
+    // next/image answers 400 for it and auditors report a broken image.
+    photos: photos.filter(isImageUrl),
     video_urls: [],
     latitude: row.latitude != null ? Number(row.latitude) || null : null,
     longitude: row.longitude != null ? Number(row.longitude) || null : null,
@@ -1629,4 +1642,31 @@ export async function getListingsByAgentId(
     activeListings: mergeWithSIRMedia(mlsResult.activeListings, realogyResult.activeListings),
     soldListings: mergeWithSIRMedia(mlsResult.soldListings, realogyResult.soldListings),
   };
+}
+
+
+/**
+ * The newer MLS record for the same property, when the feed carries it twice
+ * (a relist under a new number, or a home and its lot listed separately at
+ * the same address and price). The older page then canonicalises to the
+ * newer one instead of the two competing as duplicate titles and content.
+ */
+export async function findNewerDuplicateListing(
+  listing: Pick<MLSProperty, 'id' | 'mls_number' | 'address' | 'list_price'>
+): Promise<MLSProperty | null> {
+  if (!isSupabaseConfigured() || !listing.address || !listing.list_price) return null;
+  const { data, error } = await supabase
+    .from('mls_properties')
+    .select('*')
+    .eq('is_active', true)
+    .eq('address', listing.address)
+    .eq('list_price', listing.list_price)
+    .neq('id', listing.id)
+    .order('mls_number', { ascending: false })
+    .limit(1);
+  if (error || !data || data.length === 0) return null;
+  const other = transformListing(data[0] as GraphQLListing);
+  const mine = Number(listing.mls_number) || 0;
+  const theirs = Number(other.mls_number) || 0;
+  return theirs > mine ? other : null;
 }

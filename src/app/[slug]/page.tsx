@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import MuxVideoPlayer from "@/components/MuxVideoPlayer";
-import { getBaseUrl } from '@/lib/settings';
+import { getBaseUrl, getBrandName } from '@/lib/settings';
 import RelatedPosts from '@/components/RelatedPosts';
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -51,7 +51,12 @@ export async function generateMetadata({
     : null;
 
   // Use custom meta title or fall back to post title
-  const metaTitle = post.seo?.metaTitle || post.title;
+  // The title tag carries the brand when that keeps it within 70 characters;
+  // otherwise it would match the H1 exactly, which auditors flag.
+  const brandName = await getBrandName();
+  const metaTitle =
+    post.seo?.metaTitle ||
+    (post.title.length + brandName.length + 3 <= 70 ? `${post.title} | ${brandName}` : post.title);
 
   // Use custom meta description or extract from body
   let metaDescription = post.seo?.metaDescription || post.title;

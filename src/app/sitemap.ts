@@ -9,6 +9,7 @@ import {
 } from '@/lib/mlsConfiguration';
 import { getOffMarketListings } from '@/lib/offMarketListings';
 import { getBaseUrl } from '@/lib/settings';
+import { PROPERTY_TYPE_VIEWS, propertyTypeHref } from '@/lib/propertyTypes';
 import { getCrawlBaseUrl } from '@/lib/crawlers';
 
 // Sanity queries for dynamic content
@@ -89,7 +90,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     {
-      url: baseUrl,
+      // With the trailing slash: that is the URL every link resolves to, and
+      // an auditor treated the slash-less form as an orphan.
+      url: `${baseUrl}/`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,
@@ -100,6 +103,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'hourly',
       priority: 0.9,
     },
+    // The property-type views of the grid: the link path to the rental,
+    // commercial and land listings, which a crawler otherwise reaches only
+    // through the sitemap.
+    ...PROPERTY_TYPE_VIEWS.map((view) => ({
+      url: `${baseUrl}${propertyTypeHref(view.type)}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    })),
     {
       url: `${baseUrl}/off-market`,
       lastModified: new Date(),
