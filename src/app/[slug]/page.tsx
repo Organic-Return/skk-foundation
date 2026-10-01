@@ -53,10 +53,14 @@ export async function generateMetadata({
   // Use custom meta title or fall back to post title
   // The title tag carries the brand when that keeps it within 70 characters;
   // otherwise it would match the H1 exactly, which auditors flag.
+  // Most posts' custom meta title simply repeats the post title, so the
+  // suffix applies to that case as well: any title with no brand in it yet.
   const brandName = await getBrandName();
+  const baseTitle = post.seo?.metaTitle?.trim() || post.title;
   const metaTitle =
-    post.seo?.metaTitle ||
-    (post.title.length + brandName.length + 3 <= 70 ? `${post.title} | ${brandName}` : post.title);
+    !baseTitle.includes('|') && !baseTitle.includes(brandName) && baseTitle.length + brandName.length + 3 <= 70
+      ? `${baseTitle} | ${brandName}`
+      : baseTitle;
 
   // Use custom meta description or extract from body
   let metaDescription = post.seo?.metaDescription || post.title;
