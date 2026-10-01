@@ -25,7 +25,7 @@ import CustomOneListingContent from '@/components/CustomOneListingContent';
 import RCSothebysListingContent from '@/components/RCSothebysListingContent';
 import StickyRequestInfo from '@/components/StickyRequestInfo';
 import ListingContactForm from '@/components/ListingContactForm';
-import { findNewerDuplicateListing } from '@/lib/listings';
+import { findNewerDuplicateListing, isClosedListing } from '@/lib/listings';
 import SimilarListings from '@/components/SimilarListings';
 
 export const revalidate = 60;
@@ -426,13 +426,13 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 export default async function ListingPage({ params }: ListingPageProps) {
   const { id } = await params;
 
-  const [listing, settings, googleMapsApiKey] = await Promise.all([
+  const [fetchedListing, settings, googleMapsApiKey] = await Promise.all([
     getListingBySlug(id),
     getSettings(),
     getGoogleMapsApiKey(),
   ]);
 
-  if (!listing) {
+  if (!fetchedListing) {
     notFound();
   }
 
@@ -479,13 +479,21 @@ export default async function ListingPage({ params }: ListingPageProps) {
         description
       }
     }`,
-    { mlsNumber: listing.mls_number }
+    { mlsNumber: fetchedListing.mls_number }
   );
 
   // Look up team members matching this listing's agent IDs
-  const listingAgents = await getListingAgents(listing);
+  const listingAgents = await getListingAgents(fetchedListing);
   const listingAgent = listingAgents[0] || null;
   const coListingAgent = listingAgents[1] || null;
+
+  // Tours and videos on closed listings are usually taken down by whoever
+  // hosted them (our own included), so a sold page would frame an error.
+  const showMedia = !isClosedListing(fetchedListing);
+  const listing: MLSProperty = showMedia
+    ? fetchedListing
+    : { ...fetchedListing, virtual_tour_url: null, video_urls: [] };
+  const enhancementVideos = showMedia ? propertyEnhancement?.videos : undefined;
 
   const hasPhotos = listing.photos && listing.photos.length > 0;
   const baseUrl = await getBaseUrl();
@@ -1179,6 +1187,15 @@ export default async function ListingPage({ params }: ListingPageProps) {
                       title={`Virtual tour of ${listing.address}`}
                     />
                   </div>
+                  {/* Not every tour host allows itself to be framed; keep the tour reachable either way. */}
+                  <a
+                    href={listing.virtual_tour_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-4 text-sm text-[var(--color-sothebys-blue)] underline underline-offset-4"
+                  >
+                    Open the virtual tour in a new tab
+                  </a>
                 </div>
               )}
 
@@ -1219,7 +1236,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               {/* Property Videos & Documents from Sanity */}
               {propertyEnhancement && (
                 <PropertyMedia
-                  videos={propertyEnhancement.videos}
+                  videos={enhancementVideos}
                   documents={propertyEnhancement.documents}
                 />
               )}

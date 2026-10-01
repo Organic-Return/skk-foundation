@@ -6,7 +6,7 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { getSettings, getBaseUrl } from '@/lib/settings';
+import { getSettings, getBaseUrl, withBrand } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
 import StructuredData from "@/components/StructuredData";
 import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema } from "@/lib/seo";
@@ -87,7 +87,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   const who = agent?.name || 'Our Team';
-  const metaTitle = data.seo?.metaTitle || data.heroTitle || `Buy a Home in Aspen & Snowmass | ${who}`;
+  const metaTitle = await withBrand(data.seo?.metaTitle || data.heroTitle || `Buy a Home in Aspen & Snowmass | ${who}`);
   const metaDescription =
     data.seo?.metaDescription ||
     data.heroSubtitle ||

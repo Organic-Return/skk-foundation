@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import MuxVideoPlayer from "@/components/MuxVideoPlayer";
-import { getBaseUrl, getBrandName } from '@/lib/settings';
+import { getBaseUrl, withBrand } from '@/lib/settings';
 import RelatedPosts from '@/components/RelatedPosts';
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -55,12 +55,13 @@ export async function generateMetadata({
   // otherwise it would match the H1 exactly, which auditors flag.
   // Most posts' custom meta title simply repeats the post title, so the
   // suffix applies to that case as well: any title with no brand in it yet.
-  const brandName = await getBrandName();
-  const baseTitle = post.seo?.metaTitle?.trim() || post.title;
-  const metaTitle =
-    !baseTitle.includes('|') && !baseTitle.includes(brandName) && baseTitle.length + brandName.length + 3 <= 70
-      ? `${baseTitle} | ${brandName}`
-      : baseTitle;
+  // Several stored meta titles are the post title cut to 60 characters with a
+  // trailing ellipsis ("...Slopeside Homes and..."), which drops the words the
+  // post is about. A meta title that ends that way is a truncated copy, not a
+  // deliberate rewrite, so the full post title stands in for it.
+  const customTitle = post.seo?.metaTitle?.trim();
+  const baseTitle = customTitle && !/(\.\.\.|…)$/.test(customTitle) ? customTitle : post.title;
+  const metaTitle = await withBrand(baseTitle);
 
   // Use custom meta description or extract from body
   let metaDescription = post.seo?.metaDescription || post.title;

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getListingHref, type MLSProperty } from '@/lib/listings';
+import { getListingHref, isClosedListing, type MLSProperty } from '@/lib/listings';
 
 interface AgentListingsGridProps {
   activeListings: MLSProperty[];
@@ -270,8 +270,8 @@ export default function AgentListingsGrid({ activeListings, soldListings, mlsWit
             key={listing.id}
             listing={listing}
             isSold={activeTab === 'sold'}
-            hasVideo={!!listing.mls_number && mlsWithVideos.includes(listing.mls_number)}
-            hasMatterport={!!listing.mls_number && mlsWithMatterport.includes(listing.mls_number) || !!listing.virtual_tour_url}
+            hasVideo={!isClosedListing(listing) && !!listing.mls_number && mlsWithVideos.includes(listing.mls_number)}
+            hasMatterport={!isClosedListing(listing) && ((!!listing.mls_number && mlsWithMatterport.includes(listing.mls_number)) || !!listing.virtual_tour_url)}
           />
         ))}
       </div>

@@ -167,6 +167,40 @@ function isImageUrl(url: string): boolean {
   return !DOCUMENT_URL.test(url);
 }
 
+// The feed's virtual_tour_url is free text, not a URL: a bare domain
+// ("www.homestories.ai/properties/..."), a link shortener ("bit.ly/..."), a whole
+// <iframe> embed snippet, or just a label ("217 S Third Street Virtual Tour").
+// Rendered as-is into an iframe src, a bare domain resolves relative to the page
+// (/listings/www.homestories.ai/...) and 404s. Reduce the value to an absolute
+// https URL, or drop it when there is no URL in it.
+const EMBED_SRC = /src=["']([^"']+)["']/i;
+const DOMAIN_SHAPED = /^[\w-]+(\.[\w-]+)+(?::\d+)?([/?#]|$)/;
+/** Tours and videos are usually taken down once a sale closes, so closed
+ *  listings never show or advertise them. */
+export function isClosedListing(listing: Pick<MLSProperty, 'status'>): boolean {
+  return listing.status === 'Closed' || listing.status === 'Sold';
+}
+
+export function normalizeVirtualTourUrl(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  let value = raw.trim();
+  const embed = value.match(EMBED_SRC);
+  if (embed) value = embed[1];
+  // Some values are a URL with the tail of an embed snippet still attached
+  // ("...&embed=1\" target=\"_top\">View this tour..."); keep the URL only.
+  value = value.replace(/&amp;/g, '&').split(/[\s"'<>]/)[0];
+  if (value.startsWith('//')) value = `https:${value}`;
+  else if (!/^https?:\/\//i.test(value)) {
+    if (!DOMAIN_SHAPED.test(value)) return null;
+    value = `https://${value}`;
+  }
+  try {
+    return new URL(value).href;
+  } catch {
+    return null;
+  }
+}
+
 // Transform graphql_listings row to MLSProperty format
 function transformListing(row: GraphQLListing): MLSProperty {
   // Extract photos. mls_properties provides a clean, ordered `photos` array of
@@ -351,7 +385,7 @@ function transformListing(row: GraphQLListing): MLSProperty {
     attached_garage_yn: row.attached_garage_yn,
     parking_features: row.parking_features,
     association_amenities: row.association_amenities,
-    virtual_tour_url: row.virtual_tour_url,
+    virtual_tour_url: normalizeVirtualTourUrl(row.virtual_tour_url),
     list_agent_mls_id: row.list_agent_mls_id,
     list_agent_full_name: row.list_agent_full_name || null,
     co_list_agent_mls_id: row.co_list_agent_mls_id,

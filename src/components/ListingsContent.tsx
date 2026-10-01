@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ListingsMap from './ListingsMap';
 import SavePropertyButton from './SavePropertyButton';
-import { getListingHref, type MLSProperty, type SortOption } from '@/lib/listings';
+import { getListingHref, isClosedListing, type MLSProperty, type SortOption } from '@/lib/listings';
 
 interface ListingsContentProps {
   listings: MLSProperty[];
@@ -511,7 +511,7 @@ export default function ListingsContent({
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {displayListings.map((listing) => (
-                      <PropertyCard key={listing.id} listing={listing} template={template} hasVideo={!!listing.mls_number && mlsWithVideos.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)} hasMatterport={(!!listing.mls_number && mlsWithMatterport.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)) || (!!listing.virtual_tour_url && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id))} />
+                      <PropertyCard key={listing.id} listing={listing} template={template} hasVideo={!isClosedListing(listing) && !!listing.mls_number && mlsWithVideos.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)} hasMatterport={!isClosedListing(listing) && ((!!listing.mls_number && mlsWithMatterport.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)) || (!!listing.virtual_tour_url && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)))} />
                     ))}
                   </div>
 
@@ -556,7 +556,7 @@ export default function ListingsContent({
                 <>
                   <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${listingsPerRow !== 2 ? 'xl:grid-cols-3' : ''}`}>
                     {displayListings.map((listing) => (
-                      <PropertyCard key={listing.id} listing={listing} template={template} hasVideo={!!listing.mls_number && mlsWithVideos.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)} hasMatterport={(!!listing.mls_number && mlsWithMatterport.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)) || (!!listing.virtual_tour_url && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id))} />
+                      <PropertyCard key={listing.id} listing={listing} template={template} hasVideo={!isClosedListing(listing) && !!listing.mls_number && mlsWithVideos.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)} hasMatterport={!isClosedListing(listing) && ((!!listing.mls_number && mlsWithMatterport.includes(listing.mls_number) && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)) || (!!listing.virtual_tour_url && !!listing.list_agent_mls_id && teamAgentMlsIds.includes(listing.list_agent_mls_id)))} />
                     ))}
                   </div>
 

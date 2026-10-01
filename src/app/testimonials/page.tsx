@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
 import TestimonialVideoGallery from "@/components/TestimonialVideoGallery";
-import { getBaseUrl, getSettings } from '@/lib/settings';
+import { getBaseUrl, getSettings, withBrand } from '@/lib/settings';
 import { realEstateAgentSchema } from '@/lib/seo';
 import { getDefaultShareImage } from '@/lib/homepage';
 
@@ -75,7 +75,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
-  const metaTitle = data.seo?.metaTitle || data.heroTitle || 'Client Testimonials';
+  const metaTitle = await withBrand(data.seo?.metaTitle || data.heroTitle || 'Client Testimonials');
   const metaDescription = data.seo?.metaDescription || data.heroSubtitle || '';
   const ogImageUrl = data.seo?.ogImage
     ? urlFor(data.seo.ogImage)?.width(1200).height(630).url()

@@ -125,18 +125,24 @@ export async function generateMetadata({ searchParams }: ListingsPageProps): Pro
   //
   // Filter params (city, price, beds…) are deliberately excluded from the
   // canonical: they generate unbounded combinations, and every filtered view
-  // should consolidate onto the plain paginated URL rather than be indexed.
+  // should consolidate onto /listings rather than be indexed. A page number
+  // only means something within its own result set, so a filtered view drops
+  // it too: Aspen page 2 is not a duplicate of unfiltered page 2, and a
+  // canonical claiming so is one search engines ignore.
   //
   // The exception is the property-type view: seven bounded, linked hubs
   // (rentals, land, commercial...) that are the only link path to those
   // listings. Each describes itself and canonicalises to itself, so Semrush
   // does not file them as duplicates of /listings.
   const typeView = PROPERTY_TYPE_VIEWS.find((v) => v.type === params.type);
+  const isFiltered = Object.entries(params).some(
+    ([key, value]) => value && key !== 'page' && !(key === 'type' && typeView),
+  );
   // Spelled with %20 like the links that point here, so the canonical and
   // the crawled URL compare equal byte for byte.
   const qs = [
     typeView ? `type=${encodeURIComponent(typeView.type)}` : null,
-    page > 1 ? `page=${page}` : null,
+    page > 1 && !isFiltered ? `page=${page}` : null,
   ].filter(Boolean).join('&');
   const canonical = `${baseUrl}/listings${qs ? `?${qs}` : ''}`;
   const pageSuffix = page > 1 ? ` — Page ${page}` : '';

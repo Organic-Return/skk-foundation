@@ -168,6 +168,17 @@ export async function getBrandName(): Promise<string> {
 }
 
 /**
+ * A page title with the brand appended ("Client Testimonials | Stacey K. Kelly").
+ * The suffix is skipped when the title already carries a brand segment or the
+ * brand name, or when adding it would push the title past 70 characters.
+ */
+export async function withBrand(title: string): Promise<string> {
+  const brand = await getBrandName();
+  const alreadyBranded = title.includes('|') || title.includes(brand);
+  return !alreadyBranded && title.length + brand.length + 3 <= 70 ? `${title} | ${brand}` : title;
+}
+
+/**
  * Gets the site template from Sanity settings
  * Priority: Sanity setting > NEXT_PUBLIC_SITE_TEMPLATE env var > 'classic'
  */

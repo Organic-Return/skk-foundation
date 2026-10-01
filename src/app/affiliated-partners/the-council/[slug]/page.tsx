@@ -47,8 +47,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${baseUrl}/affiliated-partners/the-council/${slug}`;
 
   const shareImage = await getDefaultShareImage();
+  const partnerName = `${partner.firstName} ${partner.lastName}`;
+  // The site's own agent is a Council member too; her profile would otherwise
+  // read "Stacey K. Kelly | The Council | Stacey K. Kelly".
+  const title = partnerName === siteName ? `${partnerName} | The Council` : `${partnerName} | The Council | ${siteName}`;
   return {
-    title: `${partner.firstName} ${partner.lastName} | The Council | ${siteName}`,
+    title,
     description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
     alternates: {
       canonical: canonicalUrl,
@@ -56,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: 'website',
       images: shareImage ? [shareImage] : [],
-      title: `${partner.firstName} ${partner.lastName} | The Council | ${siteName}`,
+      title,
       description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
       url: canonicalUrl,
     },
