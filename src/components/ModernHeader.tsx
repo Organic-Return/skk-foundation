@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import ContactModal from './ContactModal';
@@ -73,6 +74,7 @@ export default function ModernHeader({
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLElement>(null);
+  const pathname = usePathname();
 
   const showScrolledState = isScrolled || forceBackground;
 
@@ -95,6 +97,23 @@ export default function ModernHeader({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // The mobile menu is a fixed overlay; without this the page behind it kept
+  // scrolling under a finger, and the menu stayed open across navigations.
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
+  // Close on navigation. Written as a state adjustment during render (React's
+  // "previous render" pattern) rather than an effect, so the closed menu never
+  // paints for a frame first.
+  const [menuPathname, setMenuPathname] = useState(pathname);
+  if (menuPathname !== pathname) {
+    setMenuPathname(pathname);
+    setMobileMenuOpen(false);
+    setActiveMobileDropdown(null);
+  }
 
   const handleDropdownEnter = (index: number) => {
     setActiveDropdown(index);
@@ -119,8 +138,11 @@ export default function ModernHeader({
         }`}
       >
         {/* Single Row Navigation: Left Nav | Logo | Right Nav */}
-        <div className="max-w-[1800px] mx-auto px-8">
-          <div className="flex items-center justify-between h-[127px]">
+        {/* 72px on phones: the 127px desktop row was taking a fifth of a
+            phone screen on every page, and the fixed overlay hid the top of
+            scrollable content behind it. */}
+        <div className="max-w-[1800px] mx-auto px-5 lg:px-8">
+          <div className="flex items-center justify-between h-[72px] lg:h-[127px]">
             {/* Left Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
               {navItems.slice(0, Math.ceil(navItems.length / 2)).map((item, index) => (
@@ -361,8 +383,11 @@ export default function ModernHeader({
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-[var(--modern-black)] lg:hidden overflow-y-auto">
-          <div className="min-h-screen px-6 py-24">
+        <div className="fixed inset-0 z-40 bg-[var(--modern-black)] lg:hidden overflow-y-auto overscroll-contain">
+          {/* Top padding clears the 72px fixed header above this overlay; the
+              old py-24 was shorter than the header, so the first item sat
+              underneath it. */}
+          <div className="min-h-full px-6 pt-[88px] pb-16">
             <nav className="space-y-1">
               {navItems.map((item, index) => (
                 <div key={index}>
@@ -472,7 +497,7 @@ export default function ModernHeader({
       {/* Header Spacer - only on solid-nav pages (functional pages without a
           hero). Transparent pages let their full-bleed hero sit behind the nav. */}
       {forceBackground && (
-        <div className="h-[120px] lg:h-[120px]" />
+        <div className="h-[72px] lg:h-[120px]" />
       )}
 
       {/* Contact Modal. Mounted only while open: the header precedes <main>,

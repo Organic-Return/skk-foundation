@@ -233,12 +233,13 @@ export default async function SoldPage() {
             A record of recently closed transactions across Aspen, Snowmass, and the Roaring Fork Valley.
           </p>
 
-          {/* Stats — third line in the hero */}
+          {/* Stats — third line in the hero. Stacked on phones: side by side,
+              the sales-volume figure overflowed the screen. */}
           {stats.length > 0 && (totalSold > 0 || managedStats.length > 0 || hasBaseline) && (
-            <div className={`mt-12 md:mt-16 grid ${stats.length >= 4 ? "grid-cols-2 md:grid-cols-4" : stats.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-8 max-w-3xl mx-auto`}>
+            <div className={`mt-12 md:mt-16 grid ${stats.length >= 4 ? "grid-cols-2 md:grid-cols-4" : stats.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"} gap-6 sm:gap-8 max-w-3xl mx-auto`}>
               {stats.map((stat, i) => (
                 <div key={i}>
-                  <div className="font-serif text-white text-5xl md:text-7xl font-light mb-2 tracking-tight leading-none">
+                  <div className="font-serif text-white text-4xl sm:text-5xl md:text-7xl font-light mb-2 tracking-tight leading-none">
                     {stat.value}
                   </div>
                   <div className="text-xs md:text-sm uppercase tracking-[0.15em] font-light text-white/70">

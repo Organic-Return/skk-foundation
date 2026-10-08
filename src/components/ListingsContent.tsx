@@ -418,19 +418,20 @@ export default function ListingsContent({
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* View Toggle & Sort Bar */}
-      <div className="px-4 py-2.5 bg-white border-b flex items-center justify-between lg:px-6 flex-shrink-0">
+      <div className="px-4 py-2 sm:py-2.5 bg-white border-b flex items-center justify-between gap-3 lg:px-6 flex-shrink-0">
         {/* Property count, sort, and area filter indicator */}
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
             {areaFilteredListings !== null
               ? <><span className="font-medium text-gray-900">{areaFilteredListings.length.toLocaleString()}</span> of {total.toLocaleString()} properties</>
               : <><span className="font-medium text-gray-900">{total.toLocaleString()}</span> properties found</>}
           </span>
-          <span className="w-px h-4 bg-gray-200" />
+          <span className="w-px h-4 bg-gray-200 flex-shrink-0" />
           <select
             value={currentSort}
             onChange={(e) => handleSortChange(e.target.value as SortOption)}
-            className="h-[34px] px-3 text-sm border border-gray-200 bg-white text-gray-700 focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none cursor-pointer"
+            aria-label="Sort listings"
+            className="h-[34px] px-2 sm:px-3 text-xs sm:text-sm border border-gray-200 bg-white text-gray-700 focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none cursor-pointer min-w-0"
           >
             <option value="newest">Newest</option>
             <option value="price_low">Price: Low to High</option>
@@ -451,7 +452,9 @@ export default function ListingsContent({
           )}
         </div>
 
-        <div className="flex" role="group">
+        {/* The map pane is lg-only (see below), so the toggle is too; on
+            phones it only took the space the count and sort needed. */}
+        <div className="hidden lg:flex" role="group">
           <button
             type="button"
             onClick={() => setViewMode('list')}

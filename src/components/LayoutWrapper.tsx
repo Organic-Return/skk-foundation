@@ -78,8 +78,10 @@ export default function LayoutWrapper({ header, footer, children, template }: La
 
   if (isListingsPage) {
     // Listings page: header but no footer, fixed viewport height
+    // dvh, not vh: on phones 100vh includes the browser chrome, so the bottom
+    // of the results list sat behind Safari's toolbar.
     return (
-      <div className="h-screen flex flex-col overflow-hidden">
+      <div className="h-dvh flex flex-col overflow-hidden">
         {headerWithProps}
         <div className={`flex-1 overflow-hidden ${isRCSothebys || usesSpacerHeader ? '' : 'pt-20'}`}>
           {children}

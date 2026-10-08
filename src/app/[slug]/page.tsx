@@ -254,25 +254,30 @@ export default async function PostPage({
         </div>
       )}
       {postImageUrl && (
-        <div className="relative w-full max-w-[1200px] mx-auto aspect-video">
-          <img
-            src={postImageUrl}
-            alt={post.image?.alt || post.title}
-            className="w-full h-full object-cover"
-            width="1200"
-            height="675"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-full max-w-[1200px] px-8">
-              <h1 className="text-white text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                {post.title}
-              </h1>
-            </div>
+        <div className="relative w-full max-w-[1200px] mx-auto">
+          {/* Taller crop on phones: at 16:9 the fixed header covered a third
+              of the image. */}
+          <div className="relative aspect-[4/3] md:aspect-video">
+            <img
+              src={postImageUrl}
+              alt={post.image?.alt || post.title}
+              className="absolute inset-0 w-full h-full object-cover"
+              width="1200"
+              height="675"
+            />
+          </div>
+          {/* The title overlays the image from md up. On phones it sits in
+              normal flow below it: a 40px serif title over a 16:9 image at
+              390px wide ran five lines, past the image and under the header. */}
+          <div className="md:absolute md:inset-0 md:flex md:items-center md:justify-center px-6 md:px-8 pt-6 md:pt-0">
+            <h1 className="post-hero-title text-center text-[#1a1a1a] dark:text-white md:text-white md:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              {post.title}
+            </h1>
           </div>
         </div>
       )}
       {postImageUrl && (
-        <div className="w-full max-w-[1200px] mx-auto px-8 -mt-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <div className="w-full max-w-[1200px] mx-auto px-6 md:px-8 mt-4 md:-mt-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <Link href="/blog" className="text-sm hover:underline">
             ← Back to posts
           </Link>

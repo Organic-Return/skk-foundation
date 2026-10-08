@@ -91,6 +91,10 @@ export default function ListingFilters({
   const [bedsDropdownOpen, setBedsDropdownOpen] = useState(false);
   const [bathsDropdownOpen, setBathsDropdownOpen] = useState(false);
   const [advancedModalOpen, setAdvancedModalOpen] = useState(false);
+  // Phones show only the keyword box and a "Filters" toggle; the dropdown row
+  // stacked four rows high there and, with the fixed header, left little
+  // room for the listings themselves.
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Refs for click-outside handling
   const cityDropdownRef = useRef<HTMLDivElement>(null);
@@ -324,6 +328,8 @@ export default function ListingFilters({
 
   // Count active advanced filters
   const advancedFilterCount = [status, propertyType, propertySubType, selectedNeighborhood, ourTeam].filter(Boolean).length;
+  // Everything except the keyword, for the phone-only toggle badge.
+  const activeFilterCount = advancedFilterCount + [selectedCities.length > 0, minPrice || maxPrice, beds, baths].filter(Boolean).length;
 
   // Shared dropdown button style
   const dropdownBtnClass = "h-[42px] px-4 border border-gray-200 bg-white text-sm text-gray-700 flex items-center justify-between gap-2 hover:border-gray-300 transition-colors whitespace-nowrap cursor-pointer";
@@ -335,7 +341,7 @@ export default function ListingFilters({
         {/* Main Filters Row */}
         <div className="flex flex-wrap gap-2.5 items-center">
           {/* Keyword Search - Double width */}
-          <div className="relative flex-shrink-0 w-full sm:w-auto sm:min-w-[320px] sm:flex-[2]  max-w-[480px]">
+          <div className="relative flex-1 min-w-0 sm:flex-[2] sm:min-w-[320px] max-w-[480px]">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -347,6 +353,36 @@ export default function ListingFilters({
               className="w-full h-[42px] pl-10 pr-4 border border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 placeholder:italic focus:border-[var(--rc-navy,#1a2332)] focus:ring-1 focus:ring-[var(--rc-navy,#1a2332)] focus:outline-none transition-colors"
             />
           </div>
+
+          {/* Phone-only toggle for the dropdown row below */}
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen((open) => !open)}
+            aria-expanded={mobileFiltersOpen}
+            aria-controls="listing-filter-controls"
+            className={`sm:hidden h-[42px] px-3.5 text-sm font-medium flex items-center gap-2 flex-shrink-0 transition-colors ${
+              mobileFiltersOpen || activeFilterCount > 0
+                ? 'bg-[var(--rc-navy,#1a2332)] text-white'
+                : 'border border-gray-200 bg-white text-gray-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="w-5 h-5 bg-white text-[var(--rc-navy,#1a2332)] rounded-full text-xs font-bold flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+
+          {/* On phones this is a collapsible row of its own; from sm up it has
+              no box (display: contents) and its children sit in the row above. */}
+          <div
+            id="listing-filter-controls"
+            className={`${mobileFiltersOpen ? 'flex' : 'hidden'} w-full flex-wrap gap-2.5 items-center sm:contents`}
+          >
 
           {/* City Multi-Select Dropdown */}
           <div ref={cityDropdownRef} className="relative flex-shrink-0">
@@ -585,6 +621,7 @@ export default function ListingFilters({
               Clear All
             </button>
           )}
+          </div>
         </div>
 
         {/* Active Filter Tags */}

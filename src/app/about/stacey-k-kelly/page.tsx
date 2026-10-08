@@ -242,9 +242,12 @@ export default async function AboutStaceyPage() {
                 {agent.title ? `${agent.title} · ` : ''}Christie&apos;s International Real Estate
               </p>
 
-              <dl className="grid grid-cols-3 gap-6 md:gap-10 border-t border-white/15 pt-8 mb-10 max-w-2xl">
+              {/* Two columns on phones: three could not hold a nine-figure
+                  sales volume, which ran off the right edge of the screen.
+                  A long value takes a full row there. */}
+              <dl className="grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-10 border-t border-white/15 pt-8 mb-10 max-w-2xl">
                 {stats.map((s) => (
-                  <div key={s.label} className="flex flex-col">
+                  <div key={s.label} className={`flex flex-col ${s.value.length > 8 ? 'col-span-2 sm:col-span-1' : ''}`}>
                     <dt className="order-2 text-[10px] md:text-xs uppercase tracking-[0.2em] text-white/55 mt-2">{s.label}</dt>
                     <dd className="order-1 font-serif text-2xl md:text-4xl font-light text-white whitespace-nowrap leading-none">{s.value}</dd>
                   </div>

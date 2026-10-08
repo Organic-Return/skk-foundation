@@ -592,7 +592,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
         />
       ))}
 
-      <div className={`min-h-screen ${template === 'custom-one' ? '-mt-[80px] lg:-mt-[120px] pt-[80px] lg:pt-[120px] bg-[var(--modern-black)] relative overflow-hidden' : 'bg-[#f8f7f5]'}`} itemScope itemType="https://schema.org/RealEstateListing">
+      <div className={`min-h-screen ${template === 'custom-one' ? '-mt-[72px] lg:-mt-[120px] pt-[72px] lg:pt-[120px] bg-[var(--modern-black)] relative overflow-hidden' : 'bg-[#f8f7f5]'}`} itemScope itemType="https://schema.org/RealEstateListing">
         {/* Gold texture background for custom-one */}
         {template === 'custom-one' && (
           <div className="absolute inset-0 opacity-5 pointer-events-none">
@@ -611,18 +611,20 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
         {/* Back Link */}
         <div className={template === 'custom-one' ? 'relative z-10' : 'bg-[var(--color-sothebys-blue)]'}>
-          <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${template === 'custom-one' ? 'max-w-[1400px] py-5' : 'max-w-7xl py-4'}`}>
+          <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${template === 'custom-one' ? 'max-w-[1400px] py-3 lg:py-5' : 'max-w-7xl py-4'}`}>
             <nav aria-label="Breadcrumb">
-              <ol className="flex items-center space-x-2 text-sm">
-                <li>
+              {/* The address truncates rather than wrapping: on a phone a full
+                  "street, city, state zip" ran to three lines above the gallery. */}
+              <ol className="flex items-center space-x-2 text-sm min-w-0">
+                <li className="flex-shrink-0">
                   <Link href="/" className="text-white/70 hover:text-white transition-colors">Home</Link>
                 </li>
                 <li className="text-white/50">/</li>
-                <li>
+                <li className="flex-shrink-0">
                   <Link href="/listings" className="text-white/70 hover:text-white transition-colors">Listings</Link>
                 </li>
                 <li className="text-white/50">/</li>
-                <li className="text-white font-medium" aria-current="page">
+                <li className="text-white font-medium min-w-0 truncate" aria-current="page">
                   {listing.address || listing.mls_number}
                 </li>
               </ol>
@@ -668,7 +670,10 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </div>
 
                 <div itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
-                  <h1 className={`font-serif font-light text-[#1a1a1a] ${template === 'custom-one' ? 'text-[3rem] leading-tight' : 'text-xl md:text-2xl'}`}>
+                  {/* custom-one: the unlayered template h1 rule in globals.css
+                      sets a clamp() size that beats plain utilities, so the
+                      phone sizes are marked important. */}
+                  <h1 className={`font-serif font-light text-[#1a1a1a] ${template === 'custom-one' ? 'max-sm:!text-[1.75rem] max-lg:!text-[2.25rem] text-[3rem] leading-tight' : 'text-xl md:text-2xl'}`}>
                     <span itemProp="streetAddress" className="block">
                       {listing.address?.split(',')[0] || listing.address}
                     </span>
@@ -734,7 +739,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                         </div>
                       </div>
                     )}
-                    {listing.square_feet && (
+                    {!!listing.square_feet && (
                       <div className="flex items-center gap-2" itemProp="floorSize" itemScope itemType="https://schema.org/QuantitativeValue">
                         <svg className="w-5 h-5 text-[var(--color-sothebys-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
@@ -745,7 +750,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                         </div>
                       </div>
                     )}
-                    {listing.lot_size && (
+                    {!!listing.lot_size && (
                       <div className="flex items-center gap-2">
                         <svg className="w-5 h-5 text-[var(--color-sothebys-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -839,13 +844,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
                             <span className="font-medium text-gray-900">{listing.bathrooms_half}</span>
                           </div>
                         )}
-                        {listing.square_feet && (
+                        {!!listing.square_feet && (
                           <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
                             <span className="text-gray-500 text-sm">Sq. Ft.</span>
                             <span className="font-medium text-gray-900">{listing.square_feet.toLocaleString()}</span>
                           </div>
                         )}
-                        {listing.lot_size && (
+                        {!!listing.lot_size && (
                           <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
                             <span className="text-gray-500 text-sm">Lot Size</span>
                             <span className="font-medium text-gray-900">{`${listing.lot_size.toFixed(2)} Acres`}</span>
@@ -881,7 +886,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                             <span className="font-medium text-gray-900">{listing.days_on_market}</span>
                           </div>
                         )}
-                        {listing.furnished && (
+                        {!!listing.furnished && (
                           <div className="flex justify-between items-baseline py-2 border-b border-gray-100">
                             <span className="text-gray-500 text-sm">Furnished</span>
                             <span className="font-medium text-gray-900">{listing.furnished}</span>
@@ -891,7 +896,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     </div>
 
                     {/* Features & Amenities */}
-                    {(listing.fireplace_yn || listing.cooling?.length || listing.heating?.length || listing.laundry_features?.length || listing.attached_garage_yn !== null || listing.parking_features?.length || listing.association_amenities?.length) && (
+                    {!!(listing.fireplace_yn || listing.cooling?.length || listing.heating?.length || listing.laundry_features?.length || listing.attached_garage_yn !== null || listing.parking_features?.length || listing.association_amenities?.length) && (
                       <div>
                         <h2 className="text-sm font-medium uppercase tracking-[0.15em] text-[var(--color-sothebys-blue)] mb-4">Features & Amenities</h2>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-1">
@@ -1084,7 +1089,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     </div>
                   </div>
                 )}
-                {listing.square_feet && (
+                {!!listing.square_feet && (
                   <div className="flex items-center gap-3" itemProp="floorSize" itemScope itemType="https://schema.org/QuantitativeValue">
                     <svg className="w-6 h-6 text-[var(--color-sothebys-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
@@ -1095,7 +1100,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     </div>
                   </div>
                 )}
-                {listing.lot_size && (
+                {!!listing.lot_size && (
                   <div className="flex items-center gap-3">
                     <svg className="w-6 h-6 text-[var(--color-sothebys-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />

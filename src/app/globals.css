@@ -1355,3 +1355,17 @@ h1.modern-hero-kicker,
 .gm-style > div[style*="rgb(26, 115, 232)"] {
   border-color: var(--color-gold) !important;
 }
+
+/* Blog post hero title. Below md it sits in normal flow under the image
+   (see src/app/[slug]/page.tsx), where the template's display-size clamp()
+   is far too large for a phone column. Both selectors are listed so this
+   outranks the unlayered `.custom-one-template h1` rule above. */
+@media (max-width: 767px) {
+  h1.post-hero-title,
+  .custom-one-template h1.post-hero-title,
+  .modern-template h1.post-hero-title {
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+    line-height: 1.2;
+    margin: 0;
+  }
+}
