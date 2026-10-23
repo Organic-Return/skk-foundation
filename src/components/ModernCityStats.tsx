@@ -13,13 +13,36 @@ interface CityData {
   };
 }
 
-interface ApiCityStat {
+export interface ApiCityStat {
   city: string;
   totalActiveListings: number;
   avgListPrice: number;
   avgSoldPrice: number | null;
   avgDaysOnMarket: number | null;
   priorYearAvgSoldPrice: number | null;
+}
+
+// The /api/city-stats shape, reduced to what the cards show.
+function toCityData(stats: ApiCityStat[]): CityData[] {
+  return stats.map((stat) => {
+    // Calculate YoY price change
+    let priceChange = 0;
+    if (stat.avgSoldPrice && stat.priorYearAvgSoldPrice) {
+      priceChange = Math.round(
+        ((stat.avgSoldPrice - stat.priorYearAvgSoldPrice) / stat.priorYearAvgSoldPrice) * 100
+      );
+    }
+
+    return {
+      city: stat.city,
+      stats: {
+        medianPrice: stat.avgSoldPrice || stat.avgListPrice,
+        activeListings: stat.totalActiveListings,
+        avgDaysOnMarket: stat.avgDaysOnMarket || 0,
+        priceChange,
+      },
+    };
+  });
 }
 
 interface ModernCityStatsProps {
@@ -29,6 +52,9 @@ interface ModernCityStatsProps {
   variant?: 'light' | 'dark';
   /** Overrides the section background in the light variant (e.g. 'bg-white'). */
   sectionBgClass?: string;
+  /** Stats computed on the server (src/app/page.tsx). With these the section
+   *  is in the HTML; without them it fetches after load. */
+  initialStats?: ApiCityStat[];
 }
 
 export default function ModernCityStats({
@@ -37,11 +63,13 @@ export default function ModernCityStats({
   configuredCities,
   variant = 'light',
   sectionBgClass,
+  initialStats,
 }: ModernCityStatsProps) {
   const isDark = variant === 'dark';
   const lightBgClass = sectionBgClass || 'bg-[var(--modern-gray-bg)]';
-  const [cityData, setCityData] = useState<CityData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const hasInitial = initialStats !== undefined;
+  const [cityData, setCityData] = useState<CityData[]>(() => toCityData(initialStats ?? []));
+  const [loading, setLoading] = useState(!hasInitial);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -66,6 +94,7 @@ export default function ModernCityStats({
   }, [loading]);
 
   useEffect(() => {
+    if (hasInitial) return;
     async function fetchCityStats() {
       try {
         const cityParam = configuredCities?.length
@@ -74,27 +103,7 @@ export default function ModernCityStats({
         const response = await fetch(`/api/city-stats${cityParam}`);
         if (response.ok) {
           const data = await response.json();
-          // Transform the API response to the expected format
-          const transformedData: CityData[] = (data.stats || []).map((stat: ApiCityStat) => {
-            // Calculate YoY price change
-            let priceChange = 0;
-            if (stat.avgSoldPrice && stat.priorYearAvgSoldPrice) {
-              priceChange = Math.round(
-                ((stat.avgSoldPrice - stat.priorYearAvgSoldPrice) / stat.priorYearAvgSoldPrice) * 100
-              );
-            }
-
-            return {
-              city: stat.city,
-              stats: {
-                medianPrice: stat.avgSoldPrice || stat.avgListPrice,
-                activeListings: stat.totalActiveListings,
-                avgDaysOnMarket: stat.avgDaysOnMarket || 0,
-                priceChange,
-              },
-            };
-          });
-          setCityData(transformedData);
+          setCityData(toCityData(data.stats || []));
         }
       } catch (error) {
         console.error('Error fetching city stats:', error);
@@ -104,7 +113,7 @@ export default function ModernCityStats({
     }
 
     fetchCityStats();
-  }, [configuredCities]);
+  }, [configuredCities, hasInitial]);
 
   const formatPrice = (price: number) => {
     if (price >= 1000000) {

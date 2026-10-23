@@ -12,32 +12,42 @@ import ClassicFeaturedProperty from '@/components/ClassicFeaturedProperty';
 import FeaturedAspenProperties from '@/components/FeaturedAspenProperties';
 import CityStats from '@/components/CityStats';
 
+// The sections below the hero are code-split with dynamic() but still
+// rendered on the server. They used to pass `ssr: false`, which left the
+// homepage HTML with only the nav, hero and footer: Stacey's bio, the stats,
+// Featured Properties, Market Insights and Newest to Market all arrived in
+// the browser. Google renders JavaScript late and not always fully, and the
+// AI crawlers mostly don't run it at all, so they saw a near-empty page.
+
 // RC Sotheby's template components — hero eagerly loaded, rest lazy
 import RCSothebysHero from '@/components/RCSothebysHero';
-const RCSothebysPropertyCarousel = dynamic(() => import('@/components/RCSothebysPropertyCarousel'), { ssr: false });
-const RCSothebysAbout = dynamic(() => import('@/components/RCSothebysAbout'), { ssr: false });
-const RCSothebysInquirySection = dynamic(() => import('@/components/RCSothebysInquirySection'), { ssr: false });
+const RCSothebysPropertyCarousel = dynamic(() => import('@/components/RCSothebysPropertyCarousel'));
+const RCSothebysAbout = dynamic(() => import('@/components/RCSothebysAbout'));
+const RCSothebysInquirySection = dynamic(() => import('@/components/RCSothebysInquirySection'));
 
 // Luxury template components
 import LuxuryHero from '@/components/LuxuryHero';
-const LuxuryPropertyCarousel = dynamic(() => import('@/components/LuxuryPropertyCarousel'), { ssr: false });
-const LuxuryAbout = dynamic(() => import('@/components/LuxuryAbout'), { ssr: false });
-const LuxuryQuoteBlock = dynamic(() => import('@/components/LuxuryQuoteBlock'), { ssr: false });
-const LuxuryCityStats = dynamic(() => import('@/components/LuxuryCityStats'), { ssr: false });
-const LuxuryFeaturedProperty = dynamic(() => import('@/components/LuxuryFeaturedProperty'), { ssr: false });
-const LuxuryCommunities = dynamic(() => import('@/components/LuxuryCommunities'), { ssr: false });
+const LuxuryPropertyCarousel = dynamic(() => import('@/components/LuxuryPropertyCarousel'));
+const LuxuryAbout = dynamic(() => import('@/components/LuxuryAbout'));
+const LuxuryQuoteBlock = dynamic(() => import('@/components/LuxuryQuoteBlock'));
+const LuxuryCityStats = dynamic(() => import('@/components/LuxuryCityStats'));
+const LuxuryFeaturedProperty = dynamic(() => import('@/components/LuxuryFeaturedProperty'));
+const LuxuryCommunities = dynamic(() => import('@/components/LuxuryCommunities'));
 
 // Modern template components
 import ModernHero from '@/components/ModernHero';
-const ModernAbout = dynamic(() => import('@/components/ModernAbout'), { ssr: false });
-const ModernQuoteBlock = dynamic(() => import('@/components/ModernQuoteBlock'), { ssr: false });
-const ModernFeaturedProperty = dynamic(() => import('@/components/ModernFeaturedProperty'), { ssr: false });
-const ModernPropertyCarousel = dynamic(() => import('@/components/ModernPropertyCarousel'), { ssr: false });
-const ModernCityStats = dynamic(() => import('@/components/ModernCityStats'), { ssr: false });
-const ModernAgentListingsGallery = dynamic(() => import('@/components/ModernAgentListingsGallery'), { ssr: false });
-const ModernNewestListings = dynamic(() => import('@/components/ModernNewestListings'), { ssr: false });
-const ModernCommunities = dynamic(() => import('@/components/ModernCommunities'), { ssr: false });
-const ModernContactCTA = dynamic(() => import('@/components/ModernContactCTA'), { ssr: false });
+import type { FeaturedPropertyData } from '@/components/ModernFeaturedProperty';
+import type { ApiCityStat } from '@/components/ModernCityStats';
+import type { NewestListingData } from '@/components/ModernNewestListings';
+const ModernAbout = dynamic(() => import('@/components/ModernAbout'));
+const ModernQuoteBlock = dynamic(() => import('@/components/ModernQuoteBlock'));
+const ModernFeaturedProperty = dynamic(() => import('@/components/ModernFeaturedProperty'));
+const ModernPropertyCarousel = dynamic(() => import('@/components/ModernPropertyCarousel'));
+const ModernCityStats = dynamic(() => import('@/components/ModernCityStats'));
+const ModernAgentListingsGallery = dynamic(() => import('@/components/ModernAgentListingsGallery'));
+const ModernNewestListings = dynamic(() => import('@/components/ModernNewestListings'));
+const ModernCommunities = dynamic(() => import('@/components/ModernCommunities'));
+const ModernContactCTA = dynamic(() => import('@/components/ModernContactCTA'));
 
 // Shared
 import VideoFeatureCarousel from '@/components/VideoFeatureCarousel';
@@ -170,6 +180,13 @@ interface HomepageContentProps {
   // Branding logo for sections that need it
   logoUrl?: string;
   logoAlt?: string;
+
+  // Server-fetched data for the modern/custom-one sections, so they are in
+  // the HTML (see src/lib/homepageSections.ts). Undefined means the section
+  // fetches after load as it used to.
+  featuredPropertiesInitial?: FeaturedPropertyData[];
+  cityStatsInitial?: ApiCityStat[];
+  newestListingsInitial?: NewestListingData[];
 }
 
 export default function HomepageContent({
@@ -199,6 +216,9 @@ export default function HomepageContent({
   clientVideosSection,
   logoUrl,
   logoAlt,
+  featuredPropertiesInitial,
+  cityStatsInitial,
+  newestListingsInitial,
 }: HomepageContentProps) {
   // Extract enabled cities from market stats configuration
   const marketStatsCities = marketStatsSection?.cities
@@ -250,6 +270,7 @@ export default function HomepageContent({
             agentMlsId={agentMlsId}
             headline={featuredProperty.headline}
             buttonText={featuredProperty.buttonText}
+            initialProperties={featuredPropertiesInitial}
           />
         )}
 
@@ -270,6 +291,7 @@ export default function HomepageContent({
             configuredCities={marketStatsCities.length > 0 ? marketStatsCities : undefined}
             variant="light"
             sectionBgClass="bg-white"
+            initialStats={cityStatsInitial}
           />
         )}
 
@@ -278,6 +300,7 @@ export default function HomepageContent({
           <ModernNewestListings
             cities={featuredPropertiesCarousel?.cities || undefined}
             limit={featuredPropertiesCarousel?.limit || 8}
+            initialProperties={newestListingsInitial}
           />
         )}
 
@@ -310,6 +333,7 @@ export default function HomepageContent({
             title={marketStatsSection?.title}
             subtitle={marketStatsSection?.subtitle}
             configuredCities={marketStatsCities.length > 0 ? marketStatsCities : undefined}
+            initialStats={cityStatsInitial}
           />
         )}
       </>

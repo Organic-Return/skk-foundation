@@ -5,6 +5,7 @@ import { getHomepageData, getAllCommunities, getDefaultShareImage } from '@/lib/
 import { getSettings, getBranding, getBaseUrl } from '@/lib/settings';
 import { getNewestHighPricedByCities, getNewestHighPricedByCity } from '@/lib/listings';
 import { getSalesTotals, formatUSD } from '@/lib/salesTotals';
+import { getFeaturedProperties, getHomepageCityStats, getNewestListings } from '@/lib/homepageSections';
 import StructuredData from '@/components/StructuredData';
 import { postalAddressSchema } from '@/lib/seo';
 import HomepageContent from '@/components/HomepageContent';
@@ -147,6 +148,32 @@ export default async function Home() {
       console.error('Error pre-fetching hero properties:', e);
     }
   }
+
+  // Pre-fetch the modern/custom-one sections that otherwise load in the
+  // browser, so the bio, stats, Featured Properties, Market Insights and
+  // Newest to Market are in the HTML for crawlers that do not run JavaScript.
+  // The conditions mirror the ones HomepageContent renders each section under.
+  const isModernTemplate = settings?.template === 'modern' || settings?.template === 'custom-one';
+  const marketStatsCities = (homepage?.marketStatsSection?.cities || [])
+    .filter((c) => c.enabled)
+    .map((c) => c.city);
+  const featuredAgentMlsId = teamSection?.featuredTeamMember?.mlsAgentId;
+  const [featuredPropertiesInitial, cityStatsInitial, newestListingsInitial] = isModernTemplate
+    ? await Promise.all([
+        featuredProperty?.enabled && (featuredProperty?.mlsId || featuredAgentMlsId)
+          ? getFeaturedProperties({ mlsId: featuredProperty.mlsId, agentMlsId: featuredAgentMlsId })
+          : Promise.resolve(undefined),
+        homepage?.marketStatsSection?.enabled !== false
+          ? getHomepageCityStats(marketStatsCities.length > 0 ? marketStatsCities : undefined)
+          : Promise.resolve(undefined),
+        settings?.template === 'custom-one'
+          ? getNewestListings(
+              homepage?.featuredPropertiesCarousel?.cities || undefined,
+              homepage?.featuredPropertiesCarousel?.limit || 8
+            )
+          : Promise.resolve(undefined),
+      ])
+    : [undefined, undefined, undefined];
 
   const baseUrl = await getBaseUrl();
 
@@ -363,6 +390,9 @@ export default async function Home() {
         }}
         logoUrl={branding?.logo?.asset?.url ? urlFor(branding.logo).width(420).url() : undefined}
         logoAlt={branding?.logoAlt || settings?.title}
+        featuredPropertiesInitial={featuredPropertiesInitial}
+        cityStatsInitial={cityStatsInitial}
+        newestListingsInitial={newestListingsInitial}
       />
     </>
   );

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getListingHref } from '@/lib/listings';
 
-interface Property {
+export interface NewestListingData {
   id: string;
   address: string | null;
   city: string | null;
@@ -19,11 +19,25 @@ interface Property {
   photos: string[];
 }
 
+type Property = NewestListingData;
+
+/** Keeps only listings with a photo, up to `limit` — every card shown should
+ *  have an image. src/lib/homepageSections.ts applies the same rule on the
+ *  server. */
+function pickNewestWithPhotos<T extends { photos?: string[] | null }>(listings: T[], limit: number): T[] {
+  return listings
+    .filter((p) => Array.isArray(p.photos) && Boolean(p.photos[0]))
+    .slice(0, limit);
+}
+
 interface ModernNewestListingsProps {
   cities?: string[];
   title?: string;
   subtitle?: string;
   limit?: number;
+  /** Listings fetched on the server (src/app/page.tsx). With these the
+   *  section is in the HTML; without them it fetches after load. */
+  initialProperties?: NewestListingData[];
 }
 
 export default function ModernNewestListings({
@@ -31,9 +45,11 @@ export default function ModernNewestListings({
   title = 'Newest to Market',
   subtitle = 'The latest properties available in our markets',
   limit = 8,
+  initialProperties,
 }: ModernNewestListingsProps) {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+  const hasInitial = initialProperties !== undefined;
+  const [properties, setProperties] = useState<Property[]>(initialProperties ?? []);
+  const [loading, setLoading] = useState(!hasInitial);
   const [isVisible, setIsVisible] = useState(false);
   const [index, setIndex] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
@@ -60,6 +76,7 @@ export default function ModernNewestListings({
   }, [loading]);
 
   useEffect(() => {
+    if (hasInitial) return;
     async function fetchProperties() {
       try {
         const cityParam = (cities && cities.length > 0)
@@ -74,10 +91,7 @@ export default function ModernNewestListings({
         const response = await fetch(`/api/featured-properties?${cityParam}&limit=${fetchLimit}`);
         if (response.ok) {
           const data = await response.json();
-          const withPhotos = ((data.properties || []) as Property[]).filter(
-            (p) => Array.isArray(p.photos) && Boolean(p.photos[0])
-          );
-          setProperties(withPhotos.slice(0, limit));
+          setProperties(pickNewestWithPhotos((data.properties || []) as Property[], limit));
         }
       } catch (error) {
         console.error('Error fetching newest listings:', error);
@@ -87,7 +101,7 @@ export default function ModernNewestListings({
     }
 
     fetchProperties();
-  }, [cities, limit]);
+  }, [cities, limit, hasInitial]);
 
   // One card's width plus the flex gap, measured from the DOM so it follows the
   // 320px/380px breakpoints. Scrolling by this rather than a flat 400px keeps

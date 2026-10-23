@@ -5,14 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getListingHref } from '@/lib/listings';
 
-interface ModernFeaturedPropertyProps {
-  mlsId?: string;
-  agentMlsId?: string;
-  headline?: string;
-  buttonText?: string;
-}
-
-interface PropertyData {
+export interface FeaturedPropertyData {
   id: string;
   address: string;
   city: string;
@@ -24,15 +17,29 @@ interface PropertyData {
   photos: string[];
 }
 
+type PropertyData = FeaturedPropertyData;
+
+interface ModernFeaturedPropertyProps {
+  mlsId?: string;
+  agentMlsId?: string;
+  headline?: string;
+  buttonText?: string;
+  /** Listings fetched on the server (src/app/page.tsx). With these the
+   *  section is in the HTML; without them it fetches after load. */
+  initialProperties?: FeaturedPropertyData[];
+}
+
 export default function ModernFeaturedProperty({
   mlsId,
   agentMlsId,
   headline = 'Featured Properties',
   buttonText = 'View Property',
+  initialProperties,
 }: ModernFeaturedPropertyProps) {
-  const [properties, setProperties] = useState<PropertyData[]>([]);
+  const hasInitial = initialProperties !== undefined;
+  const [properties, setProperties] = useState<PropertyData[]>(initialProperties ?? []);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasInitial);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -57,6 +64,7 @@ export default function ModernFeaturedProperty({
   }, [loading]);
 
   useEffect(() => {
+    if (hasInitial) return;
     async function fetchData() {
       try {
         if (agentMlsId) {
@@ -98,7 +106,7 @@ export default function ModernFeaturedProperty({
     }
 
     fetchData();
-  }, [mlsId, agentMlsId]);
+  }, [mlsId, agentMlsId, hasInitial]);
 
   const hasMultiple = properties.length > 1;
   const property = properties[activeIndex];
