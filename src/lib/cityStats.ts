@@ -102,11 +102,11 @@ async function computeCityStats(propertyFilter: string, requestedCities?: string
 
   let closedQuery = supabase
     .from('mls_properties')
-    .select('city, sold_price, list_price, square_feet, listing_date, close_date')
+    .select('city, sold_price, list_price, square_feet, listing_date, sold_date')
     .in('status', ['Closed', 'Sold'])
     .in('city', allowedCities)
     .not('sold_price', 'is', null)
-    .gte('close_date', twoYearsAgoStr)
+    .gte('sold_date', twoYearsAgoStr)
     .not('property_type', 'eq', 'Residential Lease')
     .not('property_type', 'eq', 'Commercial Lease')
     .not('property_type', 'eq', 'Fractional')
@@ -191,7 +191,7 @@ async function computeCityStats(propertyFilter: string, requestedCities?: string
       list_price: listing.list_price as number | null,
       square_feet: listing.square_feet as number | null,
       listing_date: listing.listing_date as string | null,
-      close_date: listing.close_date as string | null,
+      close_date: listing.sold_date as string | null,
     });
   });
 
