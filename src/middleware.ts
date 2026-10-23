@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { isAuditBot, isStagingHost } from '@/lib/crawlers';
+import { legacyRedirect } from '@/lib/legacyRedirects';
 
 const isRCSothebys = process.env.NEXT_PUBLIC_SITE_TEMPLATE === 'rcsothebys-custom';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // URLs of the previous skkrealestate.com that search engines still hold.
+  // Permanent, so the index moves to the new address rather than logging a
+  // 404 for each.
+  const legacy = legacyRedirect(pathname);
+  if (legacy) {
+    return NextResponse.redirect(new URL(legacy, request.nextUrl.origin), 301);
+  }
 
   // RC Sotheby's: redirect /team → /agents (preserve subpaths and query params)
   if (isRCSothebys && pathname.startsWith('/team')) {
