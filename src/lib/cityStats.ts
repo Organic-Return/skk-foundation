@@ -401,7 +401,10 @@ export const getCachedCityStats = (propertyFilter: string, cities?: string[]) =>
   const citiesKey = cities ? cities.sort().join(',') : 'default';
   return unstable_cache(
     async () => computeCityStats(propertyFilter, cities),
-    [`city-stats-${propertyFilter}-${citiesKey}`],
+    // v2: the data cache persists across deployments, so the key changed when
+    // the closed-listings query moved to sold_date; otherwise the empty result
+    // cached under the old key would have been served for another day.
+    [`city-stats-v2-${propertyFilter}-${citiesKey}`],
     {
       revalidate: CACHE_DURATION,
       tags: [`city-stats`, `city-stats-${propertyFilter}`],
