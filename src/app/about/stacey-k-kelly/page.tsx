@@ -7,8 +7,8 @@ import { createImageUrlBuilder } from '@sanity/image-url';
 import { getListingsByAgentId, getListingHref, type MLSProperty } from '@/lib/listings';
 import { computeSalesTotals, formatUSD, type SalesBaseline } from '@/lib/salesTotals';
 import { getBaseUrl, getSettings, getSiteName } from '@/lib/settings';
-import { agentProfileSchema, breadcrumbSchema } from '@/lib/seo';
-import StructuredData from '@/components/StructuredData';
+import SchemaGraph from '@/components/SchemaGraph';
+import { getTenant, ids, personNode, profilePageNode, breadcrumbNode, truncate, type TenantCredential } from '@/lib/schema';
 import VideoFeatureCarousel from '@/components/VideoFeatureCarousel';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import AgentContactForm from '@/components/AgentContactForm';
@@ -198,26 +198,45 @@ export default async function AboutStaceyPage() {
   const portrait = agent.image ? urlFor(agent.image).width(900).height(1200).fit('crop').quality(90).url() : null;
   const pageUrl = `${baseUrl}/about/${SLUG}`;
 
-  const schemas = [
-    agentProfileSchema({
-      name,
+  // Structured data: a ProfilePage whose main entity is the agent. When this
+  // is the tenant's primary agent (settings → Business → Primary Agent) the
+  // sitewide #agent node is the entity, with the credentials it carries.
+  const tenant = await getTenant();
+  const isPrimaryAgent = tenant.agent?.slug === SLUG;
+  const personId = isPrimaryAgent ? ids.agent(tenant.baseUrl) : `${pageUrl}#person`;
+  const credentials = ((agent as { credentials?: Array<{ credentialType: TenantCredential['type']; name: string; issuer?: string; url?: string; year?: number }> }).credentials || [])
+    .filter((c) => c?.name && c?.credentialType)
+    .map((c) => ({ type: c.credentialType, name: c.name, issuer: c.issuer, url: c.url, year: c.year }));
+  const schemaNodes = [
+    profilePageNode({
+      tenant,
       url: pageUrl,
-      jobTitle: agent.title,
+      name: `${name} | ${agent.title || 'Real Estate Agent'}`,
+      description: truncate(bioText, 300),
       image: portrait,
-      description: bioText.slice(0, 300),
-      email,
-      telephone: phone,
-      address,
-      worksFor: "Christie's International Real Estate Aspen Snowmass",
-      sameAs: social.map((s) => s.href),
-      areaServed: ['Aspen', 'Snowmass Village', 'Old Snowmass', 'Basalt', 'Carbondale', 'Roaring Fork Valley'],
+      mainEntityId: personId,
     }),
-    breadcrumbSchema([
-      { name: 'Home', url: baseUrl },
+    breadcrumbNode(pageUrl, [
+      { name: 'Home', url: `${baseUrl}/` },
       { name: 'About', url: `${baseUrl}/about` },
       { name, url: pageUrl },
     ]),
-  ].filter(Boolean);
+    isPrimaryAgent
+      ? undefined
+      : personNode({
+          id: personId,
+          url: pageUrl,
+          name,
+          jobTitle: agent.title,
+          description: truncate(bioText, 500),
+          imageUrl: portrait,
+          telephone: phone,
+          email,
+          sameAs: social.map((s) => s.href),
+          credentials,
+          worksForId: ids.organization(tenant.baseUrl),
+        }),
+  ];
 
   const stats = [
     ...(years ? [{ value: `${years}+`, label: 'Years in Aspen Snowmass' }] : []),
@@ -227,7 +246,7 @@ export default async function AboutStaceyPage() {
 
   return (
     <>
-      <StructuredData data={schemas} />
+      <SchemaGraph nodes={schemaNodes} />
 
       {/* Hero: continues the black header, editorial type beside the portrait */}
       <section className="relative bg-[var(--modern-black)] text-white overflow-hidden">

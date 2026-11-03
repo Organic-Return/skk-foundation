@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { getBaseUrl, getBrandName, getSiteTemplate } from '@/lib/settings';
 import TeamGrid from "@/components/TeamGrid";
 import PageHero from "@/components/PageHero";
-import StructuredData from "@/components/StructuredData";
+import SchemaGraph from '@/components/SchemaGraph';
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 
 const builder = createImageUrlBuilder(client);
@@ -77,7 +77,7 @@ export default async function TeamPage() {
     })),
   });
   const teamCrumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
+    { name: 'Home', url: `${baseUrl}/` },
     { name: isRC ? 'Agents' : 'Team', url: `${baseUrl}/${teamPath}` },
   ]);
 
@@ -100,8 +100,7 @@ export default async function TeamPage() {
 
   return (
     <main className="min-h-screen">
-      {teamSchema && <StructuredData data={teamSchema} />}
-      <StructuredData data={teamCrumbs} />
+      <SchemaGraph nodes={[teamSchema, teamCrumbs]} />
       {/* Hero */}
       <PageHero
         title={isRC ? "Retter & Company Sotheby's International Realty Team" : "Our Team"}

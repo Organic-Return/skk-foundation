@@ -8,8 +8,8 @@ import type { ReactNode } from "react";
 import { client } from "@/sanity/client";
 import { getBaseUrl } from "@/lib/settings";
 import PageHero from "@/components/PageHero";
-import StructuredData from "@/components/StructuredData";
-import { breadcrumbSchema } from "@/lib/seo";
+import SchemaGraph from "@/components/SchemaGraph";
+import { getTenant, ids, webPageNode, breadcrumbNode } from "@/lib/schema";
 
 /**
  * Affiliation pages (Studio > Affiliation Pages), e.g. /about/the-council.
@@ -100,15 +100,30 @@ export default async function AffiliationPage({ params }: Params) {
   const logoUrl = data.logo ? urlFor(data.logo)?.height(400).url() : undefined;
   const hasBody = Array.isArray(data.body) && data.body.length > 0;
 
-  const crumbs = breadcrumbSchema([
-    { name: "Home", url: baseUrl },
-    { name: "About", url: `${baseUrl}/about` },
-    { name: title, url: `${baseUrl}/about/${slug}` },
-  ]);
+  const tenant = await getTenant();
+  const pageUrl = `${baseUrl}/about/${slug}`;
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: pageUrl,
+      type: 'AboutPage',
+      name: title,
+      description: data.heroSubtitle,
+      image: heroImageUrl,
+      hasBreadcrumb: true,
+      aboutId: ids.organization(tenant.baseUrl),
+    }),
+    breadcrumbNode(pageUrl, [
+      { name: "Home", url: `${baseUrl}/` },
+      { name: "About", url: `${baseUrl}/about` },
+      { name: title, url: pageUrl },
+    ]),
+  ];
 
   return (
+    <>
+    <SchemaGraph nodes={schemaNodes} />
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
-      {crumbs && <StructuredData data={crumbs} />}
       <PageHero title={title} subtitle={data.heroSubtitle} eyebrow={data.heroEyebrow} image={heroImageUrl ?? undefined} />
 
       {/* Logo band — dark, so white-on-transparent artwork reads as supplied. */}
@@ -152,5 +167,6 @@ export default async function AffiliationPage({ params }: Params) {
         </section>
       )}
     </main>
+    </>
   );
 }

@@ -8,6 +8,9 @@ import type { Metadata } from "next";
 import MuxVideoPlayer from "@/components/MuxVideoPlayer";
 import { getBaseUrl, withBrand } from '@/lib/settings';
 import RelatedPosts from '@/components/RelatedPosts';
+import SchemaGraph from "@/components/SchemaGraph";
+import FaqSection, { faqEntries } from "@/components/FaqSection";
+import { getTenant, ids, articleNode, webPageNode, breadcrumbNode, faqNode, toPlainText, truncate } from "@/lib/schema";
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
   ...,
@@ -213,35 +216,49 @@ export default async function PostPage({
     ? urlFor(post.image)?.width(1200).height(675).url()
     : null;
 
-  // Generate JSON-LD structured data for SEO
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    image: postImageUrl || undefined,
-    datePublished: post.publishedAt,
-    dateModified: post._updatedAt || post.publishedAt,
-    author: {
-      '@type': 'Organization',
-      name: 'Real Estate Website',
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Real Estate Website',
-      logo: {
-        '@type': 'ImageObject',
-        url: postImageUrl || undefined,
-      },
-    },
-    description: post.title,
-  };
+  // Structured data: BlogPosting by the primary agent, published by the
+  // business, with the page, breadcrumb (Home → Blog → post) and any FAQ
+  // rendered below the post.
+  const tenant = await getTenant();
+  const postUrl = `${tenant.baseUrl}/${slug}`;
+  const postDescription = post.seo?.metaDescription || truncate(toPlainText(post.body), 300) || post.title;
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: postUrl,
+      name: post.title,
+      description: postDescription,
+      image: postImageUrl,
+      hasBreadcrumb: true,
+      mainEntityId: ids.mainEntity(postUrl),
+      datePublished: post.publishedAt,
+      dateModified: post._updatedAt || post.publishedAt,
+    }),
+    breadcrumbNode(postUrl, [
+      { name: 'Home', url: `${tenant.baseUrl}/` },
+      { name: 'Blog', url: `${tenant.baseUrl}/blog` },
+      { name: post.title, url: postUrl },
+    ]),
+    articleNode({
+      type: 'BlogPosting',
+      url: postUrl,
+      headline: post.title,
+      description: postDescription,
+      image: postImageUrl,
+      datePublished: post.publishedAt,
+      dateModified: post._updatedAt || post.publishedAt,
+      authorId: tenant.agent ? ids.agent(tenant.baseUrl) : undefined,
+      authorName: tenant.agent ? undefined : tenant.name,
+      publisherId: ids.organization(tenant.baseUrl),
+      articleSection: post.category,
+      keywords: Array.isArray(post.seo?.keywords) ? post.seo.keywords : undefined,
+    }),
+    faqNode(postUrl, faqEntries(post.faqs)),
+  ];
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <SchemaGraph nodes={schemaNodes} />
       <main className="container mx-auto min-h-screen flex flex-col gap-4">
       {/* Without an image the fixed header would cover the top of the page,
           so keep the old spacer; with one the image runs under the header
@@ -310,6 +327,7 @@ export default async function PostPage({
         </div>
       </div>
       <RelatedPosts currentSlug={slug} />
+      <FaqSection faqs={post.faqs} />
     </main>
     </>
   );

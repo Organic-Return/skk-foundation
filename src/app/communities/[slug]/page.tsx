@@ -22,6 +22,9 @@ import { fetchDemographicData, formatCurrency, formatNumber } from "@/lib/census
 import { getCommunityPriceRange, getNewestHighPricedByCity, type MLSProperty } from "@/lib/listings";
 import { getSettings, getBaseUrl } from '@/lib/settings';
 import { communitySeo } from '@/lib/seo';
+import SchemaGraph from '@/components/SchemaGraph';
+import FaqSection, { faqEntries } from '@/components/FaqSection';
+import { getTenant, ids, placeNode, webPageNode, breadcrumbNode, faqNode, truncate } from '@/lib/schema';
 import RelatedCommunities from '@/components/RelatedCommunities';
 import type { CommunitySummary } from '@/lib/communityArea';
 
@@ -485,94 +488,44 @@ export default async function CommunityPage({
   ]);
   const communityUrl = `${baseUrl}/communities/${community.slug.current}`;
 
-  // Generate JSON-LD structured data for SEO - Place schema
-  const placeSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Place',
-    '@id': communityUrl,
-    name: community.title,
-    description: community.description || community.title,
-    url: communityUrl,
-    image: heroImageUrl || undefined,
-    geo: community.coordinates ? {
-      '@type': 'GeoCoordinates',
-      latitude: community.coordinates.lat,
-      longitude: community.coordinates.lng,
-    } : undefined,
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: community.title,
-      addressRegion: 'CO',
-      addressCountry: 'US',
-    },
-    ...(community.amenities && community.amenities.length > 0 && {
-      amenityFeature: community.amenities.map((amenity: string) => ({
-        '@type': 'LocationFeatureSpecification',
-        name: amenity,
-      })),
+  // Structured data: the community as a Place (with its county and state),
+  // the page, its breadcrumb and the FAQ section rendered at the end.
+  const tenant = await getTenant();
+  const stateNames: Record<string, string> = { CO: 'Colorado', WA: 'Washington', ID: 'Idaho', MT: 'Montana', UT: 'Utah', WY: 'Wyoming', HI: 'Hawaii' };
+  const stateName = tenant.address?.state ? stateNames[tenant.address.state.toUpperCase()] || tenant.address.state : undefined;
+  const communityFaqs = faqEntries(community.faqs);
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: communityUrl,
+      name: community.title,
+      description: truncate(community.description) || community.title,
+      image: heroImageUrl,
+      hasBreadcrumb: true,
+      mainEntityId: ids.mainEntity(communityUrl),
+      dateModified: community._updatedAt,
     }),
-  };
-
-  // BreadcrumbList schema
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: baseUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Communities',
-        item: `${baseUrl}/communities`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: community.title,
-        item: communityUrl,
-      },
-    ],
-  };
-
-  // WebPage schema
-  const webPageSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    '@id': `${communityUrl}#webpage`,
-    url: communityUrl,
-    name: community.title,
-    description: community.description || community.title,
-    isPartOf: {
-      '@id': `${baseUrl}#website`,
-    },
-    primaryImageOfPage: heroImageUrl ? {
-      '@type': 'ImageObject',
-      url: heroImageUrl,
-    } : undefined,
-    breadcrumb: {
-      '@id': `${communityUrl}#breadcrumb`,
-    },
-  };
+    breadcrumbNode(communityUrl, [
+      { name: 'Home', url: `${baseUrl}/` },
+      { name: 'Communities', url: `${baseUrl}/communities` },
+      { name: community.title, url: communityUrl },
+    ]),
+    placeNode({
+      url: communityUrl,
+      name: community.title,
+      description: truncate(community.description) || community.title,
+      image: heroImageUrl,
+      geo: community.coordinates ? { lat: community.coordinates.lat, lng: community.coordinates.lng } : null,
+      containedIn: [community.county, stateName],
+      amenities: Array.isArray(community.amenities) ? community.amenities : [],
+      address: { city: community.title, state: tenant.address?.state },
+    }),
+    faqNode(communityUrl, communityFaqs),
+  ];
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
-      />
+      <SchemaGraph nodes={schemaNodes} />
       <main className="min-h-screen">
         {/* Hero Section */}
         {heroImageUrl ? (
@@ -1148,6 +1101,7 @@ export default async function CommunityPage({
             </section>
           )}
         </div>
+        <FaqSection faqs={community.faqs} />
       </main>
     </>
   );

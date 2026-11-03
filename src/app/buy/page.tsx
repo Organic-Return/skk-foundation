@@ -8,8 +8,9 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { getSettings, getBaseUrl, withBrand } from '@/lib/settings';
 import AgentContactForm from "@/components/AgentContactForm";
-import StructuredData from "@/components/StructuredData";
-import { faqPageSchema, realEstateAgentSchema, breadcrumbSchema } from "@/lib/seo";
+import SchemaGraph from "@/components/SchemaGraph";
+import { faqPageSchema, breadcrumbSchema } from "@/lib/seo";
+import { getTenant, ids, webPageNode, serviceNode, reviewNode } from "@/lib/schema";
 import { DEFAULT_BUY_FAQS, DEFAULT_BUY_PROCESS, type Faq } from "@/lib/pageDefaults";
 import { getSalesTotals, formatUSD } from "@/lib/salesTotals";
 import StatsBand from "@/components/StatsBand";
@@ -217,27 +218,45 @@ export default async function BuyPage() {
 
   // SEO structured data (FAQ rich results, agent, breadcrumb, real reviews only).
   const agentFirstName = agent?.name?.split(" ")[0] || "our team";
-  const schemas = [
-    faqPageSchema(faqs),
-    realEstateAgentSchema({
-      name: agent?.name,
-      url: `${baseUrl}/buy`,
-      telephone: settings?.contactInfo?.phone || null,
-      address: settings?.contactInfo?.address || null,
-      description: `${agent?.name} is an Aspen real estate agent helping buyers purchase luxury homes across Aspen, Snowmass, and the Roaring Fork Valley.`,
-      knowsAbout: ["Aspen real estate", "Snowmass real estate", "Luxury home buyers", "Roaring Fork Valley properties"],
+  // Structured data: the page, breadcrumb, the services the business offers,
+  // the FAQ this page renders and a Review per testimonial shown on it.
+  const tenant = await getTenant();
+  const pageUrl = `${baseUrl}/buy`;
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: pageUrl,
+      name: data.seo?.metaTitle || data.heroTitle || 'Buy',
+      description: data.seo?.metaDescription || data.heroSubtitle,
+      image: heroImageUrl,
+      hasBreadcrumb: true,
+      aboutId: ids.organization(tenant.baseUrl),
     }),
     breadcrumbSchema([
-      { name: "Home", url: baseUrl },
-      { name: "Buy", url: `${baseUrl}/buy` },
+      { name: "Home", url: `${baseUrl}/` },
+      { name: "Buy", url: pageUrl },
     ]),
-  ].filter(Boolean);
+    ...tenant.services.map((service) =>
+      serviceNode({
+        serviceType: service.serviceType,
+        description: service.description,
+        providerId: ids.organization(tenant.baseUrl),
+        areaServed: tenant.areaServed,
+        url: pageUrl,
+      })
+    ),
+    faqPageSchema(faqs, pageUrl),
+    ...(hasRealTestimonials
+      ? testimonials.map((t: { quote?: string; author?: string }) =>
+          reviewNode({ body: t.quote || '', authorName: t.author || '', itemReviewedId: ids.organization(tenant.baseUrl) })
+        )
+      : []),
+  ];
 
   return (
+    <>
+    <SchemaGraph nodes={schemaNodes} />
     <main className="min-h-screen">
-      {schemas.map((s, i) => (
-        <StructuredData key={i} data={s as Record<string, unknown>} />
-      ))}
       {/* Hero Section */}
       <PageHero
         title={data.heroTitle || 'Buy'}
@@ -410,5 +429,6 @@ export default async function BuyPage() {
       </section>
 
     </main>
+    </>
   );
 }

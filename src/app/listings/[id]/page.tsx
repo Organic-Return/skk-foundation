@@ -11,7 +11,7 @@ import {
   formatLotSize,
   type MLSProperty,
 } from '@/lib/listings';
-import { getSettings, getGoogleMapsApiKey, getBaseUrl } from '@/lib/settings';
+import { getSettings, getGoogleMapsApiKey, getBaseUrl , getTeamSyncConfig } from '@/lib/settings';
 import { client } from '@/sanity/client';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import PropertyGallery from '@/components/PropertyGallery';
@@ -27,6 +27,17 @@ import StickyRequestInfo from '@/components/StickyRequestInfo';
 import ListingContactForm from '@/components/ListingContactForm';
 import { findNewerDuplicateListing, isClosedListing } from '@/lib/listings';
 import SimilarListings from '@/components/SimilarListings';
+import SchemaGraph from '@/components/SchemaGraph';
+import {
+  getTenant,
+  ids,
+  listingNodes,
+  webPageNode,
+  breadcrumbNode,
+  truncate,
+  type Tenant,
+  type VideoInput,
+} from '@/lib/schema';
 
 export const revalidate = 60;
 
@@ -43,6 +54,8 @@ interface ListingAgent {
   email?: string;
   phone?: string;
   mobile?: string;
+  mlsAgentId?: string;
+  mlsAgentIdSold?: string;
 }
 
 async function getListingAgents(listing: MLSProperty): Promise<ListingAgent[]> {
@@ -55,7 +68,7 @@ async function getListingAgents(listing: MLSProperty): Promise<ListingAgent[]> {
 
   if (ids.length === 0) return [];
 
-  let agents = await client.fetch<(ListingAgent & { _id: string; mlsAgentId?: string })[]>(
+  let agents = await client.fetch<(ListingAgent & { _id: string; mlsAgentId?: string; mlsAgentIdSold?: string })[]>(
     `*[_type == "teamMember" && inactive != true && (mlsAgentId in $ids || mlsAgentIdSold in $ids)]{
       _id,
       name,
@@ -65,7 +78,8 @@ async function getListingAgents(listing: MLSProperty): Promise<ListingAgent[]> {
       email,
       phone,
       mobile,
-      mlsAgentId
+      mlsAgentId,
+      mlsAgentIdSold
     }`,
     { ids },
     { next: { revalidate: 60 } }
@@ -88,195 +102,102 @@ interface ListingPageProps {
   params: Promise<{ id: string }>;
 }
 
-// Generate Schema.org RealEstateListing structured data
-function generateRealEstateSchema(listing: MLSProperty, baseUrl: string) {
-  const listingUrl = `${baseUrl}${getListingHref(listing)}`;
+interface EnhancementVideo {
+  title: string;
+  videoType: 'mux' | 'youtube' | 'vimeo' | 'url';
+  muxPlaybackId?: string;
+  youtubeId?: string;
+  vimeoId?: string;
+  externalUrl?: string;
+  thumbnail?: { asset: { url: string } };
+  description?: string;
+}
 
-  // Main RealEstateListing schema
-  const realEstateSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateListing',
-    '@id': listingUrl,
-    url: listingUrl,
-    name: listing.address || `Property ${listing.mls_number}`,
-    description: listing.description || `${listing.property_type || 'Property'} in ${listing.city}, ${listing.state}`,
-    datePosted: listing.listing_date,
-    ...(listing.sold_date && { dateModified: listing.sold_date }),
+/**
+ * The listing's first video as a VideoObject input. Mux uploads are the
+ * preferred source; YouTube/Vimeo embeds and plain URLs are described too.
+ * `uploadDate` is the enhancement document's creation time.
+ */
+function enhancementVideo(
+  listingUrl: string,
+  enhancement: { _createdAt?: string; videos?: EnhancementVideo[] } | null
+): VideoInput | null {
+  const video = enhancement?.videos?.[0];
+  if (!video) return null;
+  const custom = video.thumbnail?.asset?.url;
+  const base = { url: listingUrl, name: video.title, description: video.description, uploadDate: enhancement?._createdAt };
+  if (video.videoType === 'mux' && video.muxPlaybackId) {
+    return {
+      ...base,
+      thumbnailUrl: custom || `https://image.mux.com/${video.muxPlaybackId}/thumbnail.jpg`,
+      contentUrl: `https://stream.mux.com/${video.muxPlaybackId}.m3u8`,
+    };
+  }
+  if (video.videoType === 'youtube' && video.youtubeId) {
+    return {
+      ...base,
+      thumbnailUrl: custom || `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`,
+      embedUrl: `https://www.youtube.com/embed/${video.youtubeId}`,
+    };
+  }
+  if (video.videoType === 'vimeo' && video.vimeoId) {
+    return { ...base, thumbnailUrl: custom, embedUrl: `https://player.vimeo.com/video/${video.vimeoId}` };
+  }
+  if (video.externalUrl) {
+    return { ...base, thumbnailUrl: custom, contentUrl: video.externalUrl };
+  }
+  return null;
+}
 
-    // Property details
-    ...(listing.list_price && {
-      offers: {
-        '@type': 'Offer',
-        price: listing.list_price,
-        priceCurrency: 'USD',
-        availability: listing.status === 'Active'
-          ? 'https://schema.org/InStock'
-          : listing.status === 'Pending'
-          ? 'https://schema.org/LimitedAvailability'
-          : 'https://schema.org/SoldOut',
-        ...(listing.sold_price && listing.status === 'Closed' && {
-          priceValidUntil: listing.sold_date,
-        }),
-      },
+/**
+ * Structured data for the listing page: its WebPage and breadcrumb, the
+ * RealEstateListing with its offer, the home it offers, and a VideoObject
+ * when the listing has one. `isOwn` marks the tenant's own listings, whose
+ * offer names the business as seller.
+ */
+function listingSchemaNodes(opts: { listing: MLSProperty; tenant: Tenant; isOwn: boolean; video: VideoInput | null }) {
+  const { listing, tenant, isOwn, video } = opts;
+  const listingUrl = `${tenant.baseUrl}${getListingHref(listing)}`;
+  const name = listing.address || `Property ${listing.mls_number}`;
+  const description =
+    truncate(listing.description) || `${listing.property_type || 'Property'} in ${listing.city}, ${listing.state}`;
+  const parent = { name: 'Listings', url: `${tenant.baseUrl}/listings` };
+
+  return [
+    webPageNode({
+      tenant,
+      url: listingUrl,
+      name,
+      description,
+      type: 'ItemPage',
+      image: listing.photos?.[0],
+      hasBreadcrumb: true,
+      mainEntityId: ids.mainEntity(listingUrl),
+      dateModified: listing.updated_at,
     }),
-
-    // Images
-    ...(listing.photos && listing.photos.length > 0 && {
-      image: listing.photos,
-      primaryImageOfPage: listing.photos[0],
+    breadcrumbNode(listingUrl, [{ name: 'Home', url: `${tenant.baseUrl}/` }, parent, { name, url: listingUrl }]),
+    ...listingNodes({
+      url: listingUrl,
+      name,
+      description,
+      mlsNumber: listing.mls_number,
+      photos: listing.photos,
+      address: { street: listing.address, city: listing.city, state: listing.state, postalCode: listing.zip_code },
+      geo: { lat: listing.latitude, lng: listing.longitude },
+      propertyType: listing.property_type,
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms,
+      squareFeet: listing.square_feet,
+      lotSizeAcres: listing.lot_size,
+      yearBuilt: listing.year_built,
+      listPrice: listing.list_price,
+      status: listing.status,
+      listingDate: listing.listing_date,
+      soldDate: listing.sold_date,
+      sellerId: isOwn ? ids.organization(tenant.baseUrl) : undefined,
+      video,
     }),
-
-    // Location
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: listing.address,
-      addressLocality: listing.city,
-      addressRegion: listing.state,
-      postalCode: listing.zip_code,
-      addressCountry: 'US',
-    },
-
-    // Geo coordinates
-    ...(listing.latitude && listing.longitude && {
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude: listing.latitude,
-        longitude: listing.longitude,
-      },
-    }),
-
-    // Additional identifiers
-    identifier: {
-      '@type': 'PropertyValue',
-      name: 'MLS Number',
-      value: listing.mls_number,
-    },
-  };
-
-  // Residence/SingleFamilyResidence schema for the property itself
-  const propertySchema = {
-    '@context': 'https://schema.org',
-    '@type': listing.property_type === 'Condo' || listing.property_type === 'Townhouse'
-      ? 'Apartment'
-      : listing.property_type === 'Land'
-      ? 'LandmarksOrHistoricalBuildings'
-      : 'SingleFamilyResidence',
-    '@id': `${listingUrl}#property`,
-    name: listing.address || `Property ${listing.mls_number}`,
-    description: listing.description,
-    url: listingUrl,
-
-    // Property characteristics
-    ...(listing.bedrooms !== null && { numberOfRooms: listing.bedrooms }),
-    ...(listing.bathrooms !== null && { numberOfBathroomsTotal: listing.bathrooms }),
-    ...(listing.square_feet && {
-      floorSize: {
-        '@type': 'QuantitativeValue',
-        value: listing.square_feet,
-        unitCode: 'FTK', // Square feet
-      },
-    }),
-    ...(listing.lot_size && {
-      lotSize: {
-        '@type': 'QuantitativeValue',
-        value: listing.lot_size,
-        unitCode: 'ACR', // Acres
-      },
-    }),
-    ...(listing.year_built && { yearBuilt: listing.year_built }),
-
-    // Address
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: listing.address,
-      addressLocality: listing.city,
-      addressRegion: listing.state,
-      postalCode: listing.zip_code,
-      addressCountry: 'US',
-    },
-
-    // Geo
-    ...(listing.latitude && listing.longitude && {
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude: listing.latitude,
-        longitude: listing.longitude,
-      },
-    }),
-
-    // Images
-    ...(listing.photos && listing.photos.length > 0 && {
-      image: listing.photos,
-    }),
-  };
-
-  // Product schema (for Google rich results). Merchant listing markup requires
-  // an image, so it is emitted only when the feed has photos.
-  const productSchema = listing.photos && listing.photos.length > 0 ? {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    '@id': `${listingUrl}#product`,
-    name: `${listing.address || 'Property'} - ${listing.city}, ${listing.state}`,
-    description: listing.description || `${listing.bedrooms || 0} bed, ${listing.bathrooms || 0} bath ${listing.property_type || 'property'} in ${listing.city}, ${listing.state}`,
-    ...(listing.photos && listing.photos.length > 0 && {
-      image: listing.photos,
-    }),
-    sku: listing.mls_number,
-    category: listing.property_type || 'Real Estate',
-    ...(listing.list_price && {
-      offers: {
-        '@type': 'Offer',
-        price: listing.list_price,
-        priceCurrency: 'USD',
-        availability: listing.status === 'Active'
-          ? 'https://schema.org/InStock'
-          : listing.status === 'Pending'
-          ? 'https://schema.org/LimitedAvailability'
-          : 'https://schema.org/SoldOut',
-        url: listingUrl,
-        // Seller typed as Person (the agent), not RealEstateAgent.
-        // RealEstateAgent extends LocalBusiness and Google/SEMrush
-        // require LocalBusiness to carry a full address — which we
-        // can't reliably populate for individual listing agents. Person
-        // needs only `name`. Brokerage-level LocalBusiness data is
-        // still emitted by the homepage Organization schema + Footer
-        // microdata.
-        seller: {
-          '@type': 'Person',
-          name: listing.agent_name || 'Listing Agent',
-          ...(listing.agent_email && { email: listing.agent_email }),
-        },
-      },
-    }),
-  } : null;
-
-  // BreadcrumbList schema
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: baseUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Listings',
-        item: `${baseUrl}/listings`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: listing.address || listing.mls_number,
-        item: listingUrl,
-      },
-    ],
-  };
-
-  return [realEstateSchema, propertySchema, productSchema, breadcrumbSchema].filter(Boolean);
+  ];
 }
 
 export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
@@ -440,6 +361,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
   // Fetch property enhancements (videos/documents) from Sanity
   const propertyEnhancement = await client.fetch<{
+    _createdAt?: string;
     videos?: Array<{
       _key: string;
       title: string;
@@ -460,6 +382,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
     }>;
   } | null>(
     `*[_type == "propertyEnhancement" && mlsNumber == $mlsNumber][0]{
+      _createdAt,
       videos[]{
         _key,
         title,
@@ -497,7 +420,22 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
   const hasPhotos = listing.photos && listing.photos.length > 0;
   const baseUrl = await getBaseUrl();
-  const schemas = generateRealEstateSchema(listing, baseUrl);
+  // The listing is the tenant's own when a team member is the listing or
+  // co-listing agent, or the listing office is one of the tenant's offices.
+  const tenant = await getTenant();
+  const teamSync = await getTeamSyncConfig();
+  const listSideIds = new Set([listing.list_agent_mls_id, listing.co_list_agent_mls_id].filter(Boolean));
+  const ownByAgent = listingAgents.some(
+    (agent) => (agent.mlsAgentId && listSideIds.has(agent.mlsAgentId)) || (agent.mlsAgentIdSold && listSideIds.has(agent.mlsAgentIdSold))
+  );
+  const officeName = (listing.list_office_name || '').toLowerCase();
+  const ownByOffice = !!officeName && teamSync.offices.some((o) => o.officeName && officeName.includes(o.officeName.toLowerCase()));
+  const schemaNodes = listingSchemaNodes({
+    listing,
+    tenant,
+    isOwn: ownByAgent || ownByOffice,
+    video: showMedia ? enhancementVideo(`${tenant.baseUrl}${getListingHref(listing)}`, propertyEnhancement) : null,
+  });
 
   // Custom-one template: only for properties listed by team members with matching MLS IDs
   const isCustomOne = template === 'custom-one' && listingAgent !== null;
@@ -511,13 +449,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
     return (
       <>
-        {schemas.map((schema, index) => (
-          <script
-            key={index}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-          />
-        ))}
+        <SchemaGraph nodes={schemaNodes} />
         <CustomOneListingContent
           listing={listing}
           agent={listingAgent ? {
@@ -548,13 +480,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
     return (
       <>
-        {schemas.map((schema, index) => (
-          <script
-            key={index}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-          />
-        ))}
+        <SchemaGraph nodes={schemaNodes} />
         <RCSothebysListingContent
           listing={listing}
           agent={listingAgent ? {
@@ -583,16 +509,9 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
   return (
     <>
-      {/* Schema.org JSON-LD */}
-      {schemas.map((schema, index) => (
-        <script
-          key={index}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      ))}
+      <SchemaGraph nodes={schemaNodes} />
 
-      <div className={`min-h-screen ${template === 'custom-one' ? '-mt-[72px] lg:-mt-[120px] pt-[72px] lg:pt-[120px] bg-[var(--modern-black)] relative overflow-hidden' : 'bg-[#f8f7f5]'}`} itemScope itemType="https://schema.org/RealEstateListing">
+      <div className={`min-h-screen ${template === 'custom-one' ? '-mt-[72px] lg:-mt-[120px] pt-[72px] lg:pt-[120px] bg-[var(--modern-black)] relative overflow-hidden' : 'bg-[#f8f7f5]'}`}>
         {/* Gold texture background for custom-one */}
         {template === 'custom-one' && (
           <div className="absolute inset-0 opacity-5 pointer-events-none">

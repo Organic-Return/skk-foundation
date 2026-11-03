@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { PortableText, type PortableTextComponents } from "next-sanity";
 import { client } from "@/sanity/client";
-import { getListingsByAgentId, type MLSProperty } from "@/lib/listings";
-import { getBaseUrl, getSettings } from '@/lib/settings';
+import { getListingsByAgentId, type MLSProperty, getListingHref } from '@/lib/listings';
+import { getBaseUrl } from '@/lib/settings';
 import Link from "next/link";
-import { breadcrumbSchema, realEstateAgentSchema } from "@/lib/seo";
+import { breadcrumbSchema } from "@/lib/seo";
+import { getTenant, ids, collectionPageNodes } from "@/lib/schema";
 import { computeSalesTotals, formatUSD } from "@/lib/salesTotals";
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentContactForm from "@/components/AgentContactForm";
-import StructuredData from "@/components/StructuredData";
+import SchemaGraph from "@/components/SchemaGraph";
 
 const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
   name, email, featured, mlsAgentId, mlsAgentIdSold
@@ -158,7 +159,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SoldPage() {
   const { soldListings, firstName, agentName, agentEmail, heroImage, managedStats, baseline, contentHeading, contentBody } =
     await getSoldData();
-  const [baseUrl, settings] = await Promise.all([getBaseUrl(), getSettings()]);
+  const baseUrl = await getBaseUrl();
   const who = firstName ? `${firstName}'s` : "Our";
 
   // Hero totals — baseline + closings after it (see lib/salesTotals.ts).
@@ -170,23 +171,6 @@ export default async function SoldPage() {
   const contentTitle = contentHeading || `Aspen Real Estate Agent ${agentName || ""}`.trim();
   const hasManagedContent = Array.isArray(contentBody) && contentBody.length > 0;
 
-  // RealEstateAgent structured data (only when a single agent is identifiable),
-  // with the same office phone and address every other page emits.
-  const agentSchema = realEstateAgentSchema({
-    name: agentName,
-    url: `${baseUrl}/sold`,
-    image: heroImage,
-    telephone: settings?.contactInfo?.phone,
-    address: settings?.contactInfo?.address,
-    description: `${agentName?.trim()} is a top Aspen real estate agent specializing in luxury home sales across Aspen, Snowmass, and the Roaring Fork Valley.`,
-    areaServed: ["Aspen", "Snowmass", "Snowmass Village", "Roaring Fork Valley", "Colorado"],
-    knowsAbout: [
-      "Aspen real estate",
-      "Snowmass real estate",
-      "Luxury home sales",
-      "Roaring Fork Valley properties",
-    ],
-  });
 
   // Use Sanity-managed stats if configured, otherwise auto-calculate from sold listings.
   const stats =
@@ -197,15 +181,35 @@ export default async function SoldPage() {
           { value: formatUSD(totalVolume), label: "Total Sales Volume" },
         ];
 
-  const crumbs = breadcrumbSchema([
-    { name: "Home", url: baseUrl },
-    { name: "Sold", url: `${baseUrl}/sold` },
-  ]);
+  // Structured data: a CollectionPage of the business's sold listings
+  // (first 10 by URL) with its breadcrumb.
+  const tenant = await getTenant();
+  const pageUrl = `${baseUrl}/sold`;
+  const schemaNodes = [
+    breadcrumbSchema([
+      { name: "Home", url: `${baseUrl}/` },
+      { name: "Sold", url: pageUrl },
+    ]),
+    ...collectionPageNodes({
+      tenant,
+      url: pageUrl,
+      name: contentTitle,
+      image: heroImage,
+      hasBreadcrumb: true,
+      aboutId: ids.organization(tenant.baseUrl),
+      listName: `${who} Sold Properties`,
+      items: soldListings.slice(0, 10).map((l) => ({
+        url: `${baseUrl}${getListingHref(l)}`,
+        name: l.address || undefined,
+        image: l.photos?.[0],
+      })),
+    }),
+  ];
 
   return (
+    <>
+    <SchemaGraph nodes={schemaNodes} />
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
-      {agentSchema && <StructuredData data={agentSchema} />}
-      <StructuredData data={crumbs} />
       {/* Hero */}
       <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
         {heroImage && (
@@ -376,5 +380,6 @@ export default async function SoldPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

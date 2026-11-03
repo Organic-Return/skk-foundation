@@ -6,7 +6,8 @@ import { getListingsByAgentId, getMlsNumbersWithSIRMedia, getListingHref, type M
 import { getBaseUrl } from '@/lib/settings';
 import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentContactForm from "@/components/AgentContactForm";
-import StructuredData from "@/components/StructuredData";
+import SchemaGraph from "@/components/SchemaGraph";
+import { getTenant, ids, breadcrumbNode, collectionPageNodes } from "@/lib/schema";
 
 const TEAM_QUERY = `*[_type == "teamMember" && inactive != true && defined(mlsAgentId)]{
   name, email, featured, mlsAgentId, mlsAgentIdSold
@@ -154,26 +155,35 @@ export default async function ExclusiveListingsPage() {
   const contentTitle = contentHeading || `Aspen Homes for Sale with ${agentName || ""}`.trim();
   const hasManagedContent = Array.isArray(contentBody) && contentBody.length > 0;
 
-  // ItemList structured data for the current listings.
-  const listingsSchema =
-    total > 0
-      ? {
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: `${name} — Aspen & Snowmass Properties for Sale`,
-          numberOfItems: total,
-          itemListElement: activeListings.slice(0, 25).map((l, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            name: l.address || "Aspen area property for sale",
-            url: `${baseUrl}${getListingHref(l)}`,
-          })),
-        }
-      : null;
+  // Structured data: a CollectionPage of the business's current listings
+  // with its breadcrumb.
+  const tenant = await getTenant();
+  const pageUrl = `${baseUrl}/exclusive-listings`;
+  const schemaNodes = [
+    breadcrumbNode(pageUrl, [
+      { name: 'Home', url: `${baseUrl}/` },
+      { name: 'Exclusive Listings', url: pageUrl },
+    ]),
+    ...collectionPageNodes({
+      tenant,
+      url: pageUrl,
+      name: contentTitle,
+      image: heroImage,
+      hasBreadcrumb: true,
+      aboutId: ids.organization(tenant.baseUrl),
+      listName: `${name} — Aspen & Snowmass Properties for Sale`,
+      items: activeListings.slice(0, 25).map((l) => ({
+        url: `${baseUrl}${getListingHref(l)}`,
+        name: l.address || 'Aspen area property for sale',
+        image: l.photos?.[0],
+      })),
+    }),
+  ];
 
   return (
+    <>
+    <SchemaGraph nodes={schemaNodes} />
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
-      {listingsSchema && <StructuredData data={listingsSchema} />}
       {/* Hero */}
       <section className="relative bg-[var(--color-navy)] py-[8.45rem] md:py-[11.83rem] overflow-hidden">
         {heroImage && (
@@ -323,5 +333,6 @@ export default async function ExclusiveListingsPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

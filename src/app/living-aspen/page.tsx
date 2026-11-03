@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import { getBaseUrl } from '@/lib/settings';
-import StructuredData from "@/components/StructuredData";
+import SchemaGraph from '@/components/SchemaGraph';
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 
 const MAGAZINES_QUERY = `*[_type == "publication" && publicationType == "magazine"] | order(publishedAt desc) {
@@ -60,7 +60,7 @@ export default async function LivingAspenPage() {
     })),
   });
   const magazinesCrumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
+    { name: 'Home', url: `${baseUrl}/` },
     { name: 'Living Aspen', url: `${baseUrl}/living-aspen` },
   ]);
 
@@ -70,8 +70,7 @@ export default async function LivingAspenPage() {
 
   return (
     <main className="min-h-screen">
-      {magazinesSchema && <StructuredData data={magazinesSchema} />}
-      <StructuredData data={magazinesCrumbs} />
+      <SchemaGraph nodes={[magazinesSchema, magazinesCrumbs]} />
       {/* Hero Section */}
       <PageHero
         title="Living Aspen"

@@ -6,9 +6,10 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { getBaseUrl, getSettings, getBrandName } from '@/lib/settings';
-import StructuredData from '@/components/StructuredData';
-import { breadcrumbSchema, postalAddressSchema } from '@/lib/seo';
+import { getBaseUrl, getBrandName } from '@/lib/settings';
+import SchemaGraph from '@/components/SchemaGraph';
+import FaqSection, { faqEntries } from '@/components/FaqSection';
+import { getTenant, ids, webPageNode, breadcrumbNode, faqNode } from '@/lib/schema';
 
 const ABOUT_PAGE_QUERY = `*[_type == "aboutPage"][0]{
   heroTitle,
@@ -27,6 +28,8 @@ const ABOUT_PAGE_QUERY = `*[_type == "aboutPage"][0]{
   ctaButtonText,
   ctaButtonLink,
   ctaImage,
+  faqTitle,
+  faqs,
   seo
 }`;
 
@@ -95,11 +98,10 @@ const portableTextComponents: PortableTextComponents = {
 };
 
 export default async function AboutPage() {
-  const [data, baseUrl, siteName, settings] = await Promise.all([
+  const [data, baseUrl, siteName] = await Promise.all([
     client.fetch<SanityDocument>(ABOUT_PAGE_QUERY, {}, options),
     getBaseUrl(),
     getBrandName(),
-    getSettings(),
   ]);
 
   if (!data) {
@@ -124,35 +126,32 @@ export default async function AboutPage() {
     ? urlFor(data.heroImage)?.width(1920).height(800).url()
     : null;
 
-  const aboutSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'AboutPage',
-    name: data.seo?.metaTitle || data.heroTitle || `About ${siteName}`,
-    url: `${baseUrl}/about`,
-    ...(data.seo?.metaDescription || data.heroSubtitle
-      ? { description: data.seo?.metaDescription || data.heroSubtitle }
-      : {}),
-    ...(heroImageUrl ? { primaryImageOfPage: heroImageUrl } : {}),
-    mainEntity: {
-      '@type': 'RealEstateAgent',
-      name: siteName,
-      url: baseUrl,
-      ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
-      // address is required on LocalBusiness (RealEstateAgent extends it).
-      ...(postalAddressSchema(settings?.contactInfo?.address)
-        ? { address: postalAddressSchema(settings?.contactInfo?.address) }
-        : {}),
-    },
-  };
-  const aboutCrumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
-    { name: 'About', url: `${baseUrl}/about` },
-  ]);
+  // Structured data: AboutPage about the business, breadcrumb and the FAQ
+  // section rendered at the end of the page.
+  const tenant = await getTenant();
+  const pageUrl = `${baseUrl}/about`;
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: pageUrl,
+      type: 'AboutPage',
+      name: data.seo?.metaTitle || data.heroTitle || `About ${siteName}`,
+      description: data.seo?.metaDescription || data.heroSubtitle,
+      image: heroImageUrl,
+      hasBreadcrumb: true,
+      aboutId: ids.organization(tenant.baseUrl),
+    }),
+    breadcrumbNode(pageUrl, [
+      { name: 'Home', url: `${baseUrl}/` },
+      { name: 'About', url: pageUrl },
+    ]),
+    faqNode(pageUrl, faqEntries(data.faqs)),
+  ];
 
   return (
+    <>
+    <SchemaGraph nodes={schemaNodes} />
     <main className="min-h-screen">
-      <StructuredData data={aboutSchema} />
-      <StructuredData data={aboutCrumbs} />
       {/* Hero Section */}
       <PageHero
         title={data.heroTitle || 'About'}
@@ -255,6 +254,8 @@ export default async function AboutPage() {
           </div>
         </section>
       )}
+      <FaqSection title={data.faqTitle} faqs={data.faqs} />
     </main>
+    </>
   );
 }

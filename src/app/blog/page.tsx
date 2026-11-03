@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import { getBaseUrl, getSiteName } from '@/lib/settings';
-import StructuredData from "@/components/StructuredData";
+import SchemaGraph from '@/components/SchemaGraph';
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 import { getDefaultShareImage } from '@/lib/homepage';
 
@@ -88,7 +88,7 @@ export default async function BlogPage({
     })),
   });
   const blogCrumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
+    { name: 'Home', url: `${baseUrl}/` },
     { name: 'Blog', url: `${baseUrl}/blog` },
   ]);
 
@@ -99,8 +99,7 @@ export default async function BlogPage({
 
   return (
     <main className="min-h-screen">
-      {blogSchema && <StructuredData data={blogSchema} />}
-      <StructuredData data={blogCrumbs} />
+      <SchemaGraph nodes={[blogSchema, blogCrumbs]} />
       {/* Hero Section */}
       <PageHero
         title="Blog"

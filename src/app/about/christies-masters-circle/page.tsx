@@ -6,8 +6,9 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { Metadata } from "next";
 import { getBaseUrl } from '@/lib/settings';
-import StructuredData from '@/components/StructuredData';
+import SchemaGraph from '@/components/SchemaGraph';
 import { breadcrumbSchema } from '@/lib/seo';
+import { getTenant, ids, webPageNode } from '@/lib/schema';
 import { getDefaultShareImage } from '@/lib/homepage';
 
 const QUERY = `*[_type == "christiesMastersCircle"][0]{
@@ -146,24 +147,29 @@ export default async function ChristiesMastersCirclePage() {
   const sectionLogoUrl = c.sectionLogo ? urlFor(c.sectionLogo)?.width(960).height(960).url() ?? null : null;
 
   const pageUrl = `${baseUrl}/about/christies-masters-circle`;
-  const pageSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: c.heroTitle,
-    url: pageUrl,
-    ...(c.heroSubtitle ? { description: c.heroSubtitle } : {}),
-    ...(heroImageUrl ? { primaryImageOfPage: heroImageUrl } : {}),
-  };
-  const crumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
-    { name: 'About', url: `${baseUrl}/about` },
-    { name: c.heroTitle, url: pageUrl },
-  ]);
+  const tenant = await getTenant();
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: pageUrl,
+      type: 'AboutPage',
+      name: c.heroTitle,
+      description: c.heroSubtitle,
+      image: heroImageUrl,
+      hasBreadcrumb: true,
+      aboutId: ids.agent(tenant.baseUrl),
+    }),
+    breadcrumbSchema([
+      { name: 'Home', url: `${baseUrl}/` },
+      { name: 'About', url: `${baseUrl}/about` },
+      { name: c.heroTitle, url: pageUrl },
+    ]),
+  ];
 
   return (
+    <>
+    <SchemaGraph nodes={schemaNodes} />
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
-      <StructuredData data={pageSchema} />
-      <StructuredData data={crumbs} />
       {/* Hero */}
       <PageHero
         title={c.heroTitle}
@@ -314,5 +320,6 @@ export default async function ChristiesMastersCirclePage() {
         </section>
       )}
     </main>
+    </>
   );
 }

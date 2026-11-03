@@ -3,7 +3,7 @@ import { getOpenHouseListings, getListingHref } from '@/lib/listings';
 import OpenHouseGrid from '@/components/OpenHouseGrid';
 import PageHero from '@/components/PageHero';
 import { getBaseUrl, getBrandName, getSiteName } from '@/lib/settings';
-import StructuredData from '@/components/StructuredData';
+import SchemaGraph from '@/components/SchemaGraph';
 import { collectionPageSchema, breadcrumbSchema } from '@/lib/seo';
 
 export const revalidate = 60;
@@ -33,14 +33,13 @@ export default async function OpenHousesPage() {
     })),
   });
   const openHousesCrumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
+    { name: 'Home', url: `${baseUrl}/` },
     { name: 'Open Houses', url: `${baseUrl}/open-houses` },
   ]);
 
   return (
     <main className="min-h-screen">
-      {openHousesSchema && <StructuredData data={openHousesSchema} />}
-      <StructuredData data={openHousesCrumbs} />
+      <SchemaGraph nodes={[openHousesSchema, openHousesCrumbs]} />
       {/* Hero */}
       <PageHero
         title="Open Houses"

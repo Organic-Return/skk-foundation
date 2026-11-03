@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import { getBaseUrl } from '@/lib/settings';
-import StructuredData from "@/components/StructuredData";
+import SchemaGraph from '@/components/SchemaGraph';
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/seo';
 
 const MARKET_REPORTS_QUERY = `*[_type == "publication" && publicationType == "market-report"] | order(publishedAt desc) {
@@ -60,7 +60,7 @@ export default async function MarketReportsPage() {
     })),
   });
   const reportsCrumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
+    { name: 'Home', url: `${baseUrl}/` },
     { name: 'Market Reports', url: `${baseUrl}/market-reports` },
   ]);
 
@@ -70,8 +70,7 @@ export default async function MarketReportsPage() {
 
   return (
     <main className="min-h-screen">
-      {reportsSchema && <StructuredData data={reportsSchema} />}
-      <StructuredData data={reportsCrumbs} />
+      <SchemaGraph nodes={[reportsSchema, reportsCrumbs]} />
       {/* Hero Section */}
       <PageHero
         title="Market Reports"

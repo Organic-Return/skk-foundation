@@ -6,10 +6,10 @@ import { getSettings, getBranding, getBaseUrl } from '@/lib/settings';
 import { getNewestHighPricedByCities, getNewestHighPricedByCity } from '@/lib/listings';
 import { getSalesTotals, formatUSD } from '@/lib/salesTotals';
 import { getFeaturedProperties, getHomepageCityStats, getNewestListings } from '@/lib/homepageSections';
-import StructuredData from '@/components/StructuredData';
-import { postalAddressSchema } from '@/lib/seo';
+import SchemaGraph from '@/components/SchemaGraph';
+import FaqSection, { faqEntries } from '@/components/FaqSection';
+import { getTenant, webPageNode, serviceNode, faqNode, ids } from '@/lib/schema';
 import HomepageContent from '@/components/HomepageContent';
-import { profileHref } from '@/lib/profiles';
 
 const builder = createImageUrlBuilder(client);
 
@@ -58,28 +58,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const PRIMARY_AGENT_QUERY = `*[_type == "teamMember" && inactive != true && defined(name)] | order(featured desc)[0]{
-  name, "slug": slug.current, title, email, phone, image
-}`;
-
 export default async function Home() {
-  const [homepage, settings, branding, agent] = await Promise.all([
+  const [homepage, settings, branding] = await Promise.all([
     getHomepageData(),
     getSettings(),
     getBranding(),
-    client.fetch<{ name?: string; slug?: string; title?: string; email?: string; phone?: string; image?: unknown } | null>(
-      PRIMARY_AGENT_QUERY,
-      {},
-      { next: { revalidate: 300 } }
-    ),
   ]);
-
-  const primaryAgent = agent?.name
-    ? {
-        ...agent,
-        imageUrl: agent.image ? urlFor(agent.image).width(800).url() : undefined,
-      }
-    : null;
 
   const hero = homepage?.hero;
   const teamSection = homepage?.teamSection;
@@ -175,142 +159,36 @@ export default async function Home() {
       ])
     : [undefined, undefined, undefined];
 
-  const baseUrl = await getBaseUrl();
-
-  // RealEstateAgent / Organization structured data
-  // Identity is emitted as three separate entities linked by @id, each with a
-  // STRING @type.
-  //
-  // This used to be one node typed `["RealEstateAgent", "Organization"]`. That
-  // is valid schema.org, but an array @type is invisible to parsers that only
-  // match a string — auditors reported "no Organization or Person schema" and
-  // "no LocalBusiness schema" on a page that had both. AI extractors are no
-  // more sophisticated. Splitting costs nothing and reads correctly either way.
-  const socialProfiles = [
-    settings?.socialMedia?.facebook,
-    settings?.socialMedia?.instagram,
-    settings?.socialMedia?.twitter,
-    settings?.socialMedia?.linkedin,
-    settings?.socialMedia?.youtube,
-  ].filter(Boolean);
-
-  const postalAddress = postalAddressSchema(settings?.contactInfo?.address);
-  const logoUrl = branding?.logo ? urlFor(branding.logo).width(600).url() : undefined;
-
-  // The business entity is named after the agent, exactly as the About, Contact
-  // and Sold pages name it, so every page emits one identical NAP. Sanity's
-  // `title` is the SEO title tag ("Stacey K Kelly | Christies …"), which is
-  // the right name for the WebSite and WebPage nodes but not for the business.
-  const businessName = primaryAgent?.name?.trim() || settings?.title || 'Real Estate';
-
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    '@id': `${baseUrl}#organization`,
-    name: businessName,
-    description: settings?.description,
-    url: baseUrl,
-    ...(logoUrl ? { logo: logoUrl } : {}),
-    ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
-    ...(settings?.contactInfo?.email ? { email: settings.contactInfo.email } : {}),
-    ...(postalAddress ? { address: postalAddress } : {}),
-    ...(socialProfiles.length > 0 ? { sameAs: socialProfiles } : {}),
-  };
-
-  // RealEstateAgent is a subtype of LocalBusiness — this is the local-business
-  // entity, kept distinct from the brand above and linked back to it.
-  const localBusinessSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateAgent',
-    '@id': `${baseUrl}#localbusiness`,
-    name: businessName,
-    description: 'Aspen real estate agent serving Aspen and Snowmass Village, Colorado.',
-    url: baseUrl,
-    ...(logoUrl ? { image: logoUrl } : {}),
-    ...(settings?.contactInfo?.phone ? { telephone: settings.contactInfo.phone } : {}),
-    ...(settings?.contactInfo?.email ? { email: settings.contactInfo.email } : {}),
-    ...(postalAddress ? { address: postalAddress } : {}),
-    areaServed: ['Aspen', 'Snowmass Village', 'Basalt', 'Carbondale', 'Roaring Fork Valley'],
-    parentOrganization: { '@id': `${baseUrl}#organization` },
-  };
-
-  // Person schema for the agent — what answers "who is Stacey K Kelly?" for
-  // search engines and LLMs. Absent entirely before.
-  const personSchema = primaryAgent?.name
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        '@id': `${baseUrl}#agent`,
-        name: primaryAgent.name.trim(),
-        url: `${baseUrl}${profileHref(primaryAgent.slug) ?? ''}`,
-        ...(primaryAgent.title ? { jobTitle: primaryAgent.title } : {}),
-        ...(primaryAgent.imageUrl ? { image: primaryAgent.imageUrl } : {}),
-        ...(primaryAgent.email ? { email: primaryAgent.email } : {}),
-        // The office line, not the agent's own field, so the phone is written
-        // the same way here as in every other block on the site.
-        ...(settings?.contactInfo?.phone || primaryAgent.phone
-          ? { telephone: settings?.contactInfo?.phone || primaryAgent.phone }
-          : {}),
-        ...(postalAddress ? { address: postalAddress } : {}),
-        worksFor: { '@id': `${baseUrl}#organization` },
-        knowsAbout: [
-          'Aspen real estate',
-          'Snowmass Village real estate',
-          'Luxury home sales',
-          'Roaring Fork Valley properties',
-        ],
-        ...(socialProfiles.length > 0 ? { sameAs: socialProfiles } : {}),
-      }
-    : null;
-
-  // WebSite schema with SearchAction for sitelinks search box
-  const websiteSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    '@id': `${baseUrl}#website`,
-    name: settings?.title || 'Real Estate',
-    url: baseUrl,
-    description: settings?.description,
-    publisher: {
-      '@id': `${baseUrl}#organization`,
-    },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${baseUrl}/listings?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
-  };
-
-  // WebPage schema for homepage
-  const webPageSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    '@id': `${baseUrl}#webpage`,
-    url: baseUrl,
-    name: settings?.title || 'Real Estate',
-    description: settings?.description,
-    isPartOf: {
-      '@id': `${baseUrl}#website`,
-    },
-    about: {
-      '@id': `${baseUrl}#organization`,
-    },
-    primaryImageOfPage: fallbackImageUrl ? {
-      '@type': 'ImageObject',
-      url: fallbackImageUrl,
-    } : undefined,
-  };
+  // Page-level structured data. The business, agent and website nodes come
+  // from the root layout; this page adds its WebPage, the services the
+  // business offers and the site-wide FAQ (rendered below the content).
+  const tenant = await getTenant();
+  const homeUrl = `${tenant.baseUrl}/`;
+  const homeFaqs = faqEntries(tenant.faqs as Parameters<typeof faqEntries>[0]);
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: homeUrl,
+      name: settings?.title || tenant.siteTitle,
+      description: settings?.description,
+      image: fallbackImageUrl,
+      aboutId: ids.organization(tenant.baseUrl),
+    }),
+    ...tenant.services.map((service) =>
+      serviceNode({
+        serviceType: service.serviceType,
+        description: service.description,
+        providerId: ids.organization(tenant.baseUrl),
+        areaServed: tenant.areaServed,
+        url: homeUrl,
+      })
+    ),
+    faqNode(homeUrl, homeFaqs),
+  ];
 
   return (
     <>
-      <StructuredData data={organizationSchema} />
-      <StructuredData data={localBusinessSchema} />
-      {personSchema && <StructuredData data={personSchema} />}
-      <StructuredData data={websiteSchema} />
-      <StructuredData data={webPageSchema} />
+      <SchemaGraph nodes={schemaNodes} />
 
       <HomepageContent
         template={settings?.template}
@@ -394,6 +272,7 @@ export default async function Home() {
         cityStatsInitial={cityStatsInitial}
         newestListingsInitial={newestListingsInitial}
       />
+      <FaqSection faqs={tenant.faqs as Parameters<typeof faqEntries>[0]} />
     </>
   );
 }

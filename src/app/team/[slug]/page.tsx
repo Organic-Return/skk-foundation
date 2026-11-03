@@ -11,8 +11,8 @@ import AgentListingsGrid from "@/components/AgentListingsGrid";
 import AgentHeroGallery from "@/components/AgentHeroGallery";
 import AgentContactForm from "@/components/AgentContactForm";
 import AgentContactButton from "@/components/AgentContactButton";
-import StructuredData from "@/components/StructuredData";
-import { agentProfileSchema, breadcrumbSchema } from "@/lib/seo";
+import SchemaGraph from "@/components/SchemaGraph";
+import { getTenant, ids, personNode, profilePageNode, breadcrumbNode, truncate, type TenantCredential } from "@/lib/schema";
 
 const builder = createImageUrlBuilder(client);
 function urlFor(source: any) {
@@ -54,6 +54,9 @@ interface TeamMember {
 
 const TEAM_MEMBER_QUERY = `*[_type == "teamMember" && slug.current == $slug && inactive != true][0] {
   _id,
+  website,
+  knowsAbout,
+  credentials,
   name,
   slug,
   title,
@@ -120,28 +123,53 @@ export default async function TeamMemberPage({ params }: Props) {
   const bioText = member.bio
     ? sanitizeBioHtml(member.bio).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500)
     : null;
-  const agentSchema = agentProfileSchema({
-    name: member.name,
-    url: profileUrl,
-    jobTitle: member.title,
-    image: member.image ? urlFor(member.image).width(800).url() : null,
-    description: bioText,
-    email: member.email,
-    telephone: member.phone || member.mobile,
-    address: member.address,
-    worksFor: member.office || siteName,
-    sameAs: [
-      member.socialMedia?.facebook,
-      member.socialMedia?.instagram,
-      member.socialMedia?.twitter,
-      member.socialMedia?.linkedin,
-    ],
-  });
-  const crumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
-    { name: isRC ? 'Agents' : 'Team', url: `${baseUrl}/${isRC ? 'agents' : 'team'}` },
-    { name: member.name, url: profileUrl },
-  ]);
+  // Structured data: a ProfilePage whose main entity is this agent. The
+  // tenant's primary agent is the sitewide #agent node; anyone else gets a
+  // Person of their own, working for the business.
+  const tenant = await getTenant();
+  const isPrimaryAgent = tenant.agent?.slug === slug;
+  const personId = isPrimaryAgent ? ids.agent(tenant.baseUrl) : `${profileUrl}#person`;
+  const credentials = ((member as { credentials?: Array<{ credentialType: TenantCredential['type']; name: string; issuer?: string; url?: string; year?: number }> }).credentials || [])
+    .filter((c) => c?.name && c?.credentialType)
+    .map((c) => ({ type: c.credentialType, name: c.name, issuer: c.issuer, url: c.url, year: c.year }));
+  const schemaNodes = [
+    profilePageNode({
+      tenant,
+      url: profileUrl,
+      name: `${member.name}${member.title ? ` | ${member.title}` : ''}`,
+      description: truncate(bioText, 300),
+      image: member.image ? urlFor(member.image).width(1200).url() : undefined,
+      mainEntityId: personId,
+    }),
+    breadcrumbNode(profileUrl, [
+      { name: 'Home', url: `${baseUrl}/` },
+      { name: isRC ? 'Agents' : 'Team', url: `${baseUrl}/${isRC ? 'agents' : 'team'}` },
+      { name: member.name, url: profileUrl },
+    ]),
+    isPrimaryAgent
+      ? undefined
+      : personNode({
+          id: personId,
+          url: profileUrl,
+          name: member.name,
+          jobTitle: member.title,
+          description: truncate(bioText, 500),
+          imageUrl: member.image ? urlFor(member.image).width(800).url() : undefined,
+          telephone: member.phone || member.mobile,
+          email: member.email,
+          sameAs: [
+            (member as { website?: string }).website,
+            member.socialMedia?.facebook,
+            member.socialMedia?.instagram,
+            member.socialMedia?.twitter,
+            member.socialMedia?.linkedin,
+          ],
+          knowsAbout: (member as { knowsAbout?: string[] }).knowsAbout,
+          credentials,
+          worksForId: !member.office || member.office === siteName ? ids.organization(tenant.baseUrl) : undefined,
+          worksForName: member.office && member.office !== siteName ? member.office : undefined,
+        }),
+  ];
 
   const [agentListings, salesBaseline] = await Promise.all([
     getListingsByAgentId(member.mlsAgentId || null, member.mlsAgentIdSold, member.name),
@@ -184,9 +212,9 @@ export default async function TeamMemberPage({ params }: Props) {
     : undefined;
 
   return (
+    <>
+    <SchemaGraph nodes={schemaNodes} />
     <main className="min-h-screen">
-      {agentSchema && <StructuredData data={agentSchema} />}
-      <StructuredData data={crumbs} />
       {/* Hero Gallery (RC with active listings) or Standard Hero */}
       {/* RC Hero Gallery (only when agent has active listings with photos) */}
       {showHeroGallery && <AgentHeroGallery listings={heroListings} />}
@@ -573,5 +601,6 @@ export default async function TeamMemberPage({ params }: Props) {
         </section>
       )}
     </main>
+    </>
   );
 }

@@ -6,10 +6,10 @@ import Image from "next/image";
 import PageHero from "@/components/PageHero";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import StructuredData from "@/components/StructuredData";
+import SchemaGraph from '@/components/SchemaGraph';
 import TestimonialVideoGallery from "@/components/TestimonialVideoGallery";
-import { getBaseUrl, getSettings, withBrand } from '@/lib/settings';
-import { realEstateAgentSchema } from '@/lib/seo';
+import { getBaseUrl, withBrand } from '@/lib/settings';
+import { getTenant, ids, reviewNode, webPageNode, breadcrumbNode } from '@/lib/schema';
 import { getDefaultShareImage } from '@/lib/homepage';
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
@@ -25,7 +25,8 @@ const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
     location,
     transactionType,
     image,
-    propertyImage
+    propertyImage,
+    rating
   },
   testimonials[]{
     quote,
@@ -35,7 +36,8 @@ const TESTIMONIALS_QUERY = `*[_type == "testimonialsPage"][0]{
     transactionType,
     year,
     image,
-    featured
+    featured,
+    rating
   },
   videoTestimonialsTitle,
   videoTestimonials[]{
@@ -145,15 +147,6 @@ const TransactionBadge = ({ type }: { type?: string }) => {
 
 export default async function TestimonialsPage() {
   const data = await client.fetch<SanityDocument>(TESTIMONIALS_QUERY, {}, options);
-  const [baseUrl, settings, agent] = await Promise.all([
-    getBaseUrl(),
-    getSettings(),
-    client.fetch<{ name?: string } | null>(
-      `*[_type == "teamMember" && inactive != true && defined(name)] | order(featured desc)[0]{ name }`,
-      {},
-      options
-    ),
-  ]);
 
   if (!data) {
     return (
@@ -181,40 +174,44 @@ export default async function TestimonialsPage() {
   const regularTestimonials = data.testimonials?.filter((t: any) => !t.featured) || [];
   const allTestimonials = [...(data.testimonials || [])];
 
-  // Business entity for this page. Testimonials are shown as content only:
-  // review markup a business hosts about itself is not eligible for rich
-  // results, and the ratings it carried were invented (every quote was 5/5).
-  const businessSchema = realEstateAgentSchema({
-    name: agent?.name,
-    url: `${baseUrl}/testimonials`,
-    telephone: settings?.contactInfo?.phone,
-    address: settings?.contactInfo?.address,
-  });
-
-  // BreadcrumbList schema
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: baseUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Testimonials',
-        item: `${baseUrl}/testimonials`,
-      },
-    ],
-  };
+  // Structured data: the page, its breadcrumb and one Review per
+  // testimonial shown on it. A rating is included only when the CMS holds
+  // one; there is deliberately no AggregateRating, which Google treats as
+  // self-serving on a business's own site.
+  const tenant = await getTenant();
+  const pageUrl = `${tenant.baseUrl}/testimonials`;
+  const reviewSources = [
+    ...(data.featuredTestimonial?.quote ? [data.featuredTestimonial] : []),
+    ...allTestimonials,
+  ];
+  const schemaNodes = [
+    webPageNode({
+      tenant,
+      url: pageUrl,
+      name: data.heroTitle || 'Testimonials',
+      description: data.heroSubtitle || data.seo?.metaDescription,
+      image: heroImageUrl,
+      hasBreadcrumb: true,
+      aboutId: ids.organization(tenant.baseUrl),
+    }),
+    breadcrumbNode(pageUrl, [
+      { name: 'Home', url: `${tenant.baseUrl}/` },
+      { name: 'Testimonials', url: pageUrl },
+    ]),
+    ...reviewSources.map((t: any) =>
+      reviewNode({
+        body: t.quote,
+        authorName: t.author,
+        itemReviewedId: ids.organization(tenant.baseUrl),
+        rating: typeof t.rating === 'number' ? t.rating : undefined,
+        datePublished: /^\d{4}$/.test(String(t.year || '')) ? String(t.year) : undefined,
+      })
+    ),
+  ];
 
   return (
     <>
-      {businessSchema && <StructuredData data={businessSchema} />}
-      <StructuredData data={breadcrumbSchema} />
+      <SchemaGraph nodes={schemaNodes} />
       <main className="min-h-screen">
       {/* Hero Section */}
       <PageHero

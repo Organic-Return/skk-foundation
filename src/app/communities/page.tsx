@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
 import PageHero from '@/components/PageHero';
-import StructuredData from '@/components/StructuredData';
+import SchemaGraph from '@/components/SchemaGraph';
 import { getBaseUrl, getBrandName } from '@/lib/settings';
 import { collectionPageSchema, breadcrumbSchema } from '@/lib/seo';
 import { getDefaultShareImage } from '@/lib/homepage';
@@ -69,14 +69,13 @@ export default async function CommunitiesPage() {
     })),
   });
   const crumbs = breadcrumbSchema([
-    { name: 'Home', url: baseUrl },
+    { name: 'Home', url: `${baseUrl}/` },
     { name: 'Communities', url: `${baseUrl}/communities` },
   ]);
 
   return (
     <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
-      {listSchema && <StructuredData data={listSchema} />}
-      <StructuredData data={crumbs} />
+      <SchemaGraph nodes={[listSchema, crumbs]} />
 
       <PageHero
         title="Communities"

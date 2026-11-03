@@ -14,6 +14,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 import UTMCapture from "@/components/UTMCapture";
 import Analytics from "@/components/Analytics";
 import { getSettings, getBranding, getBaseUrl } from "@/lib/settings";
+import { getTenant, siteNodes } from "@/lib/schema";
+import SchemaGraph from "@/components/SchemaGraph";
 import { getDefaultShareImage } from "@/lib/homepage";
 import { createImageUrlBuilder } from '@sanity/image-url';
 import { client } from '@/sanity/client';
@@ -203,9 +205,14 @@ export default async function RootLayout({
   // Determine template-specific body class
   const templateClass = template === 'modern' ? 'modern-template' : template === 'custom-one' ? 'custom-one-template' : template === 'luxury' ? 'luxury-template' : template === 'rcsothebys-custom' ? 'rcsothebys-template' : '';
 
+  // Sitewide structured data: the business, its primary agent and the
+  // website, with stable @ids that every page's own graph refers to.
+  const tenant = await getTenant();
+
   return (
     <html lang="en">
       <body className={`${inter.variable} ${bodoni.variable} ${cormorantGaramond.variable} ${montserrat.variable} ${playfairDisplay.variable} ${figtree.variable} ${notoSerifDisplay.variable} antialiased ${templateClass}`}>
+        <SchemaGraph nodes={siteNodes(tenant)} />
         <Analytics />
         <AuthProvider>
         <UTMCapture />

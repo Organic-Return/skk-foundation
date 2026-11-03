@@ -1,176 +1,20 @@
 /**
- * Helpers that build schema.org JSON-LD objects for page SEO.
- * Pass the returned objects to the <StructuredData> component (skip nulls).
+ * Page-level SEO helpers. The JSON-LD helpers are thin wrappers over
+ * `@/lib/schema` so index pages can keep their one-line calls; everything they
+ * return is a graph node (or array of nodes) for <SchemaGraph>.
  */
-
-const DEFAULT_AREA_SERVED = [
-  "Aspen",
-  "Snowmass",
-  "Snowmass Village",
-  "Roaring Fork Valley",
-  "Colorado",
-];
+import { breadcrumbNode, collectionPageNodes, faqNode, type JsonLdNode } from '@/lib/schema';
 
 type Faq = { question?: string; answer?: string };
 
-/** FAQPage rich-result schema built from Sanity FAQ items. Returns null if none. */
-export function faqPageSchema(faqs?: Faq[]) {
-  const valid = (faqs || []).filter((f) => f?.question && f?.answer);
-  if (valid.length === 0) return null;
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: valid.map((f) => ({
-      "@type": "Question",
-      name: f.question,
-      acceptedAnswer: { "@type": "Answer", text: f.answer },
-    })),
-  };
-}
-
-/**
- * Build a PostalAddress from the free-text office address in Sanity settings,
- * which is entered as newline-separated lines, e.g.
- *
- *   Snowmass Village Office
- *   16 Kearns Road, Suite 110
- *   Snowmass Village, CO 81615
- *
- * RealEstateAgent extends LocalBusiness, and `address` is a required field —
- * omitting it is a structured-data error. Parsing is best-effort: the last line
- * is treated as "City, ST ZIP" and everything before it as the street address.
- * If it doesn't match that shape, the whole string becomes streetAddress rather
- * than emitting nothing.
- */
-export function postalAddressSchema(address?: string | null) {
-  if (!address?.trim()) return null;
-
-  const lines = address
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-  if (lines.length === 0) return null;
-
-  const cityStateZip = /^(.+?),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/.exec(lines[lines.length - 1]);
-  if (!cityStateZip) {
-    return { "@type": "PostalAddress", streetAddress: lines.join(", ") };
-  }
-
-  const [, city, region, postalCode] = cityStateZip;
-  // Drop a leading office label ("Snowmass Village Office") from the street.
-  const streetLines = lines.slice(0, -1);
-  const street = streetLines.length > 1 ? streetLines.slice(1).join(", ") : streetLines.join(", ");
-
-  return {
-    "@type": "PostalAddress",
-    ...(street ? { streetAddress: street } : {}),
-    addressLocality: city,
-    addressRegion: region,
-    postalCode,
-    addressCountry: "US",
-  };
-}
-
-/** RealEstateAgent schema for the primary agent. Returns null without a name. */
-export function realEstateAgentSchema(opts: {
-  name?: string | null;
-  url: string;
-  image?: string | null;
-  telephone?: string | null;
-  description?: string | null;
-  /** Free-text office address from Sanity settings. Required by LocalBusiness. */
-  address?: string | null;
-  areaServed?: string[];
-  knowsAbout?: string[];
-}) {
-  const name = opts.name?.trim();
-  if (!name) return null;
-  const address = postalAddressSchema(opts.address);
-  return {
-    "@context": "https://schema.org",
-    "@type": "RealEstateAgent",
-    name,
-    url: opts.url,
-    ...(opts.image ? { image: opts.image } : {}),
-    ...(opts.telephone ? { telephone: opts.telephone } : {}),
-    ...(opts.description ? { description: opts.description } : {}),
-    ...(address ? { address } : {}),
-    areaServed: opts.areaServed || DEFAULT_AREA_SERVED,
-    ...(opts.knowsAbout ? { knowsAbout: opts.knowsAbout } : {}),
-  };
-}
-
-/**
- * Review schema objects for real, attributed testimonials.
- * Call this ONLY with genuine CMS testimonials — never placeholder copy.
- * Returns null if there are none.
- */
-export function reviewSchemas(
-  testimonials: Array<{ quote?: string; author?: string }> | undefined,
-  agentName?: string | null
-) {
-  const valid = (testimonials || []).filter((t) => t?.quote && t?.author);
-  if (valid.length === 0) return null;
-  return valid.map((t) => ({
-    "@context": "https://schema.org",
-    "@type": "Review",
-    reviewBody: t.quote,
-    author: { "@type": "Person", name: t.author },
-    ...(agentName
-      ? { itemReviewed: { "@type": "RealEstateAgent", name: agentName } }
-      : {}),
-  }));
-}
-
-/**
- * Full RealEstateAgent profile for an individual agent's own page.
- *
- * Richer than realEstateAgentSchema(): carries the contact points, postal
- * address, and sameAs social profiles that let Google resolve the agent as an
- * entity (knowledge panel) rather than just a page. Returns null without a name.
- */
-export function agentProfileSchema(opts: {
-  name?: string | null;
-  url: string;
-  jobTitle?: string | null;
-  image?: string | null;
-  description?: string | null;
-  email?: string | null;
-  telephone?: string | null;
-  address?: string | null;
-  worksFor?: string | null;
-  sameAs?: Array<string | undefined | null>;
-  areaServed?: string[];
-}) {
-  const name = opts.name?.trim();
-  if (!name) return null;
-  const sameAs = (opts.sameAs || []).filter(Boolean);
-  return {
-    "@context": "https://schema.org",
-    "@type": "RealEstateAgent",
-    "@id": `${opts.url}#agent`,
-    name,
-    url: opts.url,
-    ...(opts.image ? { image: opts.image } : {}),
-    ...(opts.description ? { description: opts.description } : {}),
-    ...(opts.email ? { email: opts.email } : {}),
-    ...(opts.telephone ? { telephone: opts.telephone } : {}),
-    ...(postalAddressSchema(opts.address) ? { address: postalAddressSchema(opts.address) } : {}),
-    // jobTitle and worksFor belong to a Person, not to the RealEstateAgent
-    // business type; the agent as a person hangs off the business.
-    ...(opts.jobTitle || opts.worksFor
-      ? {
-          employee: {
-            "@type": "Person",
-            name,
-            ...(opts.jobTitle ? { jobTitle: opts.jobTitle } : {}),
-            ...(opts.worksFor ? { worksFor: { "@type": "Organization", name: opts.worksFor } } : {}),
-          },
-        }
-      : {}),
-    ...(sameAs.length > 0 ? { sameAs } : {}),
-    areaServed: opts.areaServed || DEFAULT_AREA_SERVED,
-  };
+/** FAQPage node for questions rendered on the page at `pageUrl`. Null if none. */
+export function faqPageSchema(faqs: Faq[] | undefined, pageUrl: string): JsonLdNode | null {
+  return (
+    faqNode(
+      pageUrl,
+      (faqs || []).map((f) => ({ question: f?.question || '', answer: f?.answer || '' }))
+    ) || null
+  );
 }
 
 /**
@@ -183,26 +27,17 @@ export function collectionPageSchema(opts: {
   url: string;
   description?: string | null;
   items: Array<{ name?: string | null; url: string }>;
-}) {
+}): JsonLdNode[] | null {
   const valid = opts.items.filter((i) => i?.name && i?.url);
   if (valid.length === 0) return null;
-  return {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: opts.name,
+  return collectionPageNodes({
     url: opts.url,
-    ...(opts.description ? { description: opts.description } : {}),
-    mainEntity: {
-      "@type": "ItemList",
-      numberOfItems: valid.length,
-      itemListElement: valid.map((item, i) => ({
-        "@type": "ListItem",
-        position: i + 1,
-        name: item.name,
-        url: item.url,
-      })),
-    },
-  };
+    name: opts.name,
+    description: opts.description,
+    hasBreadcrumb: true,
+    listName: opts.name,
+    items: valid,
+  });
 }
 
 /**
@@ -252,16 +87,8 @@ export function communitySeo(opts: {
   return { place, title, description, heading };
 }
 
-/** BreadcrumbList schema for a simple Home > Page trail. */
-export function breadcrumbSchema(items: Array<{ name: string; url: string }>) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items.map((it, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: it.name,
-      item: it.url,
-    })),
-  };
+/** BreadcrumbList node for a trail that ends at the current page. */
+export function breadcrumbSchema(items: Array<{ name: string; url: string }>): JsonLdNode | null {
+  if (items.length === 0) return null;
+  return breadcrumbNode(items[items.length - 1].url, items) || null;
 }
