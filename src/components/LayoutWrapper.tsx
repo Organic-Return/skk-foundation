@@ -56,8 +56,11 @@ export default function LayoutWrapper({ header, footer, children, template }: La
     pathname?.startsWith('/off-market') ||
     pathname?.startsWith('/saved-properties') ||
     false;
+  // Council member profiles open on a light profile card rather than a dark
+  // hero, so they take the solid nav too. The Council index keeps its hero.
+  const isCouncilMemberPage = pathname?.startsWith('/affiliated-partners/the-council/') ?? false;
   const isFullBleedTemplate = usesSpacerHeader;
-  const isSolidNavPage = isListingPage || isDashboard;
+  const isSolidNavPage = isListingPage || isDashboard || isCouncilMemberPage;
 
   // Force a solid header background. For full-bleed templates this is limited
   // to the functional pages above; for the other templates keep the previous

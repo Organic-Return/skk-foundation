@@ -3,9 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Partner, enrichPartnerWithAgentData } from "../../components";
-import { getBaseUrl, getBrandName } from '@/lib/settings';
+import { Partner, EnrichedPartner, enrichPartnerWithAgentData, getPartnerUrl, urlFor } from "../../components";
+import { getBaseUrl, getBrandName, getSettings } from '@/lib/settings';
 import { getDefaultShareImage } from '@/lib/homepage';
+import CouncilContactForm from "./CouncilContactForm";
 
 // Query by slug or by generated slug from firstName-lastName
 const PARTNER_BY_SLUG_QUERY = `*[_type == "affiliatedPartner" && active == true && partnerType == "the_council" && (slug.current == $slug || lower(firstName + "-" + lastName) == $slug)][0] {
@@ -23,6 +24,20 @@ const PARTNER_BY_SLUG_QUERY = `*[_type == "affiliatedPartner" && active == true 
   overrideBio,
   specialties,
   featured
+}`;
+
+// The whole roster in display order, so a profile can point to its neighbours.
+const COUNCIL_ROSTER_QUERY = `*[_type == "affiliatedPartner" && active == true && partnerType == "the_council"] | order(sortOrder asc, lastName asc) {
+  _id,
+  partnerType,
+  firstName,
+  lastName,
+  agentStaffId,
+  slug,
+  title,
+  company,
+  location,
+  overridePhoto
 }`;
 
 const options = { next: { revalidate: 60 } };
@@ -51,20 +66,48 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // The site's own agent is a Council member too; her profile would otherwise
   // read "Stacey K. Kelly | The Council | Stacey K. Kelly".
   const title = partnerName === siteName ? `${partnerName} | The Council` : `${partnerName} | The Council | ${siteName}`;
+  const description = `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}, a member of The Council, Christie's International Real Estate's network of leading agents.`;
   return {
     title,
-    description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
+    description,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      type: 'website',
+      type: 'profile',
       images: shareImage ? [shareImage] : [],
       title,
-      description: `Meet ${partner.firstName} ${partner.lastName}${partner.company ? ` of ${partner.company}` : ''}${partner.location ? ` in ${partner.location}` : ''}.`,
+      description,
       url: canonicalUrl,
     },
   };
+}
+
+/** Split a plain-text bio into paragraphs on blank lines (or single newlines). */
+function toParagraphs(bio: string): string[] {
+  return bio
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+/** Up to `count` other members, starting after the current one in roster order. */
+function pickNeighbours(roster: Partner[], currentId: string, count: number): Partner[] {
+  const others = roster.filter((p) => p._id !== currentId);
+  if (others.length <= count) return others;
+  const index = roster.findIndex((p) => p._id === currentId);
+  const start = index < 0 ? 0 : index % others.length;
+  return [...others.slice(start), ...others.slice(0, start)].slice(0, count);
+}
+
+function PortraitPlaceholder({ className = '' }: { className?: string }) {
+  return (
+    <div className={`w-full h-full flex items-center justify-center text-[#c4c0b8] dark:text-gray-600 ${className}`}>
+      <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+      </svg>
+    </div>
+  );
 }
 
 export default async function TheCouncilMemberPage({ params }: Props) {
@@ -75,202 +118,306 @@ export default async function TheCouncilMemberPage({ params }: Props) {
     notFound();
   }
 
-  const enrichedPartner = await enrichPartnerWithAgentData(partner);
+  const [member, roster, settings, siteName] = await Promise.all([
+    enrichPartnerWithAgentData(partner),
+    client.fetch<Partner[]>(COUNCIL_ROSTER_QUERY, {}, options),
+    getSettings(),
+    getBrandName(),
+  ]);
+
+  const fullName = `${member.firstName} ${member.lastName}`;
+  const agentName = siteName;
+  const agentFirstName = siteName.split(' ')[0];
+  const agentPhone = settings?.contactInfo?.phone || settings?.footer?.contactInfo?.phone;
+  const agentEmail = settings?.contactInfo?.email || settings?.footer?.contactInfo?.email;
+  const isSiteAgent = fullName === siteName;
+
+  // A taller crop for the profile than the directory cards use.
+  const portraitUrl = member.overridePhoto
+    ? urlFor(member.overridePhoto)?.width(900).height(1125).fit('crop').url() || member.photoUrl
+    : member.photoUrl;
+
+  const paragraphs = member.bio ? toParagraphs(member.bio) : [];
+  const neighbours: EnrichedPartner[] = await Promise.all(
+    pickNeighbours(roster, member._id, 4).map((p) => enrichPartnerWithAgentData(p))
+  );
+
+  const facts: Array<{ label: string; value: string }> = [
+    member.title ? { label: 'Role', value: member.title } : null,
+    member.company ? { label: 'Brokerage', value: member.company } : null,
+    member.location ? { label: 'Market', value: member.location } : null,
+    { label: 'Network', value: "The Council, Christie's International Real Estate" },
+  ].filter((f): f is { label: string; value: string } => f !== null);
 
   return (
-    <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-[var(--color-navy)] pt-[160px] pb-16 md:pt-[220px] md:pb-24">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
-          {/* Breadcrumb */}
-          <div className="mb-8 text-center">
-            <Link href="/affiliated-partners/the-council" className="text-white/50 hover:text-white/80 text-sm font-light transition-colors">
+    <main className="min-h-screen bg-white dark:bg-[#1a1a1a]">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="border-b border-[#e8e6e3] dark:border-gray-800">
+        <ol className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 py-4 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] font-light">
+          <li>
+            <Link href="/affiliated-partners/the-council" className="text-[#6a6a6a] dark:text-gray-400 hover:text-[var(--color-gold)] transition-colors">
               The Council
             </Link>
-            <span className="text-white/30 mx-2">/</span>
-            <span className="text-white/80 text-sm font-light">{enrichedPartner.firstName} {enrichedPartner.lastName}</span>
-          </div>
+          </li>
+          <li aria-hidden="true" className="text-[#c4c0b8] dark:text-gray-600">/</li>
+          <li aria-current="page" className="text-[#1a1a1a] dark:text-white truncate">
+            {fullName}
+          </li>
+        </ol>
+      </nav>
 
-          <div className="flex flex-col items-center">
-            {/* Photo */}
-            <div className="relative w-40 h-40 md:w-52 md:h-52 rounded-full overflow-hidden mb-8 bg-[#f0f0f0] dark:bg-gray-800 border-4 border-[var(--color-gold)]/30">
-              {enrichedPartner.photoUrl ? (
+      {/* Profile header */}
+      <section className="bg-[#f8f7f5] dark:bg-[#141414]">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 py-10 md:py-14 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_1fr] gap-10 lg:gap-16 items-center">
+            {/* Portrait */}
+            <div className="relative w-full max-w-[260px] sm:max-w-[300px] lg:max-w-none mx-auto lg:mx-0 aspect-[4/5] overflow-hidden bg-[#ebe8e3] dark:bg-gray-800 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.45)]">
+              {portraitUrl ? (
                 <Image
-                  src={enrichedPartner.photoUrl}
-                  alt={`${enrichedPartner.firstName} ${enrichedPartner.lastName}`}
+                  src={portraitUrl}
+                  alt={fullName}
                   fill
-                  className="object-cover"
                   priority
+                  sizes="(max-width: 1024px) 300px, 340px"
+                  className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#aaa] dark:text-gray-600">
-                  <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                </div>
+                <PortraitPlaceholder />
               )}
             </div>
 
-            {/* Name & Title */}
-            <h1 className="font-serif text-white mb-3 text-center">
-              {enrichedPartner.firstName} {enrichedPartner.lastName}
-            </h1>
-            {enrichedPartner.title && (
-              <p className="text-[var(--color-gold)] text-lg font-light mb-2">
-                {enrichedPartner.title}
+            {/* Identity */}
+            <div className="text-center lg:text-left">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-[var(--color-gold)] font-light mb-4">
+                Member of The Council
               </p>
-            )}
-            {enrichedPartner.company && (
-              <p className="text-white/70 text-base font-light mb-1">
-                {enrichedPartner.company}
-              </p>
-            )}
-            {enrichedPartner.location && (
-              <p className="text-white/50 text-base font-light">
-                {enrichedPartner.location}
-              </p>
-            )}
+              <h1 className="text-[#1a1a1a] dark:text-white !leading-[1.05] mb-4">
+                {fullName}
+              </h1>
+              {member.title && (
+                <p className="text-lg md:text-xl text-[#4a4a4a] dark:text-gray-300 font-light mb-6">
+                  {member.title}
+                </p>
+              )}
+
+              <div className="w-12 h-px bg-[var(--color-gold)] mx-auto lg:mx-0 mb-6" />
+
+              <dl className="flex flex-col sm:flex-row sm:flex-wrap justify-center lg:justify-start gap-x-12 gap-y-4 mb-8 md:mb-10">
+                {member.company && (
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-[0.2em] text-[#8a8a8a] dark:text-gray-500 font-light mb-1">Brokerage</dt>
+                    <dd className="text-[#1a1a1a] dark:text-white font-light">{member.company}</dd>
+                  </div>
+                )}
+                {member.location && (
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-[0.2em] text-[#8a8a8a] dark:text-gray-500 font-light mb-1">Market</dt>
+                    <dd className="text-[#1a1a1a] dark:text-white font-light">{member.location}</dd>
+                  </div>
+                )}
+              </dl>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4">
+                {isSiteAgent ? (
+                  <Link
+                    href="/contact-us"
+                    className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[var(--color-navy)] border border-[var(--color-navy)] text-white text-[11px] uppercase tracking-[0.2em] font-light hover:bg-[var(--color-gold)] hover:border-[var(--color-gold)] transition-all duration-300"
+                  >
+                    Contact {agentFirstName}
+                  </Link>
+                ) : (
+                  <a
+                    href="#connect"
+                    className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[var(--color-navy)] border border-[var(--color-navy)] text-white text-[11px] uppercase tracking-[0.2em] font-light hover:bg-[var(--color-gold)] hover:border-[var(--color-gold)] transition-all duration-300"
+                  >
+                    Request an Introduction
+                  </a>
+                )}
+                <Link
+                  href="/affiliated-partners/the-council"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-4 border border-[#1a1a1a]/20 dark:border-white/25 text-[#1a1a1a] dark:text-white text-[11px] uppercase tracking-[0.2em] font-light hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-all duration-300"
+                >
+                  All Members
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-16 md:py-24 bg-white dark:bg-[#1a1a1a]">
-        <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16">
-          {/* Bio */}
-          {enrichedPartner.bio && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6">
-                About {enrichedPartner.firstName}
+      {/* Bio + sidebar */}
+      <section className="py-14 md:py-20 lg:py-24">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-14 lg:gap-20 items-start">
+            <article>
+              <h2 className="text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white tracking-wide mb-3">
+                About {member.firstName}
               </h2>
-              <div className="prose prose-lg dark:prose-invert max-w-none">
-                <p className="text-[#4a4a4a] dark:text-gray-300 font-light leading-relaxed whitespace-pre-line">
-                  {enrichedPartner.bio}
+              <div className="w-16 h-px bg-[var(--color-gold)] mb-8" />
+
+              {paragraphs.length > 0 ? (
+                <div className="space-y-6 max-w-[68ch]">
+                  {paragraphs.map((text, index) => (
+                    <p
+                      key={index}
+                      className={`text-[#4a4a4a] dark:text-gray-300 font-light leading-[1.85] ${index === 0 ? 'text-[19px] md:text-[20px] text-[#1a1a1a] dark:text-white' : 'text-[17px]'}`}
+                    >
+                      {text}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[#4a4a4a] dark:text-gray-300 font-light leading-[1.85] text-[17px] max-w-[68ch]">
+                  {member.firstName} {member.lastName} is a member of The Council, Christie&apos;s International Real Estate&apos;s
+                  invitation-only network of leading agents{member.company ? `, representing ${member.company}` : ''}
+                  {member.location ? ` in ${member.location}` : ''}.{' '}
+                  {isSiteAgent ? (
+                    <>Read more <Link href="/about/stacey-k-kelly" className="underline underline-offset-4 decoration-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors">about {agentFirstName}</Link>.</>
+                  ) : (
+                    <>{agentFirstName} can make a personal introduction.</>
+                  )}
                 </p>
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* Specialties */}
-          {enrichedPartner.specialties && enrichedPartner.specialties.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6">
-                Specialties
-              </h2>
-              <div className="flex flex-wrap gap-3">
-                {enrichedPartner.specialties.map((specialty, index) => (
-                  <span
-                    key={index}
-                    className="px-4 py-2 bg-[#f8f7f5] dark:bg-[#252525] text-[#4a4a4a] dark:text-gray-300 text-sm font-light"
-                  >
-                    {specialty}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+              {member.specialties && member.specialties.length > 0 && (
+                <div className="mt-12">
+                  <h3 className="text-[11px] uppercase tracking-[0.2em] text-[#8a8a8a] dark:text-gray-500 font-light mb-4">
+                    Specialties
+                  </h3>
+                  <ul className="flex flex-wrap gap-2.5">
+                    {member.specialties.map((specialty) => (
+                      <li
+                        key={specialty}
+                        className="px-4 py-2 border border-[#e0ddd7] dark:border-gray-700 text-[#4a4a4a] dark:text-gray-300 text-sm font-light"
+                      >
+                        {specialty}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </article>
 
-          {/* Contact Information */}
-          {(enrichedPartner.email || enrichedPartner.phone || enrichedPartner.website) && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-serif font-light text-[#1a1a1a] dark:text-white tracking-wide mb-6">
-                Contact
-              </h2>
-              <div className="space-y-4">
-                {enrichedPartner.email && (
-                  <a
-                    href={`mailto:${enrichedPartner.email}`}
-                    className="flex items-center gap-4 text-[#4a4a4a] dark:text-gray-300 hover:text-[var(--color-gold)] transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[#f8f7f5] dark:bg-[#252525] flex items-center justify-center group-hover:bg-[var(--color-gold)]/10 transition-colors">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
+            <aside className="lg:sticky lg:top-[140px] space-y-6">
+              {/* At a glance */}
+              <div className="border border-[#e8e6e3] dark:border-gray-800 p-7 md:p-8">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#8a8a8a] dark:text-gray-500 font-light mb-6">
+                  At a Glance
+                </p>
+                <dl className="divide-y divide-[#efede9] dark:divide-gray-800">
+                  {facts.map((fact) => (
+                    <div key={fact.label} className="py-3.5 first:pt-0 last:pb-0">
+                      <dt className="text-[10px] uppercase tracking-[0.18em] text-[#8a8a8a] dark:text-gray-500 font-light mb-1">
+                        {fact.label}
+                      </dt>
+                      <dd className="text-[#1a1a1a] dark:text-white font-light leading-snug">{fact.value}</dd>
                     </div>
-                    <span className="font-light">{enrichedPartner.email}</span>
-                  </a>
-                )}
-                {enrichedPartner.phone && (
-                  <a
-                    href={`tel:${enrichedPartner.phone}`}
-                    className="flex items-center gap-4 text-[#4a4a4a] dark:text-gray-300 hover:text-[var(--color-gold)] transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[#f8f7f5] dark:bg-[#252525] flex items-center justify-center group-hover:bg-[var(--color-gold)]/10 transition-colors">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                    </div>
-                    <span className="font-light">{enrichedPartner.phone}</span>
-                  </a>
-                )}
-                {enrichedPartner.website && (
-                  <a
-                    href={enrichedPartner.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 text-[#4a4a4a] dark:text-gray-300 hover:text-[var(--color-gold)] transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[#f8f7f5] dark:bg-[#252525] flex items-center justify-center group-hover:bg-[var(--color-gold)]/10 transition-colors">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                      </svg>
-                    </div>
-                    <span className="font-light">Visit Website</span>
-                  </a>
-                )}
+                  ))}
+                </dl>
               </div>
-            </div>
-          )}
+
+              {/* Introduction */}
+              <div id="connect" className="scroll-mt-[140px] bg-[var(--color-navy)] text-white p-7 md:p-8">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--color-gold)] font-light mb-3">
+                  {isSiteAgent ? 'Get in Touch' : 'Introductions'}
+                </p>
+                <h2 className="font-serif !text-2xl md:!text-[1.75rem] text-white !leading-tight mb-3">
+                  {isSiteAgent ? `Work with ${agentFirstName}` : `Connect with ${member.firstName} through ${agentFirstName}`}
+                </h2>
+                <p className="text-white/70 text-sm font-light leading-relaxed mb-6">
+                  {isSiteAgent
+                    ? `For real estate in Aspen and Snowmass, or an introduction anywhere The Council reaches, reach ${agentFirstName} directly.`
+                    : `${agentName} is a fellow Council member and can personally introduce you to ${member.firstName}${member.location ? ` for real estate in ${member.location}` : ''}.`}
+                </p>
+
+                {(agentPhone || agentEmail) && (
+                  <div className="flex flex-col gap-2 mb-7 text-sm font-light">
+                    {agentPhone && (
+                      <a href={`tel:${agentPhone.replace(/[^\d+]/g, '')}`} className="text-white/85 hover:text-[var(--color-gold)] transition-colors">
+                        {agentPhone}
+                      </a>
+                    )}
+                    {agentEmail && (
+                      <a href={`mailto:${agentEmail}`} className="text-white/85 hover:text-[var(--color-gold)] transition-colors break-all">
+                        {agentEmail}
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                <div className="border-t border-white/10 pt-6">
+                  <CouncilContactForm
+                    memberName={fullName}
+                    memberLocation={member.location}
+                    agentFirstName={agentFirstName}
+                  />
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
 
-      {/* Back Navigation */}
-      <section className="py-12 bg-[#f8f7f5] dark:bg-[#141414] border-t border-[#e8e6e3] dark:border-gray-800">
-        <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-16 text-center">
-          <Link
-            href="/affiliated-partners/the-council"
-            className="inline-flex items-center gap-3 text-[#1a1a1a] dark:text-white hover:text-[var(--color-gold)] transition-colors text-sm font-light"
-          >
-            <svg className="w-4 h-4 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-            Back to The Council
-          </Link>
-        </div>
-      </section>
+      {/* Other members */}
+      {neighbours.length > 0 && (
+        <section className="py-14 md:py-20 bg-[#f8f7f5] dark:bg-[#141414] border-t border-[#e8e6e3] dark:border-gray-800">
+          <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.25em] text-[var(--color-gold)] font-light mb-3">
+                  The Council
+                </p>
+                <h2 className="text-3xl md:text-4xl font-light text-[#1a1a1a] dark:text-white tracking-wide">
+                  More Members
+                </h2>
+              </div>
+              <Link
+                href="/affiliated-partners/the-council"
+                className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-light text-[#1a1a1a] dark:text-white hover:text-[var(--color-gold)] transition-colors"
+              >
+                View all members
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
 
-      {/* CTA Section */}
-      <section className="py-20 md:py-28 bg-[var(--color-navy)]">
-        <div className="max-w-4xl mx-auto px-6 md:px-12 text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-white tracking-wide mb-6">
-            Work with Stacey K. Kelly
-          </h2>
-          <p className="text-lg text-white/70 font-light mb-10 max-w-2xl mx-auto leading-relaxed">
-            Stacey can connect you with {enrichedPartner.firstName} and the wider Council network for real estate in {enrichedPartner.location || 'their market'}.
-          </p>
-          {enrichedPartner.email ? (
-            <a
-              href={`mailto:${enrichedPartner.email}`}
-              className="inline-flex items-center gap-3 px-10 py-4 bg-transparent border border-[var(--color-gold)] text-white hover:bg-[var(--color-gold)] hover:text-[var(--color-navy)] transition-all duration-300 text-sm uppercase tracking-[0.2em] font-light"
-            >
-              Get in Touch
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
-          ) : (
-            <Link
-              href="/contact-us"
-              className="inline-flex items-center gap-3 px-10 py-4 bg-transparent border border-[var(--color-gold)] text-white hover:bg-[var(--color-gold)] hover:text-[var(--color-navy)] transition-all duration-300 text-sm uppercase tracking-[0.2em] font-light"
-            >
-              Contact Us
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          )}
-        </div>
-      </section>
+            <ul className="grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8">
+              {neighbours.map((other) => {
+                const otherName = `${other.firstName} ${other.lastName}`;
+                return (
+                  <li key={other._id}>
+                    <Link href={getPartnerUrl(other)} className="group block">
+                      <div className="relative aspect-[4/5] overflow-hidden bg-[#ebe8e3] dark:bg-gray-800 mb-4">
+                        {other.photoUrl ? (
+                          <Image
+                            src={other.photoUrl}
+                            alt={otherName}
+                            fill
+                            sizes="(max-width: 1024px) 50vw, 25vw"
+                            className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <PortraitPlaceholder />
+                        )}
+                      </div>
+                      <h3 className="!text-lg md:!text-xl font-light text-[#1a1a1a] dark:text-white tracking-wide group-hover:text-[var(--color-gold)] transition-colors">
+                        {otherName}
+                      </h3>
+                      {other.company && (
+                        <p className="text-sm text-[#6a6a6a] dark:text-gray-400 font-light mt-1 line-clamp-1">{other.company}</p>
+                      )}
+                      {other.location && (
+                        <p className="text-sm text-[#8a8a8a] dark:text-gray-500 font-light">{other.location}</p>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
