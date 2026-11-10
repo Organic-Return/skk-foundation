@@ -7,9 +7,11 @@ import { getListingHref } from '@/lib/listings';
 
 export interface FeaturedPropertyData {
   id: string;
+  mls_number?: string | null;
   address: string;
   city: string;
   state: string;
+  zip_code?: string | null;
   list_price: number;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -86,9 +88,11 @@ export default function ModernFeaturedProperty({
             if (data) {
               setProperties([{
                 id: data.id,
+                mls_number: data.mls_number ?? null,
                 address: data.address,
                 city: data.city,
                 state: data.state,
+                zip_code: data.zip_code ?? null,
                 list_price: data.list_price ?? data.price ?? 0,
                 bedrooms: data.bedrooms ?? data.beds ?? null,
                 bathrooms: data.bathrooms ?? data.baths ?? null,

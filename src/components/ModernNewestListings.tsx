@@ -7,6 +7,8 @@ import { getListingHref } from '@/lib/listings';
 
 export interface NewestListingData {
   id: string;
+  /** Needed for the listing URL; without it links fall back to the database id and redirect. */
+  mls_number?: string | null;
   address: string | null;
   city: string | null;
   state: string | null;

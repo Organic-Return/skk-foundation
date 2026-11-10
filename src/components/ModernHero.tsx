@@ -20,6 +20,8 @@ interface SuggestedProperty {
   street: string;
   city: string;
   state: string;
+  /** The listing's canonical path, built server-side so it carries the address slug. */
+  href: string;
 }
 
 interface Suggestions {
@@ -102,7 +104,7 @@ export default function ModernHero({
 
   const goToProperty = (p: SuggestedProperty) => {
     setShowSuggest(false);
-    router.push(`/listings/${encodeURIComponent(p.mlsNumber || p.id)}`);
+    router.push(p.href || `/listings/${encodeURIComponent(p.mlsNumber || p.id)}`);
   };
 
   const handleSearch = (e: React.FormEvent) => {

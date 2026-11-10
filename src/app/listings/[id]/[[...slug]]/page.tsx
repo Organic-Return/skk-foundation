@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { profileHref } from '@/lib/profiles';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { listingId, listingSlug } from '@/lib/listingUrl';
 import {
   getListingBySlug,
   getListingHref,
@@ -99,7 +100,25 @@ async function getListingAgents(listing: MLSProperty): Promise<ListingAgent[]> {
 }
 
 interface ListingPageProps {
-  params: Promise<{ id: string }>;
+  /** /listings/{id}/{slug}: the id (MLS number or database id) identifies the listing; the slug is decorative. */
+  params: Promise<{ id: string; slug?: string[] }>;
+}
+
+/**
+ * The listing for the requested URL. Lookup is by id alone — the slug is
+ * never consulted — and any URL that is not the listing's current spelling
+ * (missing or stale slug, or the database id in place of the MLS number) is
+ * answered with a 301 to it. Returns null when there is no such listing.
+ */
+async function resolveListing(params: ListingPageProps['params']): Promise<MLSProperty | null> {
+  const { id, slug } = await params;
+  const listing = await getListingBySlug(id);
+  if (!listing) return null;
+  const requestedSlug = (slug ?? []).join('/');
+  if (requestedSlug !== listingSlug(listing) || id !== listingId(listing)) {
+    permanentRedirect(getListingHref(listing));
+  }
+  return listing;
 }
 
 interface EnhancementVideo {
@@ -201,8 +220,7 @@ function listingSchemaNodes(opts: { listing: MLSProperty; tenant: Tenant; isOwn:
 }
 
 export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const listing = await getListingBySlug(id);
+  const listing = await resolveListing(params);
 
   if (!listing) {
     return { title: 'Listing Not Found' };
@@ -345,10 +363,8 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 }
 
 export default async function ListingPage({ params }: ListingPageProps) {
-  const { id } = await params;
-
   const [fetchedListing, settings, googleMapsApiKey] = await Promise.all([
-    getListingBySlug(id),
+    resolveListing(params),
     getSettings(),
     getGoogleMapsApiKey(),
   ]);

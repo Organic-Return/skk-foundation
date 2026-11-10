@@ -6,15 +6,18 @@
  * The Wayback Machine lists ~6,600 URLs for the old site; 6,445 of them were
  * listing pages of the form /Real-Estate-Listings/<address-slug>-<mls number>,
  * and two thirds of those MLS numbers still exist in the database, where the
- * new site serves them at /listings/<mls number>. The rest were a handful of
- * community, blog, search and about pages, mapped by hand below.
+ * new site serves them at /listings/<mls number>/<address slug>. The old slug
+ * is the same spelling as the new one, so the redirect goes straight to the
+ * final URL; when the address has since changed, the listing page issues one
+ * more 301 to the current slug. The rest were a handful of community, blog,
+ * search and about pages, mapped by hand below.
  *
  * Matching is case-insensitive: the old site used mixed case
  * (/Real-Estate-Listings, /home-search/Aspen-Real-Estate) and crawlers request
  * the exact spelling they indexed.
  */
 
-const LEGACY_LISTING = /^\/real-estate-listings\/(?:.*-)?(\d{4,8})$/;
+const LEGACY_LISTING = /^\/real-estate-listings\/(?:(.*)-)?(\d{4,8})$/;
 
 const COMMUNITY_SLUGS: Record<string, string> = {
   'aspen-glen': 'aspen-glen-club',
@@ -81,7 +84,7 @@ export function legacyRedirect(pathname: string): string | null {
   const path = pathname.toLowerCase().replace(/\/+$/, '') || '/';
 
   const listing = LEGACY_LISTING.exec(path);
-  if (listing) return `/listings/${listing[1]}`;
+  if (listing) return listing[1] ? `/listings/${listing[2]}/${listing[1]}` : `/listings/${listing[2]}`;
 
   const direct = STATIC[path];
   if (direct) return direct;

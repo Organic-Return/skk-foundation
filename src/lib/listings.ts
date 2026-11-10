@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 import { getRealogySupabase, isRealogyConfigured } from './realogySupabase';
+import { listingPath, type ListingUrlInput } from './listingUrl';
 
 // Simple in-memory cache with TTL for expensive dropdown queries
 const memCache = new Map<string, { data: any; expiry: number }>();
@@ -24,6 +25,8 @@ interface GraphQLListing {
   street_name: string | null;
   street_suffix: string | null;
   unit_number: string | null;
+  /** RESO InternetAddressDisplayYN: false when the seller withholds the street address. */
+  internet_address_display_yn?: boolean | null;
   city: string | null;
   state: string | null;
   county: string | null;
@@ -88,10 +91,17 @@ export interface MLSProperty {
   status: string;
   list_price: number | null;
   sold_price: number | null;
+  /**
+   * Street address with city, state and zip, or null when the feed withholds
+   * it (`address_display` false) or has none. Nothing downstream — pages,
+   * cards, sitemap, schema, URLs — needs to check the flag itself.
+   */
   address: string | null;
   city: string | null;
   state: string | null;
   zip_code: string | null;
+  /** False when the MLS "display address on internet" flag is off. */
+  address_display?: boolean;
   neighborhood: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -152,9 +162,14 @@ export interface MLSProperty {
   updated_at: string;
 }
 
-// Build listing URL — uses MLS number when available, falls back to database ID
-export function getListingHref(listing: { id: string; mls_number?: string }): string {
-  return `/listings/${listing.mls_number || listing.id}`;
+/**
+ * The listing's URL: /listings/{mls number or id}/{address slug}. One helper
+ * for every link, the sitemap, canonical/og:url and JSON-LD, so each listing
+ * has a single spelling (see lib/listingUrl.ts). Pass the whole listing:
+ * a partial object yields a partial slug and one extra redirect hop.
+ */
+export function getListingHref(listing: ListingUrlInput): string {
+  return listingPath(listing);
 }
 
 // Resolve listing by slug — tries MLS number first, then database ID, then Realogy listing
@@ -321,6 +336,8 @@ function transformListing(row: GraphQLListing): MLSProperty {
     if (match) mlsNumber = match[1];
   }
 
+  const addressDisplay = row.internet_address_display_yn !== false;
+
   // Auto-close: if close_date is in the past, mark as Sold
   let status = row.status;
   if (row.close_date) {
@@ -340,7 +357,12 @@ function transformListing(row: GraphQLListing): MLSProperty {
     status,
     list_price: row.list_price || row.sold_price,
     sold_price: row.sold_price,
-    address: row.address || [row.street_number, row.street_name].filter(Boolean).join(' ') || null,
+    // A seller can ask the MLS to withhold the street address. Blanking it
+    // here keeps it off every page, card, feed, URL and schema node at once.
+    address: addressDisplay
+      ? row.address || [row.street_number, row.street_name].filter(Boolean).join(' ') || null
+      : null,
+    address_display: addressDisplay,
     city: row.city,
     state: row.state,
     zip_code: row.zip_code,
@@ -1357,6 +1379,7 @@ function transformRealogyListing(row: any): MLSProperty {
     list_price: row.price_amount,
     sold_price: row.is_active ? null : row.price_amount,
     address: row.street_address,
+    address_display: true,
     city: row.city,
     state: row.state_province_code,
     zip_code: row.postal_code,

@@ -26,9 +26,11 @@ import type { NewestListingData } from '@/components/ModernNewestListings';
 
 const toFeatured = (l: MLSProperty): FeaturedPropertyData => ({
   id: l.id,
+  mls_number: l.mls_number ?? null,
   address: l.address ?? '',
   city: l.city ?? '',
   state: l.state ?? '',
+  zip_code: l.zip_code ?? null,
   list_price: l.list_price ?? 0,
   bedrooms: l.bedrooms,
   bathrooms: l.bathrooms,
@@ -91,6 +93,7 @@ export async function getNewestListings(
       .slice(0, limit)
       .map((l) => ({
         id: l.id,
+        mls_number: l.mls_number ?? null,
         address: l.address,
         city: l.city,
         state: l.state,

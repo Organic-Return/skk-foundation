@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getListings } from '@/lib/listings';
+import { getListings, getListingHref } from '@/lib/listings';
 import { client } from '@/sanity/client';
 
 interface SanityHit {
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     city: l.city,
     state: l.state,
     price: l.price_amount ?? l.price,
-    href: `/listings/${l.mls_number || l.id}`,
+    href: getListingHref(l),
     photo: Array.isArray(l.photos) && l.photos.length > 0 ? l.photos[0] : null,
   }));
 

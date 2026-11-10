@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getListings, getDistinctCities } from '@/lib/listings';
+import { getListings, getDistinctCities, getListingHref } from '@/lib/listings';
 import { getMLSConfiguration, getAllowedCities } from '@/lib/mlsConfiguration';
 
 // Type-ahead suggestions for the hero search: matching areas plus a few active
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     console.error('[suggest] areas error:', error instanceof Error ? error.message : error);
   }
 
-  let properties: { id: string; mlsNumber: string; street: string; city: string; state: string }[] = [];
+  let properties: { id: string; mlsNumber: string; street: string; city: string; state: string; href: string }[] = [];
   try {
     const res = await getListings(1, 6, { keyword: q, sort: 'newest', allowedStatuses: ACTIVE_STATUSES });
     properties = (res.listings || []).map((l: any) => {
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         const idx = street.toLowerCase().indexOf(`, ${city.toLowerCase()}`);
         if (idx > 0) street = street.slice(0, idx);
       }
-      return { id: l.id, mlsNumber: l.mls_number || '', street, city, state: l.state || '' };
+      return { id: l.id, mlsNumber: l.mls_number || '', street, city, state: l.state || '', href: getListingHref(l) };
     });
   } catch (error) {
     console.error('[suggest] listings error:', error instanceof Error ? error.message : error);

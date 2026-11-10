@@ -65,7 +65,7 @@ const getSitemapListings = unstable_cache(
     }
     return out;
   },
-  ['sitemap-listings-v3'],
+  ['sitemap-listings-v4'],
   { revalidate: 3600, tags: ['sitemap-listings'] }
 );
 
